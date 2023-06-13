@@ -1,20 +1,25 @@
-version: '3.5'
-
-
+version: '3.8'
 services:
-  postgres:
-    container_name: postgres_demo
-    image: postgres:latest
+  db:
+    image: postgres:14.1-alpine
+    restart: always
     environment:
-      POSTGRES_USER: super_admin
-      POSTGRES_PASSWORD: SomeSecretPassword
-      PGDATA: /data/postgres
-    volumes:
-       - postgres-db:/data/postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
     ports:
-      - "5432:5432"
-
-
+      - '5432:5432'
+    volumes: 
+      - db:/var/lib/postgresql/data
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    ports:
+      - "5050:80"
+    profiles:
+      - tools
 volumes:
-  postgres-db:
+  db:
     driver: local
