@@ -1,0 +1,3 @@
+baza danych postgress
+prisma
+docker 
