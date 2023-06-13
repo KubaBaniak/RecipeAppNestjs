@@ -1,3 +1,6 @@
-baza danych postgress
+X baza danych postgress
+X docker 
 prisma
-docker 
+
+*** pgadmin docker dodawanie
+ - profile
