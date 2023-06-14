@@ -8,6 +8,9 @@
 #notes
 todo.txt
 
+#db
+/prisma/migrations
+
 # Logs
 logs
 *.log
