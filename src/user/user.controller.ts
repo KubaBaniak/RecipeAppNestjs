@@ -14,19 +14,6 @@ import { User as UserModel } from '@prisma/client';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Post('signup')
-  async singupUser(
-    @Body() userData: { email: string; password: string },
-  ): Promise<UserModel> {
-    return this.userService.createUser(userData);
-  }
-
-  @Post('login')
-  async loginUser(
-    @Body() userData: { email: string; password: string },
-  ): Promise<UserModel> {
-    return this.userService.user(userData);
-  }
 
   @Put()
   async updateUser(
