@@ -1,6 +1,11 @@
-import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { JwtService } from '@nestjs/jwt';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -21,7 +26,7 @@ export class AuthService {
     };
   }
 
-  async signUp(email: string, password: string): Promise<any> {
+  async signUp(email: string, password: string): Promise<User> {
     const user = await this.userService.findOneUser(email);
     if (!user) {
       const data = { email: email, password: password };
@@ -30,4 +35,5 @@ export class AuthService {
       throw new ForbiddenException();
     }
   }
+
 }
