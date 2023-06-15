@@ -8,10 +8,11 @@ import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { AuthController } from './auth/auth.controller';
 import { AuthService } from './auth/auth.service';
+import { LocalAuthGuard } from './auth/guards/local-auth.guard';
 
 @Module({
   imports: [PrismaModule, AuthModule, UserModule],
   controllers: [AppController, UserController, AuthController],
-  providers: [AppService, UserService, AuthService],
+  providers: [AppService, UserService, AuthService, LocalAuthGuard],
 })
 export class AppModule {}
