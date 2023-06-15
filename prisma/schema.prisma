@@ -11,20 +11,22 @@ datasource db {
 }
 
 model User {
-  id         Int         @id @default(autoincrement())
-  email      String      @unique
-  password   String
-  role       Role        @default(USER)
-  recipes    Recipe[]
+  id       Int      @id @default(autoincrement())
+  email    String   @unique
+  password String
+  role     Role     @default(USER)
+  recipes  Recipe[]
 }
 
 model Recipe {
-  id         Int        @id @default(autoincrement())
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
-  title      String
-  author     User       @relation(fields: [authorId], references: [id])
-  authorId   Int
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  title       String
+  author      User?    @relation(fields: [authorId], references: [id])
+  authorId    Int?
+  description String
+  ingredients String
+  preparation String
 }
 
 enum Role {
