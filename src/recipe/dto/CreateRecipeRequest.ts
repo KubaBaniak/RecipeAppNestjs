@@ -1,7 +1,6 @@
-import { Prisma, User } from '@prisma/client';
 import { IsNotEmpty } from 'class-validator';
 
-export class RecipeDto {
+export class CreateRecipeRequestDto {
   @IsNotEmpty()
   title: string;
 
@@ -11,6 +10,4 @@ export class RecipeDto {
   ingredients: string;
 
   preparation: string;
-
-  author: Prisma.UserCreateNestedOneWithoutRecipesInput;
 }

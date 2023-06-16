@@ -1,6 +1,6 @@
 import { Body, Controller, HttpCode, Post } from '@nestjs/common';
 import { RecipeService } from './recipe.service';
-import { RecipeDto } from './dto';
+import { CreateRecipeRequestDto } from './dto';
 
 @Controller('recipe')
 export class RecipeController {
@@ -8,7 +8,7 @@ export class RecipeController {
 
   @HttpCode(201)
   @Post()
-  async createRecipe(@Body() dto: RecipeDto) {
-    return this.recipeService.createRecipe(dto);
+  async createRecipe(@Body() createRecipeRequest: CreateRecipeRequestDto) {
+    return this.recipeService.createRecipe(createRecipeRequest);
   }
 }

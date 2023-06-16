@@ -1,1 +1,1 @@
-export * from './recipe.dto';
+export * from './CreateRecipeRequest';
