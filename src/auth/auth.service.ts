@@ -8,11 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
 import { bcryptConstants } from './constants';
 import * as bcrypt from 'bcrypt';
-import {
-  SignInRequestDto,
-  SignUpRequestDto,
-  ValidateUserRequestDto,
-} from './dto';
+import { SignInRequest, SignUpRequest, ValidateUserRequest } from './dto';
 
 @Injectable()
 export class AuthService {
@@ -21,11 +17,11 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  signIn(signInRequest: SignInRequestDto): Promise<string> {
+  signIn(signInRequest: SignInRequest): Promise<string> {
     return this.jwtService.signAsync(signInRequest.user);
   }
 
-  async signUp(signUpRequest: SignUpRequestDto): Promise<User> {
+  async signUp(signUpRequest: SignUpRequest): Promise<User> {
     const user = await this.userService.findOneUser(signUpRequest.email);
 
     if (!user) {
@@ -40,9 +36,7 @@ export class AuthService {
     }
   }
 
-  async validateUser(
-    validateUserRequest: ValidateUserRequestDto,
-  ): Promise<User> {
+  async validateUser(validateUserRequest: ValidateUserRequest): Promise<User> {
     const user = await this.userService.findOneUser(validateUserRequest.email);
 
     const isMatch = await bcrypt.compare(

@@ -1,5 +1,5 @@
 import { User } from '@prisma/client';
 
-export class SignInRequestDto {
+export class SignInRequest {
   user: User;
 }
