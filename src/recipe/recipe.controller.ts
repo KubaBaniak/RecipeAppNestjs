@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, Post } from '@nestjs/common';
+import { Body, Controller, HttpCode, Post, UseGuards } from '@nestjs/common';
 import { RecipeService } from './recipe.service';
 import { CreateRecipeRequest, CreateRecipeResponse } from './dto';
 
