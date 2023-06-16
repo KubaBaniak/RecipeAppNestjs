@@ -16,16 +16,16 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('signin')
   async signIn(@Body() signInRequest: SignInRequest): Promise<SignInResponse> {
-    const authServiceResult = await this.authService.signIn(signInRequest);
+    const accessToken = await this.authService.signIn(signInRequest);
 
-    return SignInResponse.from(authServiceResult);
+    return SignInResponse.from(accessToken);
   }
 
   @HttpCode(201)
   @Post('signup')
   async signUp(@Body() signUpRequest: SignUpRequest): Promise<SignUpResponse> {
-    const authServiceResult = await this.authService.signUp(signUpRequest);
+    const createdUser = await this.authService.signUp(signUpRequest);
 
-    return SignUpResponse.from(authServiceResult);
+    return SignUpResponse.from(createdUser);
   }
 }

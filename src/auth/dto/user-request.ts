@@ -1,6 +1,6 @@
 import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
 
-export class ValidateUserRequest {
+export class UserRequest {
   @IsNotEmpty()
   @IsEmail()
   email: string;
