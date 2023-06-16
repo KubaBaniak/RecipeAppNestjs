@@ -8,7 +8,11 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
 import { bcryptConstants } from './constants';
 import * as bcrypt from 'bcrypt';
-import { AuthDto } from './dto';
+import {
+  SignInRequestDto,
+  SignUpRequestDto,
+  ValidateUserRequestDto,
+} from './dto';
 
 @Injectable()
 export class AuthService {
@@ -17,26 +21,34 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  signIn(user: User): Promise<string> {
-    const payload = { email: user.email, password: user.password };
-    return this.jwtService.signAsync(payload);
+  signIn(signInRequest: SignInRequestDto): Promise<string> {
+    return this.jwtService.signAsync(signInRequest.user);
   }
 
-  async signUp(dto: AuthDto): Promise<User> {
-    const user = await this.userService.findOneUser(dto.email);
+  async signUp(signUpRequest: SignUpRequestDto): Promise<User> {
+    const user = await this.userService.findOneUser(signUpRequest.email);
 
     if (!user) {
-      const hash = await bcrypt.hash(dto.password, bcryptConstants.salt);
-      const data = { email: dto.email, password: hash };
+      const hash = await bcrypt.hash(
+        signUpRequest.password,
+        bcryptConstants.salt,
+      );
+      const data = { email: signUpRequest.email, password: hash };
       return await this.userService.createUser(data);
     } else {
       throw new ForbiddenException();
     }
   }
 
-  async validateUser(dto: AuthDto): Promise<User> {
-    const user = await this.userService.findOneUser(dto.email);
-    const isMatch = await bcrypt.compare(dto.password, user?.password);
+  async validateUser(
+    validateUserRequest: ValidateUserRequestDto,
+  ): Promise<User> {
+    const user = await this.userService.findOneUser(validateUserRequest.email);
+
+    const isMatch = await bcrypt.compare(
+      validateUserRequest.password,
+      user?.password,
+    );
 
     if (user && isMatch) {
       return user;
