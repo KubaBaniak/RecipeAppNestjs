@@ -24,7 +24,9 @@ export class AuthService {
   async signUp(signUpRequest: SignUpRequest): Promise<User> {
     const user = await this.userService.findOneUser(signUpRequest.email);
 
-    if (user) throw new ForbiddenException();
+    if (user) {
+      throw new ForbiddenException();
+    }
 
     const hash = await bcrypt.hash(
       signUpRequest.password,
@@ -38,10 +40,11 @@ export class AuthService {
 
   async validateUser(userRequest: UserRequest): Promise<User> {
     const user = await this.userService.findOneUser(userRequest.email);
-
     const isMatch = await bcrypt.compare(userRequest.password, user?.password);
 
-    if (!user || !isMatch) throw new UnauthorizedException();
+    if (!user || !isMatch) {
+      throw new UnauthorizedException();
+    }
 
     return user;
   }
