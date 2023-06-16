@@ -1,1 +1,1 @@
-export * from './CreateRecipeRequest';
+export * from './create-recipe-request';

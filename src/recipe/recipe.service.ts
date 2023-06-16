@@ -6,7 +6,8 @@ import { Recipe, Prisma } from '@prisma/client';
 export class RecipeService {
   constructor(private prisma: PrismaService) {}
 
-  async createRecipe(data: Prisma.RecipeCreateInput): Promise<Recipe> {
+  createRecipe(data: Prisma.RecipeCreateInput): Promise<Recipe> {
+    console.log(data);
     return this.prisma.recipe.create({
       data,
     });
