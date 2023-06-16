@@ -36,10 +36,10 @@ export class AuthService {
     return this.userService.createUser(data);
   }
 
-  async validateUser(UserRequest: UserRequest): Promise<User> {
-    const user = await this.userService.findOneUser(UserRequest.email);
+  async validateUser(userRequest: UserRequest): Promise<User> {
+    const user = await this.userService.findOneUser(userRequest.email);
 
-    const isMatch = await bcrypt.compare(UserRequest.password, user?.password);
+    const isMatch = await bcrypt.compare(userRequest.password, user?.password);
 
     if (!user || !isMatch) throw new UnauthorizedException();
 
