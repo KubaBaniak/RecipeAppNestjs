@@ -11,4 +11,8 @@ export class RecipeService {
       data,
     });
   }
+
+  fetchAllRecipes(): Promise<Recipe[]> {
+    return this.prisma.recipe.findMany();
+  }
 }
