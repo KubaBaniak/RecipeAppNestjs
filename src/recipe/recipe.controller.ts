@@ -7,6 +7,7 @@ import {
   UseGuards,
   Get,
   ParseIntPipe,
+  Patch,
 } from '@nestjs/common';
 import { RecipeService } from './recipe.service';
 import {
@@ -14,8 +15,10 @@ import {
   CreateRecipeResponse,
   FetchRecipeResponse,
   FetchRecipesResponse,
+  UpdatedRecipeResponse,
 } from './dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { UpdateRecipeRequest } from './dto/update-recipe-request';
 
 @Controller('recipe')
 export class RecipeController {
@@ -48,5 +51,16 @@ export class RecipeController {
     const fetchedRecipes = await this.recipeService.fetchAllRecipes();
 
     return FetchRecipesResponse.from(fetchedRecipes);
+  }
+
+  @Patch(':id')
+  async updateRecipe(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() payload: UpdateRecipeRequest,
+  ): Promise<UpdatedRecipeResponse> {
+    console.log(payload);
+    const updatedRecipe = await this.recipeService.updateRecipe(id, payload);
+
+    return UpdatedRecipeResponse.from(updatedRecipe);
   }
 }
