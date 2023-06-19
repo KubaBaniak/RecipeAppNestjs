@@ -13,16 +13,16 @@ export class RecipeService {
   }
 
   async fetchRecipe(id: number): Promise<Recipe> {
-      const recipe = await this.prisma.recipe.findUnique({
-          where: {
-              id,
-          }
-      })
+    const recipe = await this.prisma.recipe.findUnique({
+      where: {
+        id,
+      },
+    });
 
-      if (!recipe) {
-          throw new NotFoundException()
-      }
+    if (!recipe) {
+      throw new NotFoundException();
+    }
 
-      return recipe;
+    return recipe;
   }
 }
