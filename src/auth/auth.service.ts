@@ -18,7 +18,7 @@ export class AuthService {
   ) {}
 
   signIn(signInRequest: SignInRequest): Promise<string> {
-    return this.jwtService.signAsync(signInRequest.user);
+    return this.jwtService.signAsync(signInRequest);
   }
 
   async signUp(signUpRequest: SignUpRequest): Promise<User> {
@@ -40,9 +40,12 @@ export class AuthService {
 
   async validateUser(userRequest: UserRequest): Promise<User> {
     const user = await this.userService.findOneUser(userRequest.email);
-    const isMatch = await bcrypt.compare(userRequest.password, user?.password);
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+    const isMatch = await bcrypt.compare(userRequest.password, user.password);
 
-    if (!user || !isMatch) {
+    if (!isMatch) {
       throw new UnauthorizedException();
     }
 

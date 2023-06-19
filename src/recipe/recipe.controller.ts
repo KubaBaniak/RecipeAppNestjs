@@ -1,9 +1,13 @@
 import { Body, Controller, HttpCode, Post, Get, UseGuards } from '@nestjs/common';
 import { RecipeService } from './recipe.service';
 import { CreateRecipeRequest, CreateRecipeResponse, FetchAllRecipesResponse } from './dto';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
-@Controller('recipe') export class RecipeController {
+import { Body, Controller, HttpCode, Post, UseGuards } from '@nestjs/common';
+import { RecipeService } from './recipe.service';
+import { CreateRecipeRequest, CreateRecipeResponse } from './dto';
+
+@Controller('recipe')
+export class RecipeController {
   constructor(private readonly recipeService: RecipeService) {}
 
   @HttpCode(201)

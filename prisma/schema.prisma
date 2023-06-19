@@ -11,10 +11,19 @@ datasource db {
 }
 
 model User {
-  id         Int         @id @default(autoincrement())
-  email      String      @unique
-  password   String      
-  role       Role        @default(USER)
+  id       Int    @id @default(autoincrement())
+  email    String @unique
+  password String
+  role     Role   @default(USER)
+}
+
+model Recipe {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  title       String
+  description String
+  ingredients String
+  preparation String
 }
 
 enum Role {
