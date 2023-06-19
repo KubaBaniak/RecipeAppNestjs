@@ -13,6 +13,6 @@ export class RecipeService {
   }
 
   fetchAllRecipes(): Promise<Recipe[]> {
-      return this.prisma.recipe.findMany();
+    return this.prisma.recipe.findMany();
   }
 }
