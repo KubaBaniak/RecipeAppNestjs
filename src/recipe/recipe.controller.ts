@@ -1,10 +1,7 @@
 import { Body, Controller, HttpCode, Post, Get, UseGuards } from '@nestjs/common';
 import { RecipeService } from './recipe.service';
 import { CreateRecipeRequest, CreateRecipeResponse, FetchAllRecipesResponse } from './dto';
-
-import { Body, Controller, HttpCode, Post, UseGuards } from '@nestjs/common';
-import { RecipeService } from './recipe.service';
-import { CreateRecipeRequest, CreateRecipeResponse } from './dto';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @Controller('recipe')
 export class RecipeController {
@@ -22,6 +19,7 @@ export class RecipeController {
   }
 
   @HttpCode(200)
+  @UseGuards(JwtAuthGuard)
   @Get()
   async fetchAllRecipes(): Promise<FetchAllRecipesResponse> {
     const fetchedRecipes = await this.recipeService.fetchAllRecipes()
