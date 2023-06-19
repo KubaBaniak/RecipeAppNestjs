@@ -13,6 +13,7 @@ import {
   CreateRecipeRequest,
   CreateRecipeResponse,
   FetchRecipeResponse,
+  FetchRecipesResponse,
 } from './dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
@@ -40,5 +41,11 @@ export class RecipeController {
     const fetchedRecipe = await this.recipeService.fetchRecipe(id);
 
     return FetchRecipeResponse.from(fetchedRecipe);
+      
+  @Get()
+  async fetchRecipes(): Promise<FetchRecipesResponse> {
+    const fetchedRecipes = await this.recipeService.fetchAllRecipes();
+
+    return FetchRecipesResponse.from(fetchedRecipes);
   }
 }

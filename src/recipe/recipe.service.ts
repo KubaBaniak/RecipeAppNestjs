@@ -24,5 +24,8 @@ export class RecipeService {
     }
 
     return recipe;
+
+  fetchAllRecipes(): Promise<Recipe[]> {
+    return this.prisma.recipe.findMany();
   }
 }
