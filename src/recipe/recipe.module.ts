@@ -5,11 +5,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @Module({
-<<<<<<< HEAD
-  providers: [RecipeService, PrismaService, JwtStrategy, JwtAuthGuard],
-=======
   providers: [RecipeService, PrismaService, JwtAuthGuard],
->>>>>>> main
   controllers: [RecipeController],
   exports: [RecipeService],
 })
