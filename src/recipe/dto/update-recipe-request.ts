@@ -1,12 +1,11 @@
 import { IsNotEmpty, IsOptional } from 'class-validator';
 
 export class UpdateRecipeRequest {
-  @IsOptional()
   @IsNotEmpty()
+  @IsOptional()
   title: string;
 
   @IsOptional()
-  @IsNotEmpty()
   description: string;
 
   @IsOptional()
@@ -14,6 +13,5 @@ export class UpdateRecipeRequest {
   ingredients: string;
 
   @IsOptional()
-  @IsNotEmpty()
   preparation: string;
 }
