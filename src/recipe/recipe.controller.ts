@@ -47,12 +47,14 @@ export class RecipeController {
   }
 
   @Get()
+  @UseGuards(JwtAuthGuard)
   async fetchRecipes(): Promise<FetchRecipesResponse> {
     const fetchedRecipes = await this.recipeService.fetchAllRecipes();
 
     return FetchRecipesResponse.from(fetchedRecipes);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
   async updateRecipe(
     @Param('id', ParseIntPipe) id: number,
