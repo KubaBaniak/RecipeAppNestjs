@@ -16,9 +16,9 @@ import {
   FetchRecipeResponse,
   FetchRecipesResponse,
   UpdatedRecipeResponse,
+  UpdateRecipeRequest,
 } from './dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { UpdateRecipeRequest } from './dto/update-recipe-request';
 
 @Controller('recipe')
 export class RecipeController {
