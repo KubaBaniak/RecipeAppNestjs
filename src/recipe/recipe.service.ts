@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Recipe, Prisma } from '@prisma/client';
 import { UpdateRecipeRequest } from './dto';
@@ -41,6 +45,16 @@ export class RecipeService {
         data: payload,
       });
       return recipe;
+    } catch {
+      throw new NotFoundException();
+    }
+  }
+
+  async deleteRecipe(id: number) {
+    try {
+      await this.prisma.recipe.delete({
+        where: { id },
+      });
     } catch {
       throw new NotFoundException();
     }

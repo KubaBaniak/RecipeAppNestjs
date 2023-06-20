@@ -8,6 +8,7 @@ import {
   Get,
   ParseIntPipe,
   Patch,
+  Delete,
 } from '@nestjs/common';
 import { RecipeService } from './recipe.service';
 import {
@@ -63,5 +64,11 @@ export class RecipeController {
     const updatedRecipe = await this.recipeService.updateRecipe(id, payload);
 
     return UpdatedRecipeResponse.from(updatedRecipe);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id')
+  async deleteRecipe(@Param('id', ParseIntPipe) id: number) {
+    await this.recipeService.deleteRecipe(id);
   }
 }
