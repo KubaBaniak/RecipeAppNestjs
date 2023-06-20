@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Recipe, Prisma } from '@prisma/client';
+import { UpdateRecipeRequest } from './dto';
 
 @Injectable()
 export class RecipeService {
@@ -24,8 +25,24 @@ export class RecipeService {
     }
 
     return recipe;
+  }
 
   fetchAllRecipes(): Promise<Recipe[]> {
     return this.prisma.recipe.findMany();
+  }
+
+  async updateRecipe(
+    id: number,
+    payload: UpdateRecipeRequest,
+  ): Promise<Recipe> {
+    try {
+      const recipe = await this.prisma.recipe.update({
+        where: { id },
+        data: payload,
+      });
+      return recipe;
+    } catch {
+      throw new NotFoundException();
+    }
   }
 }
