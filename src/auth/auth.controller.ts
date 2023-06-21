@@ -7,7 +7,7 @@ import {
   SignUpRequest,
   SignUpResponse,
 } from './dto';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -16,6 +16,7 @@ export class AuthController {
 
   @HttpCode(200)
   @UseGuards(LocalAuthGuard)
+  @ApiOperation({ summary: 'Authenticate user' })
   @Post('signin')
   async signIn(@Body() signInRequest: SignInRequest): Promise<SignInResponse> {
     const accessToken = await this.authService.signIn(signInRequest);
@@ -24,6 +25,7 @@ export class AuthController {
   }
 
   @HttpCode(201)
+  @ApiOperation({ summary: 'Add user to database' })
   @Post('signup')
   async signUp(@Body() signUpRequest: SignUpRequest): Promise<SignUpResponse> {
     const createdUser = await this.authService.signUp(signUpRequest);
