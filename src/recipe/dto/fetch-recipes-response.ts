@@ -1,5 +1,3 @@
-import { ApiExtraModels, ApiProperty } from '@nestjs/swagger';
-
 class FetchedRecipe {
   public id: number;
   public createdAt: Date;
