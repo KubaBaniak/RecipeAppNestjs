@@ -1,7 +1,11 @@
 export class SignInResponse {
-  constructor(public accessToken: string) {}
+  public accessToken: string;
 
-  public static from(token: string): SignInResponse {
-    return new SignInResponse(token);
+  constructor(accessToken: string) {
+    this.accessToken = accessToken;
+  }
+
+  public static from(accessToken: string): SignInResponse {
+    return new SignInResponse(accessToken);
   }
 }
