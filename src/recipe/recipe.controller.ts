@@ -20,8 +20,10 @@ import {
   UpdateRecipeRequest,
 } from './dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller('recipe')
+@ApiTags('recipe')
 export class RecipeController {
   constructor(private readonly recipeService: RecipeService) {}
 
