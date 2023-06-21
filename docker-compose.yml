@@ -4,11 +4,11 @@ services:
     image: postgres:14.1-alpine
     restart: always
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      POSTGRES_USER: '${POSTGRES_USER}'
+      POSTGRES_PASSWORD: '${POSTGRES_PASSWORD}'
     ports:
       - '5432:5432'
-    volumes: 
+    volumes:
       - db:/var/lib/postgresql/data
     networks:
       - recipe-app-network
@@ -16,10 +16,10 @@ services:
     image: dpage/pgadmin4:7.3
     restart: always
     environment:
-      PGADMIN_DEFAULT_EMAIL: "${PGADMIN_EMAIL}"
-      PGADMIN_DEFAULT_PASSWORD: "${PGADMIN_PASSWORD}"
+      PGADMIN_DEFAULT_EMAIL: '${PGADMIN_EMAIL}'
+      PGADMIN_DEFAULT_PASSWORD: '${PGADMIN_PASSWORD}'
     ports:
-      - "5050:80"
+      - '5050:80'
     profiles:
       - tools
     networks:
@@ -31,3 +31,4 @@ volumes:
 networks:
   recipe-app-network:
     driver: bridge
+
