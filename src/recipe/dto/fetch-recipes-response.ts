@@ -10,10 +10,7 @@ class FetchedRecipe {
 }
 
 export class FetchRecipesResponse {
-  public fetchedRecipes: FetchedRecipe[];
-  constructor(fetchedRecipes: FetchedRecipe[]) {
-    this.fetchedRecipes = fetchedRecipes;
-  }
+  constructor(public fetchedRecipes: FetchedRecipe[]) {}
 
   public static from(fetchedRecipes: FetchedRecipe[]): FetchRecipesResponse {
     return new FetchRecipesResponse(fetchedRecipes);
