@@ -8,6 +8,7 @@ export function initalizeSwagger(): Omit<OpenAPIObject, 'paths'> {
     )
     .setVersion('1.0')
     .addTag('Recipes')
+    .addBearerAuth()
     .build();
 
   return config;

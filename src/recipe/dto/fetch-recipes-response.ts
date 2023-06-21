@@ -1,3 +1,4 @@
+import { Recipe } from '@prisma/client';
 class FetchedRecipe {
   public id: number;
   public createdAt: Date;
@@ -13,7 +14,7 @@ export class FetchRecipesResponse {
     this.fetchedRecipes = fetchedRecipes;
   }
 
-  public static from(fetchedRecipes: FetchedRecipe[]): FetchRecipesResponse {
+  public static from(fetchedRecipes: Recipe[]): FetchRecipesResponse {
     return new FetchRecipesResponse(fetchedRecipes);
   }
 }
