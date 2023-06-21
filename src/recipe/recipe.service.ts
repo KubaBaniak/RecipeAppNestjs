@@ -50,7 +50,7 @@ export class RecipeService {
     }
   }
 
-  async deleteRecipe(id: number) {
+  async deleteRecipe(id: number): Promise<void> {
     try {
       await this.prisma.recipe.delete({
         where: { id },

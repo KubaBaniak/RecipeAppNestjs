@@ -68,7 +68,7 @@ export class RecipeController {
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  async deleteRecipe(@Param('id', ParseIntPipe) id: number) {
+  async deleteRecipe(@Param('id', ParseIntPipe) id: number): Promise<void> {
     await this.recipeService.deleteRecipe(id);
   }
 }
