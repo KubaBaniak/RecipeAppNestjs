@@ -22,6 +22,7 @@ import {
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import {
   ApiTags,
+  ApiParam,
   ApiOperation,
   ApiBearerAuth,
   ApiOkResponse,
@@ -59,6 +60,10 @@ export class RecipeController {
   @ApiOkResponse({ description: 'Recipe has been fetched' })
   @ApiUnauthorizedResponse({ description: 'User is not authenticated' })
   @ApiNotFoundResponse({ description: 'Recipe does not exist' })
+  @ApiParam({
+    name: 'id',
+    description: 'Positive integer (≥1) to get recipe',
+  })
   @Get(':id')
   async fetchRecipe(
     @Param('id', ParseIntPipe) id: number,
@@ -87,6 +92,10 @@ export class RecipeController {
   @ApiNotFoundResponse({ description: 'Recipe does not exist' })
   @ApiBadRequestResponse({ description: 'Wrong credentials provided' })
   @ApiUnauthorizedResponse({ description: 'User is not authenticated' })
+  @ApiParam({
+    name: 'id',
+    description: 'Positive integer (≥1) to update recipe',
+  })
   @Patch(':id')
   async updateRecipe(
     @Param('id', ParseIntPipe) id: number,
@@ -103,6 +112,10 @@ export class RecipeController {
   @ApiOkResponse({ description: 'Recipe has been deleted' })
   @ApiNotFoundResponse({ description: 'Recipe does not exist' })
   @ApiUnauthorizedResponse({ description: 'User is not authenticated' })
+  @ApiParam({
+    name: 'id',
+    description: 'Positive integer (≥1) to delete recipe',
+  })
   @Delete(':id')
   async deleteRecipe(@Param('id', ParseIntPipe) id: number) {
     await this.recipeService.deleteRecipe(id);
