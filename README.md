@@ -12,7 +12,21 @@ Clone this repository with
 $ git clone https://github.com/KubaBaniak/RecipeAppNestjs.git
 ```
 
-and then install necessary dependencies
+set up .env file (look example.env)
+
+```
+#example.env
+
+DATABASE_URL=
+POSTGRES_USER=
+POSTGRES_PASSWORD=
+PGADMIN_EMAIL=
+PGADMIN_PASSWORD=
+JWT_SECRET=
+BCRYPT_SALT=
+```
+
+install necessary dependencies
 
 ```bash
 $ npm install
