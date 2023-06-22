@@ -117,7 +117,7 @@ export class RecipeController {
     description: 'Positive integer (≥1) to delete recipe',
   })
   @Delete(':id')
-  async deleteRecipe(@Param('id', ParseIntPipe) id: number) {
+  async deleteRecipe(@Param('id', ParseIntPipe) id: number): Promise<void> {
     await this.recipeService.deleteRecipe(id);
   }
 }
