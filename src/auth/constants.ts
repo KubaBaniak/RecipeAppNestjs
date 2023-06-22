@@ -5,5 +5,5 @@ export const jwtConstants = {
 };
 
 export const bcryptConstants = {
-  salt: process.env.BCRYPT_SALT,
+  salt: Number(process.env.BCRYPT_SALT_ROUNDS),
 };
