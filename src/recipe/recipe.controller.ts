@@ -25,11 +25,9 @@ import {
   ApiParam,
   ApiOperation,
   ApiBearerAuth,
-  ApiOkResponse,
   ApiUnauthorizedResponse,
   ApiNotFoundResponse,
   ApiBadRequestResponse,
-  ApiCreatedResponse,
 } from '@nestjs/swagger';
 
 @Controller('recipes')
@@ -40,7 +38,6 @@ export class RecipeController {
   @HttpCode(201)
   @ApiOperation({ summary: 'Create recipe' })
   @ApiBearerAuth()
-  @ApiCreatedResponse({ description: 'Recipe created successfully' })
   @ApiBadRequestResponse({ description: 'Wrong credentials provided' })
   @ApiUnauthorizedResponse({ description: 'User is unauthorized' })
   @Post()
@@ -57,7 +54,6 @@ export class RecipeController {
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Get recipe' })
   @ApiBearerAuth()
-  @ApiOkResponse({ description: 'Recipe has been fetched' })
   @ApiUnauthorizedResponse({ description: 'User is not authenticated' })
   @ApiNotFoundResponse({ description: 'Recipe does not exist' })
   @ApiParam({
@@ -76,7 +72,6 @@ export class RecipeController {
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Get list of all recipes' })
   @ApiBearerAuth()
-  @ApiOkResponse({ description: 'All recipes have been fetched' })
   @ApiUnauthorizedResponse({ description: 'User is not authenticated' })
   @Get()
   async fetchRecipes(): Promise<FetchRecipesResponse> {
@@ -88,7 +83,6 @@ export class RecipeController {
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Update recipe' })
   @ApiBearerAuth()
-  @ApiOkResponse({ description: 'Recipe has been updated' })
   @ApiNotFoundResponse({ description: 'Recipe does not exist' })
   @ApiBadRequestResponse({ description: 'Wrong credentials provided' })
   @ApiUnauthorizedResponse({ description: 'User is not authenticated' })
@@ -109,7 +103,6 @@ export class RecipeController {
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Delete recipe' })
   @ApiBearerAuth()
-  @ApiOkResponse({ description: 'Recipe has been deleted' })
   @ApiNotFoundResponse({ description: 'Recipe does not exist' })
   @ApiUnauthorizedResponse({ description: 'User is not authenticated' })
   @ApiParam({

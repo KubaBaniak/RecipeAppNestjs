@@ -24,7 +24,6 @@ export class AuthController {
   @HttpCode(200)
   @UseGuards(LocalAuthGuard)
   @ApiOperation({ summary: 'Authenticate user' })
-  @ApiOkResponse({ description: 'User has been authenticated' })
   @Post('signin')
   async signIn(@Body() signInRequest: SignInRequest): Promise<SignInResponse> {
     const accessToken = await this.authService.signIn(signInRequest);
@@ -34,7 +33,6 @@ export class AuthController {
 
   @HttpCode(201)
   @ApiOperation({ summary: 'Add user to database' })
-  @ApiCreatedResponse({ description: 'User has been added to database' })
   @ApiBadRequestResponse({ description: 'Wrong credentials provided' })
   @ApiForbiddenResponse({
     description: 'Cannot add User to database, use different credentials',
