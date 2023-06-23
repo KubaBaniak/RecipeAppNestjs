@@ -24,7 +24,7 @@ $ git clone https://github.com/KubaBaniak/RecipeAppNestjs.git
 $ nvm use
 ```
 
-Make sure you nvm is installed on your machine. If not, [install it](https://github.com/nvm-sh/nvm) and use command above once again or verify if the version you are using matches the one provided in `.nvmrc` file.
+Double-check if nvm is installed on your machine. If not, [install it](https://github.com/nvm-sh/nvm) and use command above once again or verify if the version you are using matches the one provided in `.nvmrc` file.
 
 <br>
 
