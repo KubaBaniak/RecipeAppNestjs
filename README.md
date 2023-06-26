@@ -2,7 +2,7 @@
 
 ## Description
 
-Recipe App people to share their **beloved** recipes with others.
+Recipe App people to share their **beloved** recipes with the others.
 
 ## Installation
 
