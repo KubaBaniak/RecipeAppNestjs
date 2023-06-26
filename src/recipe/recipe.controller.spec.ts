@@ -73,7 +73,7 @@ describe("Recipe Controller's tests", () => {
         preparation: dto.preparation || faker.lorem.lines(5),
       });
     }),
-    deleteRecipe: jest.fn((id: number) => Promise.resolve()),
+    deleteRecipe: jest.fn((_id: number) => Promise.resolve()),
   };
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
