@@ -6,8 +6,6 @@ import { faker } from '@faker-js/faker';
 
 describe("Recipe Controller's tests", () => {
   let recipeController: RecipeController;
-  let recipeService: RecipeService;
-  let prismaService: PrismaService;
 
   const mockRecipe = {
     id: expect.any(Number),
@@ -27,24 +25,24 @@ describe("Recipe Controller's tests", () => {
 
   const mockRecipeService = {
     createRecipe: jest.fn((dto: mockRecipeRequest) => {
-      return {
+      return Promise.resolve({
         id: 1,
         createdAt: Date.now(),
         ...dto,
-      };
+      });
     }),
     fetchRecipe: jest.fn((id: number) => {
-      return {
+      return Promise.resolve({
         id,
         createdAt: Date.now(),
         title: faker.word.noun(),
         description: faker.lorem.text(),
         ingredients: faker.lorem.words(4),
         preparation: faker.lorem.lines(5),
-      };
+      });
     }),
     fetchAllRecipes: jest.fn(() => {
-      return [
+      return Promise.resolve([
         {
           id: 0,
           createdAt: Date.now(),
@@ -61,7 +59,7 @@ describe("Recipe Controller's tests", () => {
           ingredients: faker.lorem.words(4),
           preparation: faker.lorem.lines(5),
         },
-      ];
+      ]);
     }),
     updateRecipe: jest.fn((id: number, dto: mockRecipeRequest) => {
       return Promise.resolve({
@@ -87,8 +85,6 @@ describe("Recipe Controller's tests", () => {
       ],
     }).compile();
 
-    prismaService = module.get<PrismaService>(PrismaService);
-    recipeService = module.get<RecipeService>(RecipeService);
     recipeController = module.get<RecipeController>(RecipeController);
   });
 
