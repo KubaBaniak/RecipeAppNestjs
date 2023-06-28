@@ -3,8 +3,9 @@ import { RecipeService } from './recipe.service';
 import { RecipeController } from './recipe.controller';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { faker } from '@faker-js/faker';
+import { mockRecipeController } from './__mocks__/recipe.controller';
 
-describe("Recipe Controller's tests", () => {
+describe('RecipeController', () => {
   let recipeController: RecipeController;
 
   const mockRecipe = {
@@ -16,70 +17,13 @@ describe("Recipe Controller's tests", () => {
     preparation: expect.any(String),
   };
 
-  class mockRecipeRequest {
-    title: string;
-    description: string;
-    ingredients: string;
-    preparation: string;
-  }
-
-  const mockRecipeService = {
-    createRecipe: jest.fn((dto: mockRecipeRequest) => {
-      return Promise.resolve({
-        id: 1,
-        createdAt: Date.now(),
-        ...dto,
-      });
-    }),
-    fetchRecipe: jest.fn((id: number) => {
-      return Promise.resolve({
-        id,
-        createdAt: Date.now(),
-        title: faker.word.noun(),
-        description: faker.lorem.text(),
-        ingredients: faker.lorem.words(4),
-        preparation: faker.lorem.lines(5),
-      });
-    }),
-    fetchAllRecipes: jest.fn(() => {
-      return Promise.resolve([
-        {
-          id: 0,
-          createdAt: Date.now(),
-          title: faker.word.noun(),
-          description: faker.lorem.text(),
-          ingredients: faker.lorem.words(4),
-          preparation: faker.lorem.lines(5),
-        },
-        {
-          id: 1,
-          createdAt: Date.now(),
-          title: faker.word.noun(),
-          description: faker.lorem.text(),
-          ingredients: faker.lorem.words(4),
-          preparation: faker.lorem.lines(5),
-        },
-      ]);
-    }),
-    updateRecipe: jest.fn((id: number, dto: mockRecipeRequest) => {
-      return Promise.resolve({
-        id,
-        createdAt: Date.now(),
-        title: dto.title || faker.word.noun(),
-        description: dto.description || faker.lorem.text(),
-        ingredients: dto.ingredients || faker.lorem.words(4),
-        preparation: dto.preparation || faker.lorem.lines(5),
-      });
-    }),
-    deleteRecipe: jest.fn((_id: number) => Promise.resolve()),
-  };
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [RecipeController],
       providers: [
         {
           provide: RecipeService,
-          useValue: mockRecipeService,
+          useClass: mockRecipeController,
         },
         PrismaService,
       ],
