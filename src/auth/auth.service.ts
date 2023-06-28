@@ -24,7 +24,6 @@ export class AuthService {
   async signUp(signUpRequest: SignUpRequest): Promise<User> {
     const user = await this.userService.findOneUser(signUpRequest.email);
 
-    console.log(user);
     if (user) {
       throw new ForbiddenException();
     }
