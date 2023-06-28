@@ -7,7 +7,7 @@ import { mockPrismaService } from '../prisma/__mocks__/prisma';
 describe('UserService', () => {
   let userService: UserService;
 
-  const mockUser = {
+  const userPayload = {
     id: expect.any(Number),
     email: expect.any(String),
     password: expect.any(String),
@@ -41,7 +41,7 @@ describe('UserService', () => {
       const createdUser = await userService.createUser(request);
 
       //then
-      expect(createdUser).toEqual(mockUser);
+      expect(createdUser).toEqual(userPayload);
     });
   });
 
@@ -63,7 +63,7 @@ describe('UserService', () => {
       });
 
       //then
-      expect(createdUser).toEqual(mockUser);
+      expect(createdUser).toEqual(userPayload);
     });
   });
 
