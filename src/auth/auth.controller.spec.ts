@@ -2,29 +2,10 @@ import { faker } from '@faker-js/faker';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { mockAuthController } from './__mocks__/auth.controller';
 
 describe('AuthController', () => {
   let authController: AuthController;
-
-  const mockAuthService = {
-    signIn: jest
-      .fn()
-      .mockImplementation((_request: { email: string; password: string }) => {
-        return Promise.resolve({
-          accessToken: faker.string.sample(64),
-        });
-      }),
-
-    signUp: jest
-      .fn()
-      .mockImplementation((request: { email: string; password: string }) => {
-        return Promise.resolve({
-          id: faker.number.int(),
-          email: request.email,
-          role: 'USER',
-        });
-      }),
-  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -32,7 +13,7 @@ describe('AuthController', () => {
       providers: [
         {
           provide: AuthService,
-          useValue: mockAuthService,
+          useClass: mockAuthController,
         },
       ],
     }).compile();
