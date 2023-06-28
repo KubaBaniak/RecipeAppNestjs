@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from './user.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { faker } from '@faker-js/faker';
+import { mockPrismaService } from '../prisma/__mocks__/prisma';
 
 describe('UserService', () => {
   let userService: UserService;
@@ -13,55 +14,11 @@ describe('UserService', () => {
     role: expect.any(String),
   };
 
-  class MockUserRequest {
-    email: string;
-    password: string;
-    role?: string;
-  }
-
-  const mockPrismaService = {
-    user: {
-      create: jest
-        .fn()
-        .mockImplementation((request: { data: MockUserRequest }) => {
-          return Promise.resolve({
-            id: faker.number.int(),
-            email: request.data.email,
-            password: request.data.password,
-            role: 'USER',
-          });
-        }),
-
-      update: jest.fn().mockImplementation(
-        (request: {
-          data: {
-            email: string;
-            password: string;
-          };
-          where: {
-            id: number;
-          };
-        }) => {
-          return Promise.resolve({
-            id: request.where.id,
-            email: request.data.email,
-            password: request.data.password,
-            role: 'USER',
-          });
-        },
-      ),
-
-      delete: jest.fn().mockImplementation((_request: { id: number }) => {
-        return Promise.resolve();
-      }),
-    },
-  };
-
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UserService,
-        { provide: PrismaService, useValue: mockPrismaService },
+        { provide: PrismaService, useClass: mockPrismaService },
       ],
     }).compile();
 
