@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { RecipeService } from './recipe.service';
 import { faker } from '@faker-js/faker';
+import { mockRecipeService } from './__mocks__/recipe.service';
 
 describe("Recipe Service's tests", () => {
   let recipeService: RecipeService;
@@ -15,84 +16,13 @@ describe("Recipe Service's tests", () => {
     preparation: expect.any(String),
   };
 
-  class MockRecipeRequest {
-    data: {
-      title: string;
-      description: string;
-      ingredients: string;
-      preparation: string;
-    };
-  }
-
-  const mockPrismaService = {
-    recipe: {
-      create: jest.fn().mockImplementation((request: MockRecipeRequest) => {
-        return Promise.resolve({
-          id: 420,
-          createdAt: Date.now(),
-          ...request.data,
-        });
-      }),
-
-      findUnique: jest
-        .fn()
-        .mockImplementation((request: { where: { id: number } }) => {
-          return Promise.resolve({
-            id: request.where.id,
-            createdAt: Date.now(),
-            title: faker.word.noun(),
-            description: faker.lorem.text(),
-            ingredients: faker.lorem.words(4),
-            preparation: faker.lorem.lines(5),
-          });
-        }),
-
-      findMany: jest.fn().mockImplementation(() => {
-        return Promise.resolve([
-          {
-            id: 0,
-            createdAt: Date.now(),
-            title: faker.word.noun(),
-            description: faker.lorem.text(),
-            ingredients: faker.lorem.words(4),
-            preparation: faker.lorem.lines(5),
-          },
-          {
-            id: 1,
-            createdAt: Date.now(),
-            title: faker.word.noun(),
-            description: faker.lorem.text(),
-            ingredients: faker.lorem.words(4),
-            preparation: faker.lorem.lines(5),
-          },
-        ]);
-      }),
-
-      update: jest
-        .fn()
-        .mockImplementation(
-          (request: { where: { id: number }; data: MockRecipeRequest }) => {
-            return Promise.resolve({
-              id: request.where.id,
-              createdAt: Date.now(),
-              ...request.data,
-            });
-          },
-        ),
-
-      delete: jest.fn().mockImplementation((_request) => {
-        return Promise.resolve();
-      }),
-    },
-  };
-
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         RecipeService,
         {
           provide: PrismaService,
-          useValue: mockPrismaService,
+          useClass: mockRecipeService,
         },
       ],
     }).compile();
