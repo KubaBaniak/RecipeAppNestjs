@@ -1,24 +1,17 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from './user.service';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { faker } from '@faker-js/faker';
-import { mockPrismaService } from '../prisma/__mocks__/prisma';
+import { MockPrismaService } from '../prisma/__mocks__/prisma.service.mock';
 
 describe('UserService', () => {
   let userService: UserService;
-
-  const userPayload = {
-    id: expect.any(Number),
-    email: expect.any(String),
-    password: expect.any(String),
-    role: expect.any(String),
-  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UserService,
-        { provide: PrismaService, useClass: mockPrismaService },
+        { provide: PrismaService, useClass: MockPrismaService },
       ],
     }).compile();
 
@@ -41,7 +34,12 @@ describe('UserService', () => {
       const createdUser = await userService.createUser(request);
 
       //then
-      expect(createdUser).toEqual(userPayload);
+      expect(createdUser).toEqual({
+        id: expect.any(Number),
+        email: request.email,
+        password: request.password,
+        role: 'USER',
+      });
     });
   });
 
@@ -63,7 +61,11 @@ describe('UserService', () => {
       });
 
       //then
-      expect(createdUser).toEqual(userPayload);
+      expect(createdUser).toEqual({
+        id: where.id,
+        ...data,
+        role: 'USER',
+      });
     });
   });
 

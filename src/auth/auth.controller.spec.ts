@@ -2,7 +2,7 @@ import { faker } from '@faker-js/faker';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { mockAuthController } from './__mocks__/auth.controller';
+import { MockAuthService } from './__mocks__/auth.service.mock';
 
 describe('AuthController', () => {
   let authController: AuthController;
@@ -13,7 +13,7 @@ describe('AuthController', () => {
       providers: [
         {
           provide: AuthService,
-          useClass: mockAuthController,
+          useClass: MockAuthService,
         },
       ],
     }).compile();
@@ -53,7 +53,11 @@ describe('AuthController', () => {
       const signedUpUser = await authController.signUp(request);
 
       //then
-      expect(signedUpUser).toBeDefined();
+      expect(signedUpUser).toEqual({
+        id: expect.any(Number),
+        email: request.email,
+        role: 'USER',
+      });
     });
   });
 });

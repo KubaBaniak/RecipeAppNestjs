@@ -6,21 +6,12 @@ import { faker } from '@faker-js/faker';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Role } from '@prisma/client';
+import { MockJwtService } from './__mocks__/jwt.service.mock';
+import { bcryptConstants } from './constants';
 
 describe('AuthService', () => {
   let authService: AuthService;
   let userService: UserService;
-
-  class MockRequest {
-    email: string;
-    password: string;
-  }
-
-  const mockJwtService = {
-    signAsync: jest.fn().mockImplementation((_request) => {
-      return Promise.resolve(faker.string.sample(64));
-    }),
-  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -30,7 +21,7 @@ describe('AuthService', () => {
         UserService,
         {
           provide: JwtService,
-          useValue: mockJwtService,
+          useClass: MockJwtService,
         },
       ],
     }).compile();
@@ -47,7 +38,7 @@ describe('AuthService', () => {
   describe('SignIn', () => {
     it('should return access token', async () => {
       //given
-      const request: MockRequest = {
+      const request = {
         email: faker.internet.email(),
         password: faker.internet.password(),
       };
@@ -63,7 +54,7 @@ describe('AuthService', () => {
   describe('SignUp', () => {
     it('should sign up user', async () => {
       //given
-      const request: MockRequest = {
+      const request = {
         email: faker.internet.email(),
         password: faker.internet.password(),
       };
@@ -83,9 +74,9 @@ describe('AuthService', () => {
       //then
       expect(signedUpUser).toEqual({
         id: expect.any(Number),
-        email: expect.any(String),
         password: expect.any(String),
-        role: expect.any(String),
+        email: request.email,
+        role: 'USER',
       });
     });
   });
@@ -93,20 +84,23 @@ describe('AuthService', () => {
   describe('ValidateUser', () => {
     it('should validate user', async () => {
       //given
-      const request: MockRequest = {
+      const request = {
         email: faker.internet.email(),
-        password: 'john cena',
+        password: faker.internet.password(),
       };
 
-      const hashed_password = await bcrypt.hash(request.password, 7);
-      const result = Promise.resolve({
-        id: faker.number.int(),
-        email: faker.internet.email(),
-        password: hashed_password,
-        role: Role.USER,
+      const hashed_password = await bcrypt.hash(
+        request.password,
+        bcryptConstants.test_salt,
+      );
+      jest.spyOn(userService, 'findOneUser').mockImplementation(() => {
+        return Promise.resolve({
+          id: faker.number.int(),
+          email: faker.internet.email(),
+          password: hashed_password,
+          role: Role.USER,
+        });
       });
-
-      jest.spyOn(userService, 'findOneUser').mockImplementation(() => result);
 
       //when
       const validatedUser = await authService.validateUser(request);
