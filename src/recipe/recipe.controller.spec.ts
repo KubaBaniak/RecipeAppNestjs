@@ -6,122 +6,122 @@ import { faker } from '@faker-js/faker';
 import { MockRecipeService } from './__mocks__/recipe.service.mock';
 
 describe('RecipeController', () => {
-    let recipeController: RecipeController;
+  let recipeController: RecipeController;
 
-    beforeEach(async () => {
-        const module: TestingModule = await Test.createTestingModule({
-            controllers: [RecipeController],
-            providers: [
-                PrismaService,
-                {
-                    provide: RecipeService,
-                    useClass: MockRecipeService,
-                },
-            ],
-        }).compile();
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [RecipeController],
+      providers: [
+        PrismaService,
+        {
+          provide: RecipeService,
+          useClass: MockRecipeService,
+        },
+      ],
+    }).compile();
 
-        recipeController = module.get<RecipeController>(RecipeController);
+    recipeController = module.get<RecipeController>(RecipeController);
+  });
+
+  it('should be defined', () => {
+    expect(recipeController).toBeDefined();
+  });
+
+  describe('CreateRecipe', () => {
+    it('should create recipe', async () => {
+      //given
+      const request = {
+        title: faker.word.noun(),
+        description: faker.lorem.text(),
+        ingredients: faker.lorem.words(4),
+        preparation: faker.lorem.lines(5),
+      };
+
+      //when
+      const createdRecipe = await recipeController.createRecipe(request);
+
+      //then
+      expect(createdRecipe).toEqual({
+        id: expect.any(Number),
+        createdAt: expect.any(Date),
+        ...request,
+      });
     });
+  });
 
-    it('should be defined', () => {
-        expect(recipeController).toBeDefined();
+  describe('FetchRecipe', () => {
+    it('should fetch recipe given id', async () => {
+      //given
+      const id = faker.number.int();
+
+      //when
+      const fetchedRecipe = await recipeController.fetchRecipe(id);
+
+      //then
+      expect(fetchedRecipe).toEqual({
+        fetchedRecipe: {
+          id,
+          createdAt: expect.any(Date),
+          title: expect.any(String),
+          description: expect.any(String),
+          ingredients: expect.any(String),
+          preparation: expect.any(String),
+        },
+      });
     });
+    it('should fetch all recipes', async () => {
+      //when
+      const fetchedAllRecipes = await recipeController.fetchRecipes();
 
-    describe('CreateRecipe', () => {
-        it('should create recipe', async () => {
-            //given
-            const request = {
-                title: faker.word.noun(),
-                description: faker.lorem.text(),
-                ingredients: faker.lorem.words(4),
-                preparation: faker.lorem.lines(5),
-            };
-
-            //when
-            const createdRecipe = await recipeController.createRecipe(request);
-
-            //then
-            expect(createdRecipe).toEqual({
-                id: expect.any(Number),
-                createdAt: expect.any(Date),
-                ...request,
-            });
-        });
+      //then
+      expect(fetchedAllRecipes.fetchedRecipes).toEqual(
+        expect.arrayContaining([
+          {
+            id: expect.any(Number),
+            createdAt: expect.any(Date),
+            title: expect.any(String),
+            description: expect.any(String),
+            ingredients: expect.any(String),
+            preparation: expect.any(String),
+          },
+        ]),
+      );
     });
+  });
 
-    describe('FetchRecipe', () => {
-        it('should fetch recipe given id', async () => {
-            //given
-            const id = faker.number.int();
+  describe('UpdateRecipe', () => {
+    it('should update recipe with given credentials', async () => {
+      //given
+      const id = faker.number.int();
+      const request = {
+        title: faker.word.noun(),
+        description: faker.lorem.text(),
+        ingredients: faker.lorem.words(4),
+        preparation: faker.lorem.lines(5),
+      };
 
-            //when
-            const fetchedRecipe = await recipeController.fetchRecipe(id);
+      //when
+      const updatedRecipe = await recipeController.updateRecipe(id, request);
 
-            //then
-            expect(fetchedRecipe).toEqual({
-                fetchedRecipe: {
-                    id,
-                    createdAt: expect.any(Date),
-                    title: expect.any(String),
-                    description: expect.any(String),
-                    ingredients: expect.any(String),
-                    preparation: expect.any(String),
-                },
-            });
-        });
-        it('should fetch all recipes', async () => {
-            //when
-            const fetchedAllRecipes = await recipeController.fetchRecipes();
-
-            //then
-            expect(fetchedAllRecipes.fetchedRecipes).toEqual(
-                expect.arrayContaining([
-                    {
-                        id: expect.any(Number),
-                        createdAt: expect.any(Date),
-                        title: expect.any(String),
-                        description: expect.any(String),
-                        ingredients: expect.any(String),
-                        preparation: expect.any(String),
-                    },
-                ]),
-            );
-        });
+      //then
+      expect(updatedRecipe).toEqual({
+        id,
+        createdAt: expect.any(Date),
+        ...request,
+      });
     });
+  });
 
-    describe('UpdateRecipe', () => {
-        it('should update recipe with given credentials', async () => {
-            //given
-            const id = faker.number.int();
-            const request = {
-                title: faker.word.noun(),
-                description: faker.lorem.text(),
-                ingredients: faker.lorem.words(4),
-                preparation: faker.lorem.lines(5),
-            };
+  describe('DeleteRecipe', () => {
+    it('should delete recipe with given id', async () => {
+      //given
+      const id = faker.number.int();
 
-            //when
-            const updatedRecipe = await recipeController.updateRecipe(id, request);
+      //when
+      const deletedRecipe = await recipeController.deleteRecipe(id);
 
-            //then
-            expect(updatedRecipe).toEqual({
-                id,
-                createdAt: expect.any(Date),
-                ...request,
-            });
-        });
+      //then
+      expect(deletedRecipe).toBeUndefined();
     });
-
-    describe('DeleteRecipe', () => {
-        it('should delete recipe with given id', async () => {
-            //given
-            const id = faker.number.int();
-
-            //when
-            const deletedRecipe = await recipeController.deleteRecipe(id);
-
-            //then
-            expect(deletedRecipe).toBeUndefined();
-        });
-    });
+  });
 });
