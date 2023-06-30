@@ -108,8 +108,8 @@ describe('AuthService', () => {
       //then
       expect(validatedUser).toEqual({
         id: expect.any(Number),
-        email: expect.any(String),
-        password: expect.any(String),
+        email: request.email,
+        password: hashed_password,
         role: expect.any(String),
       });
     });
