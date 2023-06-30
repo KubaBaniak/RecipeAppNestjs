@@ -158,7 +158,6 @@ describe('RecipeController (e2e)', () => {
         .expect((response: request.Response) => {
           const { id, title, description, ingredients, preparation } =
             response.body;
-          console.log(id);
           expect(id).toEqual(id);
           expect(title).toEqual(req.title);
           expect(description).toEqual(req.description);
