@@ -19,13 +19,14 @@ import {
   UpdatedRecipeResponse,
   UpdateRecipeRequest,
 } from './dto';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
-@Controller('recipe')
+@Controller('recipes')
 export class RecipeController {
   constructor(private readonly recipeService: RecipeService) {}
 
   @HttpCode(201)
+  @UseGuards(JwtAuthGuard)
   @Post()
   async createRecipe(
     @Body() createRecipeRequest: CreateRecipeRequest,

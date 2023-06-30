@@ -13,7 +13,6 @@ export class FetchRecipeResponse {
   ) {}
 
   public static from(fetchedRecipe: Recipe): FetchRecipeResponse {
-    console.log(fetchedRecipe);
     return new FetchRecipeResponse(fetchedRecipe);
   }
 }
