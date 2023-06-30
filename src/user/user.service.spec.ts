@@ -1,18 +1,86 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from './user.service';
+import { PrismaService } from '../prisma/prisma.service';
+import { faker } from '@faker-js/faker';
+import { MockPrismaService } from '../prisma/__mocks__/prisma.service.mock';
 
 describe('UserService', () => {
-  let service: UserService;
+  let userService: UserService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [UserService],
+      providers: [
+        UserService,
+        { provide: PrismaService, useClass: MockPrismaService },
+      ],
     }).compile();
 
-    service = module.get<UserService>(UserService);
+    userService = module.get<UserService>(UserService);
   });
 
   it('should be defined', () => {
-    expect(service).toBeDefined();
+    expect(userService).toBeDefined();
+  });
+
+  describe('CreateUser', () => {
+    it('should create default User', async () => {
+      //given
+      const request = {
+        email: faker.internet.email(),
+        password: faker.internet.password(),
+      };
+
+      //when
+      const createdUser = await userService.createUser(request);
+
+      //then
+      expect(createdUser).toEqual({
+        id: expect.any(Number),
+        email: request.email,
+        password: request.password,
+        role: 'USER',
+      });
+    });
+  });
+
+  describe('UpdateUser', () => {
+    it('should update User', async () => {
+      //given
+      const where = {
+        id: faker.number.int(),
+      };
+      const data = {
+        email: faker.internet.email(),
+        password: faker.internet.password(),
+      };
+
+      //when
+      const createdUser = await userService.updateUser({
+        data,
+        where,
+      });
+
+      //then
+      expect(createdUser).toEqual({
+        id: where.id,
+        ...data,
+        role: 'USER',
+      });
+    });
+  });
+
+  describe('DeleteUser', () => {
+    it('should delete User', async () => {
+      //given
+      const where = {
+        id: faker.number.int(),
+      };
+
+      //when
+      const deletedUser = await userService.deleteUser(where);
+
+      //then
+      expect(deletedUser).toBeUndefined();
+    });
   });
 });

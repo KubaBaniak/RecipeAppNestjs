@@ -59,9 +59,12 @@ export class RecipeController {
   @Patch(':id')
   async updateRecipe(
     @Param('id', ParseIntPipe) id: number,
-    @Body() payload: UpdateRecipeRequest,
+    @Body() updateRecipeRequest: UpdateRecipeRequest,
   ): Promise<UpdatedRecipeResponse> {
-    const updatedRecipe = await this.recipeService.updateRecipe(id, payload);
+    const updatedRecipe = await this.recipeService.updateRecipe(
+      id,
+      updateRecipeRequest,
+    );
 
     return UpdatedRecipeResponse.from(updatedRecipe);
   }
