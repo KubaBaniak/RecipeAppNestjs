@@ -1,6 +1,7 @@
 version: 2.1
 orbs:
   node: circleci/node@5.1.0
+  github-super-linter: circleci/github-super-linter@1.0.1
 
 commands:
   install_dependencies:
@@ -45,6 +46,7 @@ jobs:
 
     steps:
       - checkout
+      - github-super-linter
       - install_dependencies
       - setup_prisma
       - setup_docker_compose
