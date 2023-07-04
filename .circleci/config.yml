@@ -2,29 +2,25 @@ version: 2.1
 orbs:
   node: circleci/node@5.1.0
 
-jobs:
-  build:
-    working_directory: ~/repo
-
-    docker:
-      - image: cimg/base:2023.07
-      - image: cimg/postgres:14.1
-
+commands:
+  install_dependencies:
     steps:
-      - checkout
-
       - node/install:
           install-yarn: false
           node-version: '18.16.0'
       - run:
           name: Install node dependencies
           command: npm install
+  setup_prisma:
+    steps:
       - run:
           name: Generate prisma model
           command: npx prisma generate
       - run:
           name: Generate and apply migration
           command: npx prisma migrate dev
+  setup_docker_compose:
+    steps:
       - setup_remote_docker:
           version: 20.10.14
       - run:
@@ -38,6 +34,45 @@ jobs:
       - run:
           name: Run images of services declared in docker-compose.yml
           command: docker-compose up -d
+
+jobs:
+  build_and_test:
+    working_directory: ~/repo
+
+    docker:
+      - image: cimg/base:2023.07
+      - image: cimg/postgres:14.1
+
+    steps:
+      - checkout
+      - install_dependencies
+      - setup_prisma
+      - setup_docker_compose
       - run:
           name: Run unit tests
           command: npm run test
+
+  deploy:
+    working_directory: ~/repo
+
+    docker:
+      - image: cimg/base:2023.07
+      - image: cimg/postgres:14.1
+
+    steps:
+      - checkout
+      - install_dependencies
+      - setup_prisma
+      - setup_docker_compose
+      - run: echo "BUILDING PROJECT"
+
+workflows:
+  build_and_test:
+    jobs:
+      - build_and_test
+      - deploy:
+          requires:
+            - build_and_test
+          filters:
+            branches:
+              only: main
