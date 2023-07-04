@@ -105,10 +105,8 @@ describe('RecipeController (e2e)', () => {
     });
 
     it('should not fetch specific recipe and return 401 error (UNAUTHORIZED)', () => {
-      const id = 1;
-
       return request(app.getHttpServer())
-        .get(`/recipes/${id}`)
+        .get(`/recipes/${recipeId}`)
         .expect(HttpStatus.UNAUTHORIZED);
     });
   });
@@ -178,9 +176,8 @@ describe('RecipeController (e2e)', () => {
     });
 
     it('should not update specific recipe and return 401 error (UNAUTHORIZED)', () => {
-      const id = 1;
       return request(app.getHttpServer())
-        .patch(`/recipes/${id}`)
+        .patch(`/recipes/${recipeId}`)
         .send(req)
         .expect(HttpStatus.UNAUTHORIZED);
     });

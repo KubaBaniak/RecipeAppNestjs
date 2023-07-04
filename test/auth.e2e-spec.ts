@@ -6,6 +6,7 @@ import { HttpStatus, INestApplication } from '@nestjs/common';
 import { UserService } from '../src/user/user.service';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { Role } from '@prisma/client';
+import { faker } from '@faker-js/faker';
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication;
@@ -31,19 +32,19 @@ describe('AuthController (e2e)', () => {
         .post('/auth/signup')
         .set('Accept', 'application/json')
         .send(mockUserRequest)
-        .expect(HttpStatus.FORBIDDEN);
-    });
-    it('should not register a user (already in db) and return 403 error (FORBIDDEN ACCESS)', () => {
-      request(app.getHttpServer())
-        .post('/auth/signup')
-        .set('Accept', 'application/json')
-        .send(mockUserRequest)
         .expect((response: request.Response) => {
           const { id, email, role } = response.body;
           expect(id).toEqual(expect.any(Number));
           expect(email).toEqual(mockUserRequest.email);
           expect(role).toEqual(Role.USER);
         })
+        .expect(HttpStatus.CREATED);
+    });
+    it('should not register a user (already in db) and return 403 error (FORBIDDEN ACCESS)', () => {
+      request(app.getHttpServer())
+        .post('/auth/signup')
+        .set('Accept', 'application/json')
+        .send(mockUserRequest)
         .expect(HttpStatus.FORBIDDEN);
     });
   });
@@ -54,27 +55,30 @@ describe('AuthController (e2e)', () => {
         .post('/auth/signin')
         .set('Accept', 'application/json')
         .send(mockUserRequest)
-        .expect(HttpStatus.OK);
+        .expect((response: request.Response) => {
+          const accessToken = response.body.accessToken;
+          expect(accessToken).toEqual(expect.any(String));
+        });
     });
 
-    it('should not generate access token for user (wrong email) and return 401 error (UNAUTHENTICATED)', async () => {
+    it('should not generate access token for user (wrong email) and return 401 error (UNAUTHORIZED)', async () => {
       request(app.getHttpServer())
         .post('/auth/signin')
         .set('Accept', 'application/json')
         .send({
           email: mockUserRequest.email,
-          password: mockUserRequest.password + 'iLoveYouDad',
+          password: mockUserRequest.password + faker.word.noun(),
         })
-        .expect(HttpStatus.OK);
+        .expect(HttpStatus.UNAUTHORIZED);
     });
 
-    it('should not generate access token for user (wrong password) and return 401 error (UNAUTHENTICATED)', () => {
+    it('should not generate access token for user (wrong password) and return 401 error (UNAUTHORIZED)', () => {
       return request(app.getHttpServer())
         .post('/auth/signin')
         .set('Accept', 'application/json')
         .send({
           email: mockUserRequest.email,
-          password: mockUserRequest.password + 'iLoveYouMom',
+          password: mockUserRequest.password + faker.word.noun(),
         })
         .expect(HttpStatus.UNAUTHORIZED);
     });
