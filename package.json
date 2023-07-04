@@ -18,9 +18,19 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "prisma:generate": "prisma generate"
+    "test:e2e:watch": "jest --config ./test/jest-e2e.json --watch",
+    "prisma:generate": "prisma generate",
+    "prepare": "husky install"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "eslint",
+      "flow focus-check"
+    ],
+    "*": "prettier --ignore-unknown --write"
   },
   "dependencies": {
+    "@faker-js/faker": "8.0.2",
     "@nestjs/common": "9.0.0",
     "@nestjs/config": "2.3.3",
     "@nestjs/core": "9.0.0",
@@ -58,7 +68,7 @@
     "eslint-config-prettier": "8.3.0",
     "eslint-plugin-prettier": "4.0.0",
     "jest": "29.5.0",
-    "@faker-js/faker": "8.0.2",
+    "lint-staged": "13.2.3",
     "prettier": "2.3.2",
     "prisma": "4.15.0",
     "source-map-support": "0.5.20",
