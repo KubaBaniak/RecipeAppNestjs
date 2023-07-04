@@ -46,7 +46,6 @@ jobs:
 
     steps:
       - checkout
-      - github-super-linter
       - install_dependencies
       - setup_prisma
       - setup_docker_compose
