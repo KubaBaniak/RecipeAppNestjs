@@ -38,6 +38,23 @@ jobs:
       - run:
           name: Run images of services declared in docker-compose.yml
           command: docker-compose up -d
+
+  test:
+    working_directory: ~/repo
+
+    docker:
+      - image: cimg/base:2023.07
+
+    steps:
+      - checkout
       - run:
           name: Run unit tests
           command: npm run test
+
+workflows:
+  RecipeApp:
+    jobs:
+      - build
+      - test:
+          requires:
+            - build
