@@ -7,8 +7,8 @@ import { RecipeModule } from './recipe/recipe.module';
 import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
-    imports: [AuthModule, UserModule, RecipeModule, PrismaModule],
-    controllers: [AppController],
-    providers: [AppService],
+  imports: [AuthModule, UserModule, RecipeModule, PrismaModule],
+  controllers: [AppController],
+  providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

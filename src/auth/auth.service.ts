@@ -1,7 +1,7 @@
 import {
-    ForbiddenException,
-    Injectable,
-    UnauthorizedException,
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
@@ -12,43 +12,43 @@ import { SignInRequest, SignUpRequest, UserRequest } from './dto';
 
 @Injectable()
 export class AuthService {
-    constructor(
-        private readonly userService: UserService,
-        private readonly jwtService: JwtService,
-    ) { }
+  constructor(
+    private readonly userService: UserService,
+    private readonly jwtService: JwtService,
+  ) {}
 
-    signIn(signInRequest: SignInRequest): Promise<string> {
-        return this.jwtService.signAsync(signInRequest);
+  signIn(signInRequest: SignInRequest): Promise<string> {
+    return this.jwtService.signAsync(signInRequest);
+  }
+
+  async signUp(signUpRequest: SignUpRequest): Promise<User> {
+    const user = await this.userService.findOneUser(signUpRequest.email);
+
+    if (user) {
+      throw new ForbiddenException();
     }
 
-    async signUp(signUpRequest: SignUpRequest): Promise<User> {
-        const user = await this.userService.findOneUser(signUpRequest.email);
+    const hash = await bcrypt.hash(
+      signUpRequest.password,
+      bcryptConstants.salt,
+    );
 
-        if (user) {
-            throw new ForbiddenException();
-        }
+    const data = { email: signUpRequest.email, password: hash };
 
-        const hash = await bcrypt.hash(
-            signUpRequest.password,
-            bcryptConstants.salt,
-        );
+    return this.userService.createUser(data);
+  }
 
-        const data = { email: signUpRequest.email, password: hash };
+  async validateUser(userRequest: UserRequest): Promise<User> {
+    const user = await this.userService.findOneUser(userRequest.email);
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+    const isMatch = await bcrypt.compare(userRequest.password, user.password);
 
-        return this.userService.createUser(data);
+    if (!isMatch) {
+      throw new UnauthorizedException();
     }
 
-    async validateUser(userRequest: UserRequest): Promise<User> {
-        const user = await this.userService.findOneUser(userRequest.email);
-        if (!user) {
-            throw new UnauthorizedException();
-        }
-        const isMatch = await bcrypt.compare(userRequest.password, user.password);
-
-        if (!isMatch) {
-            throw new UnauthorizedException();
-        }
-
-        return user;
-    }
+    return user;
+  }
 }

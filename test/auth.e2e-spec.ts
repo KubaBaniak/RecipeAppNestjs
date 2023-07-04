@@ -7,14 +7,11 @@ import { UserService } from '../src/user/user.service';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { Role } from '@prisma/client';
 import { faker } from '@faker-js/faker';
+import { userData } from './mock.user';
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication;
-
-  const mockUserRequest = {
-    email: 'test@gmail.com',
-    password: 'testpassword123',
-  };
+  const mockUserRequest = userData;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -28,7 +25,7 @@ describe('AuthController (e2e)', () => {
 
   describe('/auth/signup (POST)', () => {
     it('should register a user and return the new user object', async () => {
-      request(app.getHttpServer())
+      return request(app.getHttpServer())
         .post('/auth/signup')
         .set('Accept', 'application/json')
         .send(mockUserRequest)
@@ -41,7 +38,7 @@ describe('AuthController (e2e)', () => {
         .expect(HttpStatus.CREATED);
     });
     it('should not register a user (already in db) and return 403 error (FORBIDDEN ACCESS)', () => {
-      request(app.getHttpServer())
+      return request(app.getHttpServer())
         .post('/auth/signup')
         .set('Accept', 'application/json')
         .send(mockUserRequest)
@@ -51,18 +48,19 @@ describe('AuthController (e2e)', () => {
 
   describe('/auth/signin (POST)', () => {
     it('should generate access token for user', async () => {
-      request(app.getHttpServer())
+      return request(app.getHttpServer())
         .post('/auth/signin')
         .set('Accept', 'application/json')
         .send(mockUserRequest)
         .expect((response: request.Response) => {
           const accessToken = response.body.accessToken;
           expect(accessToken).toEqual(expect.any(String));
-        });
+        })
+        .expect(HttpStatus.OK);
     });
 
     it('should not generate access token for user (wrong email) and return 401 error (UNAUTHORIZED)', async () => {
-      request(app.getHttpServer())
+      return request(app.getHttpServer())
         .post('/auth/signin')
         .set('Accept', 'application/json')
         .send({

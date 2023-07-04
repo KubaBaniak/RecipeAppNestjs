@@ -8,12 +8,14 @@ import { faker } from '@faker-js/faker';
 import { ValidationPipe } from '@nestjs/common';
 import { AuthService } from '../src/auth/auth.service';
 import { AuthModule } from '../src/auth/auth.module';
+import { userData } from './mock.user';
 
 describe('RecipeController (e2e)', () => {
   let app: INestApplication;
   let authService: AuthService;
-  let jwtToken: string;
+  let accessToken: string;
   let recipeId: number;
+  const mockUser = userData;
 
   const createRecipeRequest = {
     title: faker.word.noun(5),
@@ -29,9 +31,9 @@ describe('RecipeController (e2e)', () => {
     }).compile();
 
     authService = moduleRef.get<AuthService>(AuthService);
-    jwtToken = await authService.signIn({
-      email: 'test@gmail.com',
-      password: 'testpassword123',
+    accessToken = await authService.signIn({
+      email: mockUser.email,
+      password: mockUser.password,
     });
     app = moduleRef.createNestApplication();
 
@@ -47,7 +49,7 @@ describe('RecipeController (e2e)', () => {
     it('should create recipe and return in', async () => {
       return request(app.getHttpServer())
         .post('/recipes')
-        .set({ Authorization: `Bearer ${jwtToken}` })
+        .set({ Authorization: `Bearer ${accessToken}` })
         .send(createRecipeRequest)
         .expect((response: request.Response) => {
           const { id, title, description, ingredients, preparation } =
@@ -65,7 +67,7 @@ describe('RecipeController (e2e)', () => {
     it('should not create new recipe and return 400 error (BAD REQUEST)', async () => {
       return request(app.getHttpServer())
         .post('/recipes')
-        .set({ Authorization: `Bearer ${jwtToken}` })
+        .set({ Authorization: `Bearer ${accessToken}` })
         .send({})
         .expect(HttpStatus.BAD_REQUEST);
     });
@@ -82,7 +84,7 @@ describe('RecipeController (e2e)', () => {
     it('should fetch specific recipe by by given id', async () => {
       return request(app.getHttpServer())
         .get(`/recipes/${recipeId}`)
-        .set({ Authorization: `Bearer ${jwtToken}` })
+        .set({ Authorization: `Bearer ${accessToken}` })
         .expect((response: request.Response) => {
           const { id, title, description, ingredients, preparation } =
             response.body.fetchedRecipe;
@@ -100,7 +102,7 @@ describe('RecipeController (e2e)', () => {
 
       return request(app.getHttpServer())
         .get(`/recipes/${invalidId}`)
-        .set({ Authorization: `Bearer ${jwtToken}` })
+        .set({ Authorization: `Bearer ${accessToken}` })
         .expect(HttpStatus.NOT_FOUND);
     });
 
@@ -115,7 +117,7 @@ describe('RecipeController (e2e)', () => {
     it('should fetch all recipes', async () => {
       return request(app.getHttpServer())
         .get(`/recipes`)
-        .set({ Authorization: `Bearer ${jwtToken}` })
+        .set({ Authorization: `Bearer ${accessToken}` })
         .expect((response: request.Response) => {
           expect(response.body.fetchedRecipes).toEqual(
             expect.arrayContaining([
@@ -152,7 +154,7 @@ describe('RecipeController (e2e)', () => {
       return request(app.getHttpServer())
         .patch(`/recipes/${recipeId}`)
         .send(req)
-        .set({ Authorization: `Bearer ${jwtToken}` })
+        .set({ Authorization: `Bearer ${accessToken}` })
         .expect((response: request.Response) => {
           const { id, title, description, ingredients, preparation } =
             response.body;
@@ -171,7 +173,7 @@ describe('RecipeController (e2e)', () => {
       return request(app.getHttpServer())
         .patch(`/recipes/${invalidId}`)
         .send(req)
-        .set({ Authorization: `Bearer ${jwtToken}` })
+        .set({ Authorization: `Bearer ${accessToken}` })
         .expect(HttpStatus.NOT_FOUND);
     });
 
@@ -187,7 +189,7 @@ describe('RecipeController (e2e)', () => {
     it('should delete specific recipe by by given id', async () => {
       return request(app.getHttpServer())
         .delete(`/recipes/${recipeId}`)
-        .set({ Authorization: `Bearer ${jwtToken}` })
+        .set({ Authorization: `Bearer ${accessToken}` })
         .expect(HttpStatus.OK);
     });
 
@@ -195,7 +197,7 @@ describe('RecipeController (e2e)', () => {
       const invalidId = -3;
       return request(app.getHttpServer())
         .delete(`/recipes/${invalidId}`)
-        .set({ Authorization: `Bearer ${jwtToken}` })
+        .set({ Authorization: `Bearer ${accessToken}` })
         .expect(HttpStatus.NOT_FOUND);
     });
 
