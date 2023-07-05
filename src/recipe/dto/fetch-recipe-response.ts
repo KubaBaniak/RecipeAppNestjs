@@ -25,13 +25,15 @@ export class FetchRecipeResponse {
   }
 
   public static from(fetchedRecipe: Recipe): FetchRecipeResponse {
+    const { id, createdAt, title, description, ingredients, preparation } =
+      fetchedRecipe;
     return new FetchRecipeResponse(
-      fetchedRecipe.id,
-      fetchedRecipe.createdAt,
-      fetchedRecipe.title,
-      fetchedRecipe.description,
-      fetchedRecipe.ingredients,
-      fetchedRecipe.preparation,
+      id,
+      createdAt,
+      title,
+      description,
+      ingredients,
+      preparation,
     );
   }
 }

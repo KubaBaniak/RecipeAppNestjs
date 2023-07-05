@@ -31,4 +31,3 @@ volumes:
 networks:
   recipe-app-network:
     driver: bridge
-
