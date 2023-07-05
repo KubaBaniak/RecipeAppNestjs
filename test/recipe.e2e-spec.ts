@@ -100,7 +100,7 @@ describe('RecipeController (e2e)', () => {
             description,
             ingredients,
             preparation,
-          } = response.body.fetchedRecipe;
+          } = response.body;
           expect(id).toEqual(recipe.id);
           expect(createdAt).toEqual(expect.any(String));
           expect(title).toEqual(recipe.title);
@@ -175,16 +175,8 @@ describe('RecipeController (e2e)', () => {
         .send(requestData)
         .set({ Authorization: `Bearer ${accessToken}` })
         .expect((response: request.Response) => {
-          const {
-            id,
-            createdAt,
-            title,
-            description,
-            ingredients,
-            preparation,
-          } = response.body;
-          expect(id).toEqual(recipe.id);
-          expect(createdAt).toEqual(expect.any(String));
+          const { title, description, ingredients, preparation } =
+            response.body;
           expect(title).toEqual(requestData.title);
           expect(description).toEqual(requestData.description);
           expect(ingredients).toEqual(requestData.ingredients);

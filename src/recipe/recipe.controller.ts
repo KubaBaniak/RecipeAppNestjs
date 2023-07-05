@@ -19,7 +19,7 @@ import {
   UpdatedRecipeResponse,
   UpdateRecipeRequest,
 } from './dto';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import {
   ApiTags,
   ApiParam,
