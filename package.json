@@ -20,7 +20,7 @@
         "test:e2e": "jest --config ./test/jest-e2e.json",
         "test:e2e:watch": "jest --config ./test/jest-e2e.json --watch",
         "prisma:generate": "prisma generate"
-    },
+     },
     "dependencies": {
         "@faker-js/faker": "8.0.2",
         "@nestjs/common": "9.0.0",
