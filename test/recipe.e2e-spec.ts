@@ -61,7 +61,7 @@ describe('RecipeController (e2e)', () => {
                         preparation,
                     } = response.body;
                     expect(id).toEqual(expect.any(Number));
-                    expect(createdAt).toEqual(expect.any(Date));
+                    expect(createdAt).toEqual(expect.any(String));
                     expect(title).toEqual(recipeData.title);
                     expect(description).toEqual(recipeData.description);
                     expect(ingredients).toEqual(recipeData.ingredients);
@@ -102,7 +102,7 @@ describe('RecipeController (e2e)', () => {
                         preparation,
                     } = response.body.fetchedRecipe;
                     expect(id).toEqual(recipe.id);
-                    expect(createdAt).toEqual(expect.any(Date));
+                    expect(createdAt).toEqual(expect.any(String));
                     expect(title).toEqual(recipe.title);
                     expect(description).toEqual(recipe.description);
                     expect(ingredients).toEqual(recipe.ingredients);
@@ -140,7 +140,7 @@ describe('RecipeController (e2e)', () => {
                         expect.arrayContaining([
                             {
                                 id: expect.any(Number),
-                                createdAt: expect.any(Date),
+                                createdAt: expect.any(String),
                                 title: expect.any(String),
                                 description: expect.any(String),
                                 ingredients: expect.any(String),
@@ -184,7 +184,7 @@ describe('RecipeController (e2e)', () => {
                         preparation,
                     } = response.body;
                     expect(id).toEqual(recipe.id);
-                    expect(createdAt).toEqual(expect.any(Date));
+                    expect(createdAt).toEqual(expect.any(String));
                     expect(title).toEqual(requestData.title);
                     expect(description).toEqual(requestData.description);
                     expect(ingredients).toEqual(requestData.ingredients);
