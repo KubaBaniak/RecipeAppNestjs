@@ -1,39 +1,21 @@
 import { Recipe } from '@prisma/client';
-
-export class FetchRecipeResponse {
+class FetchedRecipe {
   public id: number;
   public createdAt: Date;
   public title: string;
   public description: string;
   public ingredients: string;
   public preparation: string;
+}
 
-  constructor(
-    id: number,
-    createdAt: Date,
-    title: string,
-    description: string,
-    ingredients: string,
-    preparation: string,
-  ) {
-    this.id = id;
-    this.createdAt = createdAt;
-    this.title = title;
-    this.description = description;
-    this.ingredients = ingredients;
-    this.preparation = preparation;
+export class FetchRecipeResponse {
+  public fetchedRecipe: FetchedRecipe;
+
+  constructor(fetchedRecipe: FetchedRecipe) {
+    this.fetchedRecipe = fetchedRecipe;
   }
 
   public static from(fetchedRecipe: Recipe): FetchRecipeResponse {
-    const { id, createdAt, title, description, ingredients, preparation } =
-      fetchedRecipe;
-    return new FetchRecipeResponse(
-      id,
-      createdAt,
-      title,
-      description,
-      ingredients,
-      preparation,
-    );
+    return new FetchRecipeResponse(fetchedRecipe);
   }
 }
