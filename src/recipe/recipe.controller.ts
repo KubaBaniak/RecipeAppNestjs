@@ -20,12 +20,26 @@ import {
   UpdateRecipeRequest,
 } from './dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import {
+  ApiTags,
+  ApiParam,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiUnauthorizedResponse,
+  ApiNotFoundResponse,
+  ApiBadRequestResponse,
+} from '@nestjs/swagger';
 
-@Controller('recipe')
+@Controller('recipes')
+@ApiTags('Recipes')
 export class RecipeController {
   constructor(private readonly recipeService: RecipeService) {}
 
   @HttpCode(201)
+  @ApiOperation({ summary: 'Create recipe' })
+  @ApiBearerAuth()
+  @ApiBadRequestResponse({ description: 'Wrong credentials provided' })
+  @ApiUnauthorizedResponse({ description: 'User is unauthorized' })
   @Post()
   async createRecipe(
     @Body() createRecipeRequest: CreateRecipeRequest,
@@ -38,6 +52,14 @@ export class RecipeController {
 
   @HttpCode(200)
   @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Get recipe' })
+  @ApiBearerAuth()
+  @ApiUnauthorizedResponse({ description: 'User is not authenticated' })
+  @ApiNotFoundResponse({ description: 'Recipe does not exist' })
+  @ApiParam({
+    name: 'id',
+    description: 'Positive integer (≥1) to get recipe',
+  })
   @Get(':id')
   async fetchRecipe(
     @Param('id', ParseIntPipe) id: number,
@@ -47,8 +69,11 @@ export class RecipeController {
     return FetchRecipeResponse.from(fetchedRecipe);
   }
 
-  @Get()
   @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Get list of all recipes' })
+  @ApiBearerAuth()
+  @ApiUnauthorizedResponse({ description: 'User is not authenticated' })
+  @Get()
   async fetchRecipes(): Promise<FetchRecipesResponse> {
     const fetchedRecipes = await this.recipeService.fetchAllRecipes();
 
@@ -56,6 +81,15 @@ export class RecipeController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Update recipe' })
+  @ApiBearerAuth()
+  @ApiNotFoundResponse({ description: 'Recipe does not exist' })
+  @ApiBadRequestResponse({ description: 'Wrong credentials provided' })
+  @ApiUnauthorizedResponse({ description: 'User is not authenticated' })
+  @ApiParam({
+    name: 'id',
+    description: 'Positive integer (≥1) to update recipe',
+  })
   @Patch(':id')
   async updateRecipe(
     @Param('id', ParseIntPipe) id: number,
@@ -70,6 +104,14 @@ export class RecipeController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Delete recipe' })
+  @ApiBearerAuth()
+  @ApiNotFoundResponse({ description: 'Recipe does not exist' })
+  @ApiUnauthorizedResponse({ description: 'User is not authenticated' })
+  @ApiParam({
+    name: 'id',
+    description: 'Positive integer (≥1) to delete recipe',
+  })
   @Delete(':id')
   async deleteRecipe(@Param('id', ParseIntPipe) id: number): Promise<void> {
     await this.recipeService.deleteRecipe(id);
