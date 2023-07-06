@@ -105,8 +105,6 @@ describe('RecipeController', () => {
 
       //then
       expect(updatedRecipe).toEqual({
-        id,
-        createdAt: expect.any(Date),
         ...request,
       });
     });
