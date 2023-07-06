@@ -45,8 +45,6 @@ jobs:
     docker:
       - image: cimg/node:18.16.0
       - image: cimg/postgres:14.1
-    parallelism: 2
-    resource_class: medium
     steps:
       - checkout
       - restore_cache:
@@ -55,15 +53,12 @@ jobs:
       - setup_docker_compose
       - run:
           name: Run unit tests
-          command: |
-            npm test -- $(circleci tests glob "src/*/*{spec}.ts" | circleci tests split --split-by=timings)
+          command: npm run test
 
   e2e_test:
     docker:
       - image: cimg/node:18.16.0
       - image: cimg/postgres:14.1
-    resource_class: medium
-    parallelism: 2
     steps:
       - checkout
       - restore_cache:
@@ -72,8 +67,7 @@ jobs:
       - setup_docker_compose
       - run:
           name: Run unit tests
-          command: |
-            npm test -- $(circleci tests glob "/test/*{e2e-spec}.ts" | circleci tests split --split-by=timings)
+          command: npm run test:e2e
 
   deploy:
     docker:
