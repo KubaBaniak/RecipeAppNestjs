@@ -8,14 +8,14 @@ import { faker } from '@faker-js/faker';
 import { ValidationPipe } from '@nestjs/common';
 import { AuthService } from '../src/auth/auth.service';
 import { AuthModule } from '../src/auth/auth.module';
-import { userData } from './mock.user';
-import { recipeData } from './mock.recipe';
+import { createUser } from './user.factory';
+import { createRecipe } from './recipe.factory';
+import { Recipe } from '@prisma/client';
 
 describe('RecipeController (e2e)', () => {
   let app: INestApplication;
   let prismaService: PrismaService;
   let authService: AuthService;
-
   let accessToken: string;
 
   beforeAll(async () => {
@@ -28,10 +28,7 @@ describe('RecipeController (e2e)', () => {
     prismaService = moduleRef.get<PrismaService>(PrismaService);
     authService = moduleRef.get<AuthService>(AuthService);
 
-    accessToken = await authService.signIn({
-      email: userData.email,
-      password: userData.password,
-    });
+    accessToken = await authService.signIn(createUser());
 
     app.useGlobalPipes(
       new ValidationPipe({
@@ -45,12 +42,13 @@ describe('RecipeController (e2e)', () => {
     await prismaService.recipe.deleteMany();
   });
 
-  describe('/recipes (POST)', () => {
+  describe('POST /recipes', () => {
     it('should create recipe and return in', async () => {
+      const recipe = createRecipe();
       return request(app.getHttpServer())
         .post('/recipes')
         .set({ Authorization: `Bearer ${accessToken}` })
-        .send(recipeData)
+        .send(recipe)
         .expect((response: request.Response) => {
           const {
             id,
@@ -62,10 +60,10 @@ describe('RecipeController (e2e)', () => {
           } = response.body;
           expect(id).toEqual(expect.any(Number));
           expect(createdAt).toEqual(expect.any(String));
-          expect(title).toEqual(recipeData.title);
-          expect(description).toEqual(recipeData.description);
-          expect(ingredients).toEqual(recipeData.ingredients);
-          expect(preparation).toEqual(recipeData.preparation);
+          expect(title).toEqual(recipe.title);
+          expect(description).toEqual(recipe.description);
+          expect(ingredients).toEqual(recipe.ingredients);
+          expect(preparation).toEqual(recipe.preparation);
         })
         .expect(HttpStatus.CREATED);
     });
@@ -81,14 +79,21 @@ describe('RecipeController (e2e)', () => {
     it('should not create new recipe and return 401 error (UNAUTHORIZED)', () => {
       return request(app.getHttpServer())
         .post('/recipes')
-        .send(recipeData)
+        .send(createRecipe())
         .expect(HttpStatus.UNAUTHORIZED);
     });
   });
 
-  describe('/recipes/:id (GET)', () => {
+  describe('GET /recipes/:id', () => {
+    let recipe: Recipe;
+
+    beforeEach(async () => {
+      recipe = await prismaService.recipe.create({
+        data: createRecipe(),
+      });
+    });
+
     it('should fetch specific recipe by by given id', async () => {
-      const recipe = await prismaService.recipe.create({ data: recipeData });
       return request(app.getHttpServer())
         .get(`/recipes/${recipe.id}`)
         .set({ Authorization: `Bearer ${accessToken}` })
@@ -100,7 +105,7 @@ describe('RecipeController (e2e)', () => {
             description,
             ingredients,
             preparation,
-          } = response.body;
+          } = response.body.fetchedRecipe;
           expect(id).toEqual(recipe.id);
           expect(createdAt).toEqual(expect.any(String));
           expect(title).toEqual(recipe.title);
@@ -112,7 +117,6 @@ describe('RecipeController (e2e)', () => {
     });
 
     it('should not fetch recipe and return 404 error (NOT FOUND)', async () => {
-      const recipe = await prismaService.recipe.create({ data: recipeData });
       return request(app.getHttpServer())
         .get(`/recipes/${recipe.id + 1}`)
         .set({ Authorization: `Bearer ${accessToken}` })
@@ -120,17 +124,16 @@ describe('RecipeController (e2e)', () => {
     });
 
     it('should not fetch specific recipe and return 401 error (UNAUTHORIZED)', async () => {
-      const recipe = await prismaService.recipe.create({ data: recipeData });
       return request(app.getHttpServer())
         .get(`/recipes/${recipe.id}`)
         .expect(HttpStatus.UNAUTHORIZED);
     });
   });
 
-  describe('/recipes (GET)', () => {
+  describe('GET /recipes', () => {
     it('should fetch all recipes', async () => {
       await prismaService.recipe.createMany({
-        data: [recipeData, recipeData, recipeData],
+        data: [createRecipe(), createRecipe(), createRecipe()],
       });
       return request(app.getHttpServer())
         .get(`/recipes`)
@@ -161,15 +164,22 @@ describe('RecipeController (e2e)', () => {
     });
   });
 
-  describe('/recipe/:id (PATCH)', () => {
+  describe('PATCH /recipe/:id', () => {
+    let recipe: Recipe;
     const requestData = {
       title: faker.word.noun(5),
       description: faker.lorem.text(),
       ingredients: faker.lorem.word(8),
       preparation: faker.lorem.lines(4),
     };
+
+    beforeEach(async () => {
+      recipe = await prismaService.recipe.create({
+        data: createRecipe(),
+      });
+    });
+
     it('should update specific recipe by by given id', async () => {
-      const recipe = await prismaService.recipe.create({ data: recipeData });
       return request(app.getHttpServer())
         .patch(`/recipes/${recipe.id}`)
         .send(requestData)
@@ -186,7 +196,6 @@ describe('RecipeController (e2e)', () => {
     });
 
     it('should not update recipe and return 404 error (NOT FOUND)', async () => {
-      const recipe = await prismaService.recipe.create({ data: recipeData });
       return request(app.getHttpServer())
         .patch(`/recipes/${recipe.id + 1}`)
         .send(requestData)
@@ -195,7 +204,6 @@ describe('RecipeController (e2e)', () => {
     });
 
     it('should not update specific recipe and return 401 error (UNAUTHORIZED)', async () => {
-      const recipe = await prismaService.recipe.create({ data: recipeData });
       return request(app.getHttpServer())
         .patch(`/recipes/${recipe.id}`)
         .send(requestData)
@@ -203,9 +211,16 @@ describe('RecipeController (e2e)', () => {
     });
   });
 
-  describe('/recipes/:id (DELETE)', () => {
+  describe('DELETE /recipes/:id', () => {
+    let recipe: Recipe;
+
+    beforeEach(async () => {
+      recipe = await prismaService.recipe.create({
+        data: createRecipe(),
+      });
+    });
+
     it('should delete specific recipe by by given id', async () => {
-      const recipe = await prismaService.recipe.create({ data: recipeData });
       return request(app.getHttpServer())
         .delete(`/recipes/${recipe.id}`)
         .set({ Authorization: `Bearer ${accessToken}` })
@@ -213,7 +228,6 @@ describe('RecipeController (e2e)', () => {
     });
 
     it('should not delete recipe and return 404 error (NOT FOUND)', async () => {
-      const recipe = await prismaService.recipe.create({ data: recipeData });
       return request(app.getHttpServer())
         .delete(`/recipes/${recipe.id + 1}`)
         .set({ Authorization: `Bearer ${accessToken}` })
@@ -221,7 +235,6 @@ describe('RecipeController (e2e)', () => {
     });
 
     it('should not delete specific recipe and return 401 error (UNAUTHORIZED)', async () => {
-      const recipe = await prismaService.recipe.create({ data: recipeData });
       return request(app.getHttpServer())
         .delete(`/recipes/${recipe.id}`)
         .expect(HttpStatus.UNAUTHORIZED);
