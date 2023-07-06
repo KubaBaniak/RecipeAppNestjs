@@ -25,22 +25,55 @@ commands:
           command: docker-compose up -d
 
 jobs:
-  build_and_test:
+  build:
     working_directory: ~/repo
     docker:
       - image: cimg/node:18.16.0
       - image: cimg/postgres:14.1
+    resource_class: medium
     steps:
       - checkout
+      - restore_cache:
+          key: v1-deps-{{ checksum "package-lock.json" }}
       - install_dependencies
+      - save_cache:
+          paths:
+            - './node_modules'
+          key: v1-deps-{{ checksum "package-lock.json" }}
+
+  unit_test:
+    docker:
+      - image: cimg/node:18.16.0
+      - image: cimg/postgres:14.1
+    parallelism: 2
+    resource_class: medium
+    steps:
+      - checkout
+      - restore_cache:
+          key: v1-deps-{{ checksum "package-lock.json" }}
       - setup_prisma
       - setup_docker_compose
       - run:
           name: Run unit tests
-          command: npm run test
+          command: |
+            npm test -- $(circleci tests glob "src/*/*{spec}.ts" | circleci tests split --split-by=timings)
+
+  e2e_test:
+    docker:
+      - image: cimg/node:18.16.0
+      - image: cimg/postgres:14.1
+    resource_class: medium
+    parallelism: 2
+    steps:
+      - checkout
+      - restore_cache:
+          key: v1-deps-{{ checksum "package-lock.json" }}
+      - setup_prisma
+      - setup_docker_compose
       - run:
-          name: Run e2e tests
-          command: npm run test:e2e
+          name: Run unit tests
+          command: |
+            npm test -- $(circleci tests glob "/test/*{e2e-spec}.ts" | circleci tests split --split-by=timings)
 
   deploy:
     docker:
@@ -50,12 +83,19 @@ jobs:
       - run: echo "!TODO"
 
 workflows:
-  build_and_test:
+  Recipe_app_workflow:
     jobs:
-      - build_and_test
+      - build
+      - unit_test:
+          requires:
+            - build
+      - e2e_test:
+          requires:
+            - build
       - deploy:
           requires:
-            - build_and_test
+            - unit_test
+            - e2e_test
           filters:
             branches:
               only: main
