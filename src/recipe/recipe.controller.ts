@@ -19,7 +19,7 @@ import {
   UpdatedRecipeResponse,
   UpdateRecipeRequest,
 } from './dto';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import {
   ApiTags,
   ApiParam,
@@ -36,6 +36,7 @@ export class RecipeController {
   constructor(private readonly recipeService: RecipeService) {}
 
   @HttpCode(201)
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Create recipe' })
   @ApiBearerAuth()
   @ApiBadRequestResponse({ description: 'Wrong credentials provided' })
