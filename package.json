@@ -119,6 +119,6 @@
     "titleTemplate": "{classname}-{title}",
     "ancestorSeparator": " › ",
     "usePathForSuiteName": "true",
-    "addFileAtribute": "true"
+    "addFileAttribute": "true"
   }
 }
