@@ -34,7 +34,6 @@
     "@nestjs/passport": "10.0.0",
     "@nestjs/platform-express": "10.0.5",
     "@nestjs/swagger": "7.1.1",
-    "@nestjs/typeorm": "10.0.0",
     "@prisma/client": "4.16.2",
     "bcrypt": "5.1.0",
     "class-transformer": "0.5.1",
@@ -45,8 +44,7 @@
     "passport-local": "1.0.0",
     "pg": "8.11.1",
     "reflect-metadata": "0.1.13",
-    "rxjs": "7.8.1",
-    "typeorm": "0.3.17"
+    "rxjs": "7.8.1"
   },
   "devDependencies": {
     "@faker-js/faker": "8.0.2",
