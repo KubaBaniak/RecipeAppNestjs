@@ -116,8 +116,9 @@
     "outputName": "junit.xml",
     "uniqueOutputName": "false",
     "classNameTemplate": "{classname}-{title}",
-    "titleTemplate": "{filepath}",
+    "titleTemplate": "{classname}-{title}",
     "ancestorSeparator": " › ",
-    "usePathForSuiteName": "true"
+    "usePathForSuiteName": "true",
+    "addFileAtribute": "true"
   }
 }
