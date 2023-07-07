@@ -5,8 +5,8 @@
 #env variables
 .env
 
-#notes
-todo.txt
+#test_results
+junit.xml
 
 # Logs
 logs

@@ -58,12 +58,13 @@ jobs:
       - run:
           name: Run unit tests
           command: |
-            npm test --verbose --$(circleci tests glob "/*/*{spec}.ts" | circleci tests split --split-by=timings)
+            UNIT_TEST_FILES=$(circleci tests glob "./src/*/*{spec}.ts" | circleci tests split --split-by=timings)
+            npm test $UNIT_TEST_FILES
       - run:
-          command: cp junit.xml ~/junit/
+          command: cp junit.xml ./junit/
           when: always
       - store_test_results:
-          path: ~/junit
+          path: ./junit
 
   e2e_test:
     <<: *defaults
@@ -79,12 +80,13 @@ jobs:
       - run:
           name: Run e2e tests
           command: |
-            npm test --verbose --$(circleci tests glob "/test/*{e2e-spec}.ts" | circleci tests split --split-by=timings)
+            E2E_TEST_FILES=$(circleci tests glob "./test/*{e2e-spec}.ts" | circleci tests split --split-by=timings)
+            npm test $E2E_TEST_FILES
       - run:
-          command: cp junit.xml ~/junit/
+          command: cp junit.xml ./junit/
           when: always
       - store_test_results:
-          path: ~/junit
+          path: ./junit
 
   deploy:
     docker:

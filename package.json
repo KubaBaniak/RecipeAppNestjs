@@ -101,7 +101,11 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "reporters": [
+      "default",
+      "jest-junit"
+    ]
   },
   "prisma": {
     "schema": "prisma/schema.prisma"
