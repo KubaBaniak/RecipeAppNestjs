@@ -76,7 +76,7 @@ jobs:
           name: Run e2e tests
           command: |
             E2E_TEST_FILES=$(circleci tests glob "./test/*{e2e-spec}.ts" | circleci tests split --split-by=timings)
-            npm test -- $E2E_TEST_FILES
+            npm test -- $E2E_TEST_FILES --config ./test/jest-e2e.json 
       - store_test_results:
           path: ./test_reports
 
