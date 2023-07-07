@@ -58,7 +58,7 @@ jobs:
           name: Run unit tests
           command: |
             UNIT_TEST_FILES=$(circleci tests glob "./src/*/*{spec}.ts" | circleci tests split --split-by=timings)
-            npm test $UNIT_TEST_FILES
+            npm test -- $UNIT_TEST_FILES
       - store_test_results:
           path: ./test_reports
 
@@ -72,11 +72,13 @@ jobs:
           key: ${CACHE_VERSION}-deps-{{ checksum "package-lock.json" }}
       - setup_prisma
       - setup_docker_compose
+      - run: echo $(circleci tests split --split-by=timings)
+      - run: echo $(circleci tests glob "./test/*{e2e-spec}.ts")
       - run:
           name: Run e2e tests
           command: |
             E2E_TEST_FILES=$(circleci tests glob "./test/*{e2e-spec}.ts" | circleci tests split --split-by=timings)
-            npm test $E2E_TEST_FILES
+            npm test -- $E2E_TEST_FILES
       - store_test_results:
           path: ./test_reports
 
