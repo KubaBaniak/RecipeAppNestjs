@@ -3,11 +3,11 @@ orbs:
   github-super-linter: circleci/github-super-linter@1.0.1
 
 defaults: &defaults
-    working_directory: ~/repo
-    docker:
-      - image: cimg/node:18.16.0
-      - image: cimg/postgres:14.1
-    
+  working_directory: ~/repo
+  docker:
+    - image: cimg/node:18.16.0
+    - image: cimg/postgres:14.1
+
 commands:
   install_dependencies:
     steps:
@@ -47,28 +47,34 @@ jobs:
   unit_test:
     <<: *defaults
     resource_class: medium
+    parallelism: 2
     steps:
       - checkout
       - restore_cache:
           key: ${CACHE_VERSION}-deps-{{ checksum "package-lock.json" }}
       - setup_prisma
       - setup_docker_compose
+      - run: echo $(circleci tests glob "./src/*/**{service.spec}.ts")
       - run:
           name: Run unit tests
-          command: npm run test
+          command: |
+            npm test --verbose -- $(circleci tests glob "./src/*/**{service.spec}.ts" | circleci tests split --split-by=timings)
 
   e2e_test:
     <<: *defaults
     resource_class: medium
+    parallelism: 2
     steps:
       - checkout
       - restore_cache:
           key: ${CACHE_VERSION}-deps-{{ checksum "package-lock.json" }}
       - setup_prisma
       - setup_docker_compose
+      - run: echo $(circleci tests glob "./test/*{e2e-spec}.ts")
       - run:
           name: Run e2e tests
-          command: npm run test:e2e
+          command: |
+            npm test -- $(circleci tests glob "./test/*{e2e-spec}.ts" | circleci tests split --split-by=timings)
 
   deploy:
     docker:
