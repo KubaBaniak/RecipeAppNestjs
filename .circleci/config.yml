@@ -54,11 +54,16 @@ jobs:
           key: ${CACHE_VERSION}-deps-{{ checksum "package-lock.json" }}
       - setup_prisma
       - setup_docker_compose
-      - run: echo $(circleci tests glob "./src/*/**{service.spec}.ts")
+      - run: mkdir ./junit
       - run:
           name: Run unit tests
           command: |
-            npm test --verbose -- $(circleci tests glob "./src/*/**{service.spec}.ts" | circleci tests split --split-by=timings)
+            npm test --verbose --$(circleci tests glob "/*/*{spec}.ts" | circleci tests split --split-by=timings)
+      - run:
+          command: cp junit.xml ~/junit/
+          when: always
+      - store_test_results:
+          path: ~/junit
 
   e2e_test:
     <<: *defaults
@@ -70,11 +75,16 @@ jobs:
           key: ${CACHE_VERSION}-deps-{{ checksum "package-lock.json" }}
       - setup_prisma
       - setup_docker_compose
-      - run: echo $(circleci tests glob "./test/*{e2e-spec}.ts")
+      - run: mkdir ./junit
       - run:
           name: Run e2e tests
           command: |
-            npm test -- $(circleci tests glob "./test/*{e2e-spec}.ts" | circleci tests split --split-by=timings)
+            npm test --verbose --$(circleci tests glob "/test/*{e2e-spec}.ts" | circleci tests split --split-by=timings)
+      - run:
+          command: cp junit.xml ~/junit/
+          when: always
+      - store_test_results:
+          path: ~/junit
 
   deploy:
     docker:
