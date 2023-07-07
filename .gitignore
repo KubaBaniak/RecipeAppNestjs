@@ -6,7 +6,7 @@
 .env
 
 #test_results
-junit.xml
+/test_reports
 
 # Logs
 logs

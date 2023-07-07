@@ -112,7 +112,7 @@
   },
   "jest-junit": {
     "suiteName": "jest tests",
-    "outputDirectory": ".",
+    "outputDirectory": "./test_reports",
     "outputName": "junit.xml",
     "uniqueOutputName": "false",
     "classNameTemplate": "{classname}-{title}",

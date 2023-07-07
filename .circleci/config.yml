@@ -54,17 +54,13 @@ jobs:
           key: ${CACHE_VERSION}-deps-{{ checksum "package-lock.json" }}
       - setup_prisma
       - setup_docker_compose
-      - run: mkdir ./junit
       - run:
           name: Run unit tests
           command: |
             UNIT_TEST_FILES=$(circleci tests glob "./src/*/*{spec}.ts" | circleci tests split --split-by=timings)
             npm test $UNIT_TEST_FILES
-      - run:
-          command: cp junit.xml ./junit/
-          when: always
       - store_test_results:
-          path: ./junit
+          path: ./test_reports
 
   e2e_test:
     <<: *defaults
@@ -76,17 +72,13 @@ jobs:
           key: ${CACHE_VERSION}-deps-{{ checksum "package-lock.json" }}
       - setup_prisma
       - setup_docker_compose
-      - run: mkdir ./junit
       - run:
           name: Run e2e tests
           command: |
             E2E_TEST_FILES=$(circleci tests glob "./test/*{e2e-spec}.ts" | circleci tests split --split-by=timings)
             npm test $E2E_TEST_FILES
-      - run:
-          command: cp junit.xml ./junit/
-          when: always
       - store_test_results:
-          path: ./junit
+          path: ./test_reports
 
   deploy:
     docker:
