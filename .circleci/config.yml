@@ -2,6 +2,8 @@ version: 2.1
 orbs:
   github-super-linter: circleci/github-super-linter@1.0.1
 
+  
+
 commands:
   install_dependencies:
     steps:
@@ -34,12 +36,12 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: v1-deps-{{ checksum "package-lock.json" }}
+          key: ${CACHE_VERSION}-deps-{{ checksum "package-lock.json" }}
       - install_dependencies
       - save_cache:
           paths:
             - './node_modules'
-          key: v1-deps-{{ checksum "package-lock.json" }}
+          key: ${CACHE_VERSION}-deps-{{ checksum "package-lock.json" }}
 
   unit_test:
     docker:
@@ -48,7 +50,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: v1-deps-{{ checksum "package-lock.json" }}
+          key: ${CACHE_VERSION}-deps-{{ checksum "package-lock.json" }}
       - setup_prisma
       - setup_docker_compose
       - run:
@@ -62,7 +64,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: v1-deps-{{ checksum "package-lock.json" }}
+          key: ${CACHE_VERSION}-deps-{{ checksum "package-lock.json" }}
       - setup_prisma
       - setup_docker_compose
       - run:
