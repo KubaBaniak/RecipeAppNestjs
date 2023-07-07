@@ -2,6 +2,12 @@ version: 2.1
 orbs:
   github-super-linter: circleci/github-super-linter@1.0.1
 
+defaults: &defaults
+    working_directory: ~/repo
+    docker:
+      - image: cimg/node:18.16.0
+      - image: cimg/postgres:14.1
+    
 commands:
   install_dependencies:
     steps:
@@ -25,19 +31,41 @@ commands:
           command: docker-compose up -d
 
 jobs:
-  build_and_test:
-    working_directory: ~/repo
-    docker:
-      - image: cimg/node:18.16.0
-      - image: cimg/postgres:14.1
+  build:
+    <<: *defaults
+    resource_class: medium
     steps:
       - checkout
+      - restore_cache:
+          key: ${CACHE_VERSION}-deps-{{ checksum "package-lock.json" }}
       - install_dependencies
+      - save_cache:
+          paths:
+            - './node_modules'
+          key: ${CACHE_VERSION}-deps-{{ checksum "package-lock.json" }}
+
+  unit_test:
+    <<: *defaults
+    resource_class: medium
+    steps:
+      - checkout
+      - restore_cache:
+          key: ${CACHE_VERSION}-deps-{{ checksum "package-lock.json" }}
       - setup_prisma
       - setup_docker_compose
       - run:
           name: Run unit tests
           command: npm run test
+
+  e2e_test:
+    <<: *defaults
+    resource_class: medium
+    steps:
+      - checkout
+      - restore_cache:
+          key: ${CACHE_VERSION}-deps-{{ checksum "package-lock.json" }}
+      - setup_prisma
+      - setup_docker_compose
       - run:
           name: Run e2e tests
           command: npm run test:e2e
@@ -52,10 +80,16 @@ jobs:
 workflows:
   build_and_test:
     jobs:
-      - build_and_test
-      - deploy:
+      - build
+      - unit_test:
           requires:
-            - build_and_test
+            - build
+      - e2e_test:
+          requires:
+            - build
+  deploy:
+    jobs:
+      - deploy:
           filters:
             branches:
               only: main
