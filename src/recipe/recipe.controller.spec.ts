@@ -4,18 +4,25 @@ import { RecipeController } from './recipe.controller';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { faker } from '@faker-js/faker';
 import { MockRecipeService } from './__mocks__/recipe.service.mock';
+import { CACHE_MANAGER, CacheModule } from '@nestjs/cache-manager';
+import { MockCacheManager } from './__mocks__/cache.manager.mock';
 
 describe('RecipeController', () => {
   let recipeController: RecipeController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
+      imports: [CacheModule.register()],
       controllers: [RecipeController],
       providers: [
         PrismaService,
         {
           provide: RecipeService,
           useClass: MockRecipeService,
+        },
+        {
+          provide: CACHE_MANAGER,
+          useClass: MockCacheManager,
         },
       ],
     }).compile();

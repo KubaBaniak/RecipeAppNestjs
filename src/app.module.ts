@@ -12,7 +12,6 @@ import * as redisStore from 'cache-manager-redis-store';
 @Module({
   imports: [
     CacheModule.register<RedisClientOptions>({
-      isGlobal: true,
       store: redisStore,
       url: 'redis://localhost:6379',
       password: process.env.REQUIRE_PASS_REDIS,
