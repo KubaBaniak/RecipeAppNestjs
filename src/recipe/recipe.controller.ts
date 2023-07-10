@@ -9,6 +9,7 @@ import {
   ParseIntPipe,
   Patch,
   Delete,
+  Inject,
 } from '@nestjs/common';
 import { RecipeService } from './recipe.service';
 import {
@@ -29,11 +30,16 @@ import {
   ApiNotFoundResponse,
   ApiBadRequestResponse,
 } from '@nestjs/swagger';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 
 @Controller('recipes')
 @ApiTags('Recipes')
 export class RecipeController {
-  constructor(private readonly recipeService: RecipeService) {}
+  constructor(
+    private readonly recipeService: RecipeService,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+  ) {}
 
   @HttpCode(201)
   @UseGuards(JwtAuthGuard)
@@ -48,6 +54,11 @@ export class RecipeController {
     const createdRecipe = await this.recipeService.createRecipe(
       createRecipeRequest,
     );
+    await this.cacheManager.set(
+      `cache:recipe:${createdRecipe.id}`,
+      createdRecipe,
+    );
+
     return CreateRecipeResponse.from(createdRecipe);
   }
 
@@ -66,6 +77,10 @@ export class RecipeController {
     @Param('id', ParseIntPipe) id: number,
   ): Promise<FetchRecipeResponse> {
     const fetchedRecipe = await this.recipeService.fetchRecipe(id);
+    await this.cacheManager.set(
+      `cache:recipe:${fetchedRecipe.id}`,
+      fetchedRecipe,
+    );
 
     return FetchRecipeResponse.from(fetchedRecipe);
   }
@@ -100,6 +115,10 @@ export class RecipeController {
       id,
       updateRecipeRequest,
     );
+    await this.cacheManager.set(
+      `cache:recipe:${updatedRecipe.id}`,
+      updatedRecipe,
+    );
 
     return UpdatedRecipeResponse.from(updatedRecipe);
   }
@@ -116,5 +135,6 @@ export class RecipeController {
   @Delete(':id')
   async deleteRecipe(@Param('id', ParseIntPipe) id: number): Promise<void> {
     await this.recipeService.deleteRecipe(id);
+    await this.cacheManager.del(`cache:recipe:${id}`);
   }
 }

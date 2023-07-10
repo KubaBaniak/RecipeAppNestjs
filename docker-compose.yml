@@ -28,7 +28,7 @@ services:
     image: redis:7.2-rc2-alpine
     restart: always
     ports:
-      - '6379:6370'
+      - '6379:6379'
     command: redis-server --save 20 1 --loglevel warning --requirepass '${REQUIRE_PASS_REDIS}'
     volumes:
       - cache:/data
