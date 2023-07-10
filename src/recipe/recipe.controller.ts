@@ -32,6 +32,7 @@ import {
 } from '@nestjs/swagger';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
+import { Recipe } from '@prisma/client';
 
 @Controller('recipes')
 @ApiTags('Recipes')
@@ -76,13 +77,13 @@ export class RecipeController {
   async fetchRecipe(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<FetchRecipeResponse> {
-    const fetchedRecipe = await this.recipeService.fetchRecipe(id);
-    await this.cacheManager.set(
-      `cache:recipe:${fetchedRecipe.id}`,
-      fetchedRecipe,
-    );
+    let recipe: Recipe = await this.cacheManager.get(`${id}`);
 
-    return FetchRecipeResponse.from(fetchedRecipe);
+    if (!recipe) {
+      recipe = await this.recipeService.fetchRecipe(id);
+      await this.cacheManager.set(`cache:recipe:${recipe.id}`, recipe);
+    }
+    return FetchRecipeResponse.from(recipe);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -111,16 +112,14 @@ export class RecipeController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateRecipeRequest: UpdateRecipeRequest,
   ): Promise<UpdatedRecipeResponse> {
-    const updatedRecipe = await this.recipeService.updateRecipe(
-      id,
-      updateRecipeRequest,
-    );
-    await this.cacheManager.set(
-      `cache:recipe:${updatedRecipe.id}`,
-      updatedRecipe,
-    );
+    let recipe: Recipe = await this.cacheManager.get(`${id}`);
 
-    return UpdatedRecipeResponse.from(updatedRecipe);
+    if (!recipe) {
+      recipe = await this.recipeService.updateRecipe(id, updateRecipeRequest);
+      await this.cacheManager.set(`cache:recipe:${recipe.id}`, recipe);
+    }
+
+    return UpdatedRecipeResponse.from(recipe);
   }
 
   @UseGuards(JwtAuthGuard)
