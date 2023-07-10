@@ -3,11 +3,12 @@ orbs:
   github-super-linter: circleci/github-super-linter@1.0.1
 
 defaults: &defaults
-    working_directory: ~/repo
-    docker:
-      - image: cimg/node:18.16.0
-      - image: cimg/postgres:14.1
-    
+  working_directory: ~/repo
+  docker:
+    - image: cimg/node:18.16.0
+    - image: cimg/postgres:14.1
+    - image: cimg/redis:7.0
+
 commands:
   install_dependencies:
     steps:
