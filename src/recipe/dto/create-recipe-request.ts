@@ -21,4 +21,9 @@ export class CreateRecipeRequest {
     example: 'Step 1\nStep 2\nStep 3',
   })
   preparation: string;
+
+  @ApiProperty({
+    description: 'Sets recipe to public',
+  })
+  isPublic: boolean;
 }

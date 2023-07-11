@@ -9,6 +9,7 @@ import {
   ParseIntPipe,
   Patch,
   Delete,
+  Request,
 } from '@nestjs/common';
 import { RecipeService } from './recipe.service';
 import {
@@ -29,11 +30,15 @@ import {
   ApiNotFoundResponse,
   ApiBadRequestResponse,
 } from '@nestjs/swagger';
+import { JwtStrategy } from '../auth/strategies/jwt.strategy';
 
 @Controller('recipes')
 @ApiTags('Recipes')
 export class RecipeController {
-  constructor(private readonly recipeService: RecipeService) {}
+  constructor(
+    private readonly recipeService: RecipeService,
+    private readonly jwtStrategy: JwtStrategy,
+  ) {}
 
   @HttpCode(201)
   @UseGuards(JwtAuthGuard)
@@ -43,11 +48,15 @@ export class RecipeController {
   @ApiUnauthorizedResponse({ description: 'User is unauthorized' })
   @Post()
   async createRecipe(
+    @Request() req: { userId: number },
     @Body() createRecipeRequest: CreateRecipeRequest,
   ): Promise<CreateRecipeResponse> {
+    console.log(req.userId);
     const createdRecipe = await this.recipeService.createRecipe(
       createRecipeRequest,
+      req.userId,
     );
+
     return CreateRecipeResponse.from(createdRecipe);
   }
 
@@ -63,9 +72,10 @@ export class RecipeController {
   })
   @Get(':id')
   async fetchRecipe(
+    @Request() req: { userId: number },
     @Param('id', ParseIntPipe) id: number,
   ): Promise<FetchRecipeResponse> {
-    const fetchedRecipe = await this.recipeService.fetchRecipe(id);
+    const fetchedRecipe = await this.recipeService.fetchRecipe(id, req.userId);
 
     return FetchRecipeResponse.from(fetchedRecipe);
   }
