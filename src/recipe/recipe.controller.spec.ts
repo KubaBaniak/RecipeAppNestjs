@@ -1,18 +1,19 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { RecipeService } from './recipe.service';
 import { RecipeController } from './recipe.controller';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { faker } from '@faker-js/faker';
 import { MockRecipeService } from './__mocks__/recipe.service.mock';
-import { CACHE_MANAGER, CacheModule } from '@nestjs/cache-manager';
-import { MockCacheManager } from './__mocks__/cache.manager.mock';
+import { MockRedisCacheService } from '../cache/__mock__/redis.cache.mock';
+import { RedisCacheModule } from '../cache/redisCache.module';
+import { RedisCacheService } from 'src/cache/redisCache.service';
 
 describe('RecipeController', () => {
   let recipeController: RecipeController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [CacheModule.register()],
+      imports: [RedisCacheModule],
       controllers: [RecipeController],
       providers: [
         PrismaService,
@@ -21,8 +22,8 @@ describe('RecipeController', () => {
           useClass: MockRecipeService,
         },
         {
-          provide: CACHE_MANAGER,
-          useClass: MockCacheManager,
+          provide: RedisCacheService,
+          useClass: MockRedisCacheService,
         },
       ],
     }).compile();

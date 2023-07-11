@@ -5,19 +5,13 @@ import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { RecipeModule } from './recipe/recipe.module';
 import { PrismaModule } from './prisma/prisma.module';
-import { RedisClientOptions } from 'redis';
-import { CacheModule } from '@nestjs/cache-manager';
-import * as redisStore from 'cache-manager-redis-store';
+import { RedisCacheModule } from './cache/redisCache.module';
 
 @Module({
   imports: [
-    CacheModule.register<RedisClientOptions>({
-      store: redisStore,
-      url: 'redis://localhost:6379',
-      password: process.env.REQUIRE_PASS_REDIS,
-    }),
     AuthModule,
     UserModule,
+    RedisCacheModule,
     RecipeModule,
     PrismaModule,
   ],

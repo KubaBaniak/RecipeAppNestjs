@@ -11,6 +11,7 @@ import { AuthModule } from '../src/auth/auth.module';
 import { createUser } from './user.factory';
 import { createRecipe } from './recipe.factory';
 import { Recipe } from '@prisma/client';
+import { RedisCacheModule } from '../src/cache/redisCache.module';
 
 describe('RecipeController (e2e)', () => {
   let app: INestApplication;
@@ -20,7 +21,7 @@ describe('RecipeController (e2e)', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [RecipeModule, AuthModule],
+      imports: [RecipeModule, AuthModule, RedisCacheModule],
       providers: [RecipeService, PrismaService],
     }).compile();
 

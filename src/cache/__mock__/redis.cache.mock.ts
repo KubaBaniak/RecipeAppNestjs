@@ -1,4 +1,4 @@
-export class MockCacheManager {
+export class MockRedisCacheService {
   get() {
     return null;
   }

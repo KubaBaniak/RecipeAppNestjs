@@ -9,7 +9,6 @@ import {
   ParseIntPipe,
   Patch,
   Delete,
-  Inject,
 } from '@nestjs/common';
 import { RecipeService } from './recipe.service';
 import {
@@ -30,16 +29,15 @@ import {
   ApiNotFoundResponse,
   ApiBadRequestResponse,
 } from '@nestjs/swagger';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache } from 'cache-manager';
 import { Recipe } from '@prisma/client';
+import { RedisCacheService } from '../cache/redisCache.service';
 
 @Controller('recipes')
 @ApiTags('Recipes')
 export class RecipeController {
   constructor(
     private readonly recipeService: RecipeService,
-    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+    private readonly redisCacheService: RedisCacheService,
   ) {}
 
   @HttpCode(201)
@@ -55,7 +53,7 @@ export class RecipeController {
     const createdRecipe = await this.recipeService.createRecipe(
       createRecipeRequest,
     );
-    await this.cacheManager.set(
+    await this.redisCacheService.set(
       `cache:recipe:${createdRecipe.id}`,
       createdRecipe,
     );
@@ -77,11 +75,11 @@ export class RecipeController {
   async fetchRecipe(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<FetchRecipeResponse> {
-    let recipe: Recipe = await this.cacheManager.get(`${id}`);
+    let recipe: Recipe = await this.redisCacheService.get(`${id}`);
 
     if (!recipe) {
       recipe = await this.recipeService.fetchRecipe(id);
-      await this.cacheManager.set(`cache:recipe:${recipe.id}`, recipe);
+      await this.redisCacheService.set(`cache:recipe:${recipe.id}`, recipe);
     }
     return FetchRecipeResponse.from(recipe);
   }
@@ -112,11 +110,11 @@ export class RecipeController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateRecipeRequest: UpdateRecipeRequest,
   ): Promise<UpdatedRecipeResponse> {
-    let recipe: Recipe = await this.cacheManager.get(`${id}`);
+    let recipe: Recipe = await this.redisCacheService.get(`${id}`);
 
     if (!recipe) {
       recipe = await this.recipeService.updateRecipe(id, updateRecipeRequest);
-      await this.cacheManager.set(`cache:recipe:${recipe.id}`, recipe);
+      await this.redisCacheService.set(`cache:recipe:${recipe.id}`, recipe);
     }
 
     return UpdatedRecipeResponse.from(recipe);
@@ -134,6 +132,6 @@ export class RecipeController {
   @Delete(':id')
   async deleteRecipe(@Param('id', ParseIntPipe) id: number): Promise<void> {
     await this.recipeService.deleteRecipe(id);
-    await this.cacheManager.del(`cache:recipe:${id}`);
+    await this.redisCacheService.del(`cache:recipe:${id}`);
   }
 }
