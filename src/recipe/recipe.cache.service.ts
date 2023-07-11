@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { RedisCacheService } from 'src/cache/redisCache.service';
+import { RedisCacheService } from '../cache/redisCache.service';
 import { Recipe } from '@prisma/client';
 
 function recipeCacheKey(recipeId: number): string {
@@ -18,7 +18,7 @@ export class RecipeCacheService {
     return this.redisCacheService.set(recipeCacheKey(recipe.id), recipe);
   }
 
-  deleteCacheRecipe(id: number): Promise<void> {
+  deleteCachedRecipe(id: number): Promise<void> {
     return this.redisCacheService.del(recipeCacheKey(id));
   }
 }

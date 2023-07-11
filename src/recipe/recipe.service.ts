@@ -63,7 +63,7 @@ export class RecipeService {
       await this.prisma.recipe.delete({
         where: { id },
       });
-      this.recipeCacheService.deleteCacheRecipe(id);
+      this.recipeCacheService.deleteCachedRecipe(id);
     } catch {
       throw new NotFoundException();
     }

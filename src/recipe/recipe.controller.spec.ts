@@ -4,9 +4,9 @@ import { RecipeController } from './recipe.controller';
 import { PrismaService } from '../prisma/prisma.service';
 import { faker } from '@faker-js/faker';
 import { MockRecipeService } from './__mocks__/recipe.service.mock';
-import { MockRedisCacheService } from '../cache/__mock__/redis.cache.mock';
 import { RedisCacheModule } from '../cache/redisCache.module';
-import { RedisCacheService } from '../cache/redisCache.service';
+import { MockRecipeCacheService } from './__mocks__/recipe.cache.mock';
+import { RecipeCacheService } from './recipe.cache.service';
 
 describe('RecipeController', () => {
   let recipeController: RecipeController;
@@ -18,12 +18,12 @@ describe('RecipeController', () => {
       providers: [
         PrismaService,
         {
-          provide: RecipeService,
-          useClass: MockRecipeService,
+          provide: RecipeCacheService,
+          useClass: MockRecipeCacheService,
         },
         {
-          provide: RedisCacheService,
-          useClass: MockRedisCacheService,
+          provide: RecipeService,
+          useClass: MockRecipeService,
         },
       ],
     }).compile();
