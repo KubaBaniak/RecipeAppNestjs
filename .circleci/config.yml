@@ -7,7 +7,7 @@ defaults: &defaults
   docker:
     - image: cimg/node:18.16.0
     - image: cimg/postgres:14.1
-    - image: cimg/redis:7.0
+    - image: cimg/redis:7.0.12-apline
 
 commands:
   install_dependencies:

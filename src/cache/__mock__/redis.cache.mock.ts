@@ -1,11 +1,15 @@
-export class MockRedisCacheService {
-  get() {
-    return null;
+import { RedisCacheService } from '../redisCache.service';
+
+export class MockRedisCacheService implements Required<RedisCacheService> {
+  get(_key: string): Promise<any> {
+    return Promise.resolve();
   }
-  set() {
-    return null;
+
+  set(_key: string): Promise<void> {
+    return Promise.resolve();
   }
-  del() {
-    return null;
+
+  del(_key: string): Promise<void> {
+    return Promise.resolve();
   }
 }

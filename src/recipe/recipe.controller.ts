@@ -29,16 +29,11 @@ import {
   ApiNotFoundResponse,
   ApiBadRequestResponse,
 } from '@nestjs/swagger';
-import { Recipe } from '@prisma/client';
-import { RedisCacheService } from '../cache/redisCache.service';
 
 @Controller('recipes')
 @ApiTags('Recipes')
 export class RecipeController {
-  constructor(
-    private readonly recipeService: RecipeService,
-    private readonly redisCacheService: RedisCacheService,
-  ) {}
+  constructor(private readonly recipeService: RecipeService) {}
 
   @HttpCode(201)
   @UseGuards(JwtAuthGuard)
@@ -52,10 +47,6 @@ export class RecipeController {
   ): Promise<CreateRecipeResponse> {
     const createdRecipe = await this.recipeService.createRecipe(
       createRecipeRequest,
-    );
-    await this.redisCacheService.set(
-      `cache:recipe:${createdRecipe.id}`,
-      createdRecipe,
     );
 
     return CreateRecipeResponse.from(createdRecipe);
@@ -75,13 +66,8 @@ export class RecipeController {
   async fetchRecipe(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<FetchRecipeResponse> {
-    let recipe: Recipe = await this.redisCacheService.get(`${id}`);
-
-    if (!recipe) {
-      recipe = await this.recipeService.fetchRecipe(id);
-      await this.redisCacheService.set(`cache:recipe:${recipe.id}`, recipe);
-    }
-    return FetchRecipeResponse.from(recipe);
+    const fetchedRecipe = await this.recipeService.fetchRecipe(id);
+    return FetchRecipeResponse.from(fetchedRecipe);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -110,14 +96,11 @@ export class RecipeController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateRecipeRequest: UpdateRecipeRequest,
   ): Promise<UpdatedRecipeResponse> {
-    let recipe: Recipe = await this.redisCacheService.get(`${id}`);
-
-    if (!recipe) {
-      recipe = await this.recipeService.updateRecipe(id, updateRecipeRequest);
-      await this.redisCacheService.del(`cache:recipe:${recipe.id}`);
-    }
-
-    return UpdatedRecipeResponse.from(recipe);
+    const updatedRecipe = await this.recipeService.updateRecipe(
+      id,
+      updateRecipeRequest,
+    );
+    return UpdatedRecipeResponse.from(updatedRecipe);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -132,6 +115,5 @@ export class RecipeController {
   @Delete(':id')
   async deleteRecipe(@Param('id', ParseIntPipe) id: number): Promise<void> {
     await this.recipeService.deleteRecipe(id);
-    await this.redisCacheService.del(`cache:recipe:${id}`);
   }
 }

@@ -10,8 +10,8 @@ import { RedisCacheService } from './redisCache.service';
       imports: [ConfigModule],
       useFactory: async () => ({
         store: redisStore,
-        url: 'redis://localhost:6379',
-        password: process.env.REQUIRE_PASS_REDIS,
+        url: process.env.REDIS_URL,
+        password: process.env.REDIS_PASSWORD,
       }),
     }),
   ],

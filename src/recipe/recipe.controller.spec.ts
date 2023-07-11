@@ -6,7 +6,7 @@ import { faker } from '@faker-js/faker';
 import { MockRecipeService } from './__mocks__/recipe.service.mock';
 import { MockRedisCacheService } from '../cache/__mock__/redis.cache.mock';
 import { RedisCacheModule } from '../cache/redisCache.module';
-import { RedisCacheService } from 'src/cache/redisCache.service';
+import { RedisCacheService } from '../cache/redisCache.service';
 
 describe('RecipeController', () => {
   let recipeController: RecipeController;

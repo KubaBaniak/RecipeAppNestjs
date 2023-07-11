@@ -2,23 +2,34 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Recipe, Prisma } from '@prisma/client';
 import { UpdateRecipeRequest } from './dto';
+import { RecipeCacheService } from './recipe.cache.service';
 
 @Injectable()
 export class RecipeService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private readonly recipeCacheService: RecipeCacheService,
+  ) {}
 
-  createRecipe(data: Prisma.RecipeCreateInput): Promise<Recipe> {
-    return this.prisma.recipe.create({
+  async createRecipe(data: Prisma.RecipeCreateInput): Promise<Recipe> {
+    const recipe = await this.prisma.recipe.create({
       data,
     });
+    this.recipeCacheService.cacheRecipe(recipe);
+
+    return recipe;
   }
 
   async fetchRecipe(id: number): Promise<Recipe> {
-    const recipe = await this.prisma.recipe.findUnique({
-      where: {
-        id,
-      },
-    });
+    let recipe: Recipe = await this.recipeCacheService.getCachedRecipe(id);
+
+    if (!recipe) {
+      recipe = await this.prisma.recipe.findUnique({
+        where: {
+          id,
+        },
+      });
+    }
 
     if (!recipe) {
       throw new NotFoundException();
@@ -40,6 +51,7 @@ export class RecipeService {
         where: { id },
         data: payload,
       });
+      this.recipeCacheService.cacheRecipe(recipe);
       return recipe;
     } catch {
       throw new NotFoundException();
@@ -51,6 +63,7 @@ export class RecipeService {
       await this.prisma.recipe.delete({
         where: { id },
       });
+      this.recipeCacheService.deleteCacheRecipe(id);
     } catch {
       throw new NotFoundException();
     }
