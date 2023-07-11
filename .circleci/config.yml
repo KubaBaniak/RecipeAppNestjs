@@ -6,8 +6,8 @@ defaults: &defaults
   working_directory: ~/repo
   docker:
     - image: cimg/node:18.16.0
-    - image: cimg/postgres:14.1
-    - image: cimg/redis:7.0.12-apline
+    - image: cimg/postgres:14.1-alpine
+    - image: cimg/redis:7.0.11-alpine
 
 commands:
   install_dependencies:
