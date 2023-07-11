@@ -5,8 +5,8 @@
 #env variables
 .env
 
-#notes
-todo.txt
+#test_results
+/test_reports
 
 # Logs
 logs

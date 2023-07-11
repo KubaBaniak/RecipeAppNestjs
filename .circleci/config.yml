@@ -48,6 +48,7 @@ jobs:
   unit_test:
     <<: *defaults
     resource_class: medium
+    parallelism: 2
     steps:
       - checkout
       - restore_cache:
@@ -56,11 +57,16 @@ jobs:
       - setup_docker_compose
       - run:
           name: Run unit tests
-          command: npm run test
+          command: |
+            UNIT_TEST_FILES=$(circleci tests glob "./src/*/*{spec}.ts" | circleci tests split --split-by=timings)
+            npm test -- $UNIT_TEST_FILES
+      - store_test_results:
+          path: ./test_reports
 
   e2e_test:
     <<: *defaults
     resource_class: medium
+    parallelism: 2
     steps:
       - checkout
       - restore_cache:
@@ -69,7 +75,11 @@ jobs:
       - setup_docker_compose
       - run:
           name: Run e2e tests
-          command: npm run test:e2e
+          command: |
+            E2E_TEST_FILES=$(circleci tests glob "./test/*{e2e-spec}.ts" | circleci tests split --split-by=timings)
+            npm test -- $E2E_TEST_FILES --config ./test/jest-e2e.json
+      - store_test_results:
+          path: ./test_reports
 
   deploy:
     docker:
