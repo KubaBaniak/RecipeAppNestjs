@@ -114,7 +114,7 @@ export class RecipeController {
 
     if (!recipe) {
       recipe = await this.recipeService.updateRecipe(id, updateRecipeRequest);
-      await this.redisCacheService.set(`cache:recipe:${recipe.id}`, recipe);
+      await this.redisCacheService.del(`cache:recipe:${recipe.id}`);
     }
 
     return UpdatedRecipeResponse.from(recipe);
