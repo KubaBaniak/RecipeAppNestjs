@@ -3,9 +3,12 @@ import { RecipeService } from './recipe.service';
 import { RecipeController } from './recipe.controller';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RedisCacheModule } from '../cache/redis-cache.module';
+import { RecipeCacheService } from './recipe.cache.service';
 
 @Module({
-  providers: [RecipeService, PrismaService, JwtAuthGuard],
+  imports: [RedisCacheModule],
+  providers: [RecipeService, PrismaService, JwtAuthGuard, RecipeCacheService],
   controllers: [RecipeController],
   exports: [RecipeService],
 })

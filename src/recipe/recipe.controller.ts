@@ -48,6 +48,7 @@ export class RecipeController {
     const createdRecipe = await this.recipeService.createRecipe(
       createRecipeRequest,
     );
+
     return CreateRecipeResponse.from(createdRecipe);
   }
 
@@ -66,7 +67,6 @@ export class RecipeController {
     @Param('id', ParseIntPipe) id: number,
   ): Promise<FetchRecipeResponse> {
     const fetchedRecipe = await this.recipeService.fetchRecipe(id);
-
     return FetchRecipeResponse.from(fetchedRecipe);
   }
 
@@ -100,7 +100,6 @@ export class RecipeController {
       id,
       updateRecipeRequest,
     );
-
     return UpdatedRecipeResponse.from(updatedRecipe);
   }
 
