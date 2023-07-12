@@ -16,25 +16,32 @@ export class MockRecipeController {
       id: faker.number.int(),
       createdAt: new Date(),
       ...createRecipeRequest,
+      isPublic: true,
+      authorId: faker.number.int(),
     };
 
     return Promise.resolve(CreateRecipeResponse.from(createdRecipe));
   }
 
-  fetchRecipe(id: number): Promise<FetchRecipeResponse> {
+  fetchRecipe(
+    req: { userId: number },
+    recipeId: number,
+  ): Promise<FetchRecipeResponse> {
     const fetchedRecipe = {
-      id,
+      id: recipeId,
       createdAt: new Date(),
       title: faker.word.noun(),
       description: faker.lorem.text(),
       ingredients: faker.lorem.words(4),
       preparation: faker.lorem.lines(5),
+      isPublic: true,
+      authorId: req.userId,
     };
 
     return Promise.resolve(FetchRecipeResponse.from(fetchedRecipe));
   }
 
-  fetchAllRecipes(): Promise<FetchRecipesResponse> {
+  fetchAllRecipes(req: { userId: number }): Promise<FetchRecipesResponse> {
     const fetchedRecipes = [
       {
         id: 0,
@@ -43,6 +50,8 @@ export class MockRecipeController {
         description: faker.lorem.text(),
         ingredients: faker.lorem.words(4),
         preparation: faker.lorem.lines(5),
+        isPublic: true,
+        authorId: req.userId,
       },
       {
         id: 1,
@@ -51,16 +60,19 @@ export class MockRecipeController {
         description: faker.lorem.text(),
         ingredients: faker.lorem.words(4),
         preparation: faker.lorem.lines(5),
+        isPublic: true,
+        authorId: faker.number.int(),
       },
     ];
 
     return Promise.resolve(FetchRecipesResponse.from(fetchedRecipes));
   }
   updateRecipe(
+    req: { userId: number },
     id: number,
     updateRecipeRequest: UpdateRecipeRequest,
   ): UpdatedRecipeResponse {
-    const { title, description, ingredients, preparation } =
+    const { title, description, ingredients, preparation, isPublic } =
       updateRecipeRequest;
     const updatedRecipe = {
       id,
@@ -69,12 +81,14 @@ export class MockRecipeController {
       description: description ?? faker.lorem.text(),
       ingredients: ingredients ?? faker.lorem.words(4),
       preparation: preparation ?? faker.lorem.lines(5),
+      isPublic: isPublic ?? true,
+      authorId: req.userId,
     };
 
     return UpdatedRecipeResponse.from(updatedRecipe);
   }
 
-  deleteRecipe(_id: number): Promise<void> {
+  deleteRecipe(_req: { userId: number }, _id: number): Promise<void> {
     return Promise.resolve();
   }
 }

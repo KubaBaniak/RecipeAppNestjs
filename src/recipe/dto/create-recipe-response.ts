@@ -1,4 +1,4 @@
-import { Recipe, User } from '@prisma/client';
+import { Recipe } from '@prisma/client';
 
 export class CreateRecipeResponse {
   public id: number;
@@ -8,7 +8,7 @@ export class CreateRecipeResponse {
   public ingredients: string;
   public preparation: string;
   public isPublic: boolean;
-  public author: User;
+  public authorId: number;
 
   constructor(
     id: number,
@@ -18,6 +18,7 @@ export class CreateRecipeResponse {
     ingredients: string,
     preparation: string,
     isPublic: boolean,
+    authorId: number,
   ) {
     this.id = id;
     this.createdAt = createdAt;
@@ -26,6 +27,7 @@ export class CreateRecipeResponse {
     this.ingredients = ingredients;
     this.preparation = preparation;
     this.isPublic = isPublic;
+    this.authorId = authorId;
   }
 
   public static from(createdRecipe: Recipe): CreateRecipeResponse {
@@ -37,6 +39,7 @@ export class CreateRecipeResponse {
       createdRecipe.ingredients,
       createdRecipe.preparation,
       createdRecipe.isPublic,
+      createdRecipe.authorId,
     );
   }
 }

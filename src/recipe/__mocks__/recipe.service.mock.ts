@@ -3,26 +3,32 @@ import { CreateRecipeRequest, UpdateRecipeRequest } from '../dto';
 import { Recipe } from '@prisma/client';
 
 export class MockRecipeService {
-  createRecipe(createRecipeRequest: CreateRecipeRequest): Promise<Recipe> {
+  createRecipe(
+    createRecipeRequest: CreateRecipeRequest,
+    userId: number,
+  ): Promise<Recipe> {
     return Promise.resolve({
       id: faker.number.int(),
       createdAt: new Date(),
       ...createRecipeRequest,
+      authorId: userId,
     });
   }
 
-  fetchRecipe(id: number): Promise<Recipe> {
+  fetchRecipe(recipeId: number, userId: number): Promise<Recipe> {
     return Promise.resolve({
-      id,
+      id: recipeId,
       createdAt: new Date(),
       title: faker.word.noun(),
       description: faker.lorem.text(),
       ingredients: faker.lorem.words(4),
       preparation: faker.lorem.lines(5),
+      isPublic: true,
+      authorId: userId,
     });
   }
 
-  fetchAllRecipes(): Promise<Recipe[]> {
+  fetchAllRecipes(userId: number): Promise<Recipe[]> {
     return Promise.all([
       {
         id: 0,
@@ -31,6 +37,8 @@ export class MockRecipeService {
         description: faker.lorem.text(),
         ingredients: faker.lorem.words(4),
         preparation: faker.lorem.lines(5),
+        isPublic: true,
+        authorId: userId,
       },
       {
         id: 1,
@@ -39,22 +47,26 @@ export class MockRecipeService {
         description: faker.lorem.text(),
         ingredients: faker.lorem.words(4),
         preparation: faker.lorem.lines(5),
+        isPublic: true,
+        authorId: 2,
       },
     ]);
   }
 
   updateRecipe(
-    id: number,
+    userId: number,
+    recipeId: number,
     updateRecipeRequest: UpdateRecipeRequest,
   ): Promise<Recipe> {
     return Promise.resolve({
-      id,
+      id: recipeId,
       createdAt: new Date(),
       ...updateRecipeRequest,
+      authorId: userId,
     });
   }
 
-  deleteRecipe(_id: number): Promise<void> {
+  deleteRecipe(_userId: number, _id: number): Promise<void> {
     return Promise.resolve();
   }
 }

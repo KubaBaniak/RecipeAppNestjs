@@ -51,7 +51,6 @@ export class RecipeController {
     @Request() req: { userId: number },
     @Body() createRecipeRequest: CreateRecipeRequest,
   ): Promise<CreateRecipeResponse> {
-    console.log(req.userId);
     const createdRecipe = await this.recipeService.createRecipe(
       createRecipeRequest,
       req.userId,
@@ -85,8 +84,10 @@ export class RecipeController {
   @ApiBearerAuth()
   @ApiUnauthorizedResponse({ description: 'User is not authenticated' })
   @Get()
-  async fetchRecipes(): Promise<FetchRecipesResponse> {
-    const fetchedRecipes = await this.recipeService.fetchAllRecipes();
+  async fetchRecipes(
+    @Request() req: { userId: number },
+  ): Promise<FetchRecipesResponse> {
+    const fetchedRecipes = await this.recipeService.fetchAllRecipes(req.userId);
 
     return FetchRecipesResponse.from(fetchedRecipes);
   }
@@ -104,9 +105,11 @@ export class RecipeController {
   @Patch(':id')
   async updateRecipe(
     @Param('id', ParseIntPipe) id: number,
+    @Request() req: { userId: number },
     @Body() updateRecipeRequest: UpdateRecipeRequest,
   ): Promise<UpdatedRecipeResponse> {
     const updatedRecipe = await this.recipeService.updateRecipe(
+      req.userId,
       id,
       updateRecipeRequest,
     );
@@ -124,7 +127,10 @@ export class RecipeController {
     description: 'Positive integer (≥1) to delete recipe',
   })
   @Delete(':id')
-  async deleteRecipe(@Param('id', ParseIntPipe) id: number): Promise<void> {
-    await this.recipeService.deleteRecipe(id);
+  async deleteRecipe(
+    @Request() req: { userId: number },
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<void> {
+    await this.recipeService.deleteRecipe(id, req.userId);
   }
 }

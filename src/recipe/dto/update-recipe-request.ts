@@ -14,4 +14,7 @@ export class UpdateRecipeRequest {
 
   @IsOptional()
   preparation: string;
+
+  @IsOptional()
+  isPublic: boolean;
 }

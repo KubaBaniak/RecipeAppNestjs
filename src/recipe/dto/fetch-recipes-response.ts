@@ -6,6 +6,8 @@ class FetchedRecipe {
   public description: string;
   public ingredients: string;
   public preparation: string;
+  public isPublic: boolean;
+  public authorId: number;
 }
 
 export class FetchRecipesResponse {
