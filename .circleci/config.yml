@@ -7,6 +7,7 @@ defaults: &defaults
   docker:
     - image: cimg/node:18.16.0
     - image: cimg/postgres:14.1
+    - image: redis:7.0.12-alpine
 
 commands:
   install_dependencies:
