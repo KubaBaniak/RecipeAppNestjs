@@ -4,7 +4,7 @@ import { RecipeController } from './recipe.controller';
 import { PrismaService } from '../prisma/prisma.service';
 import { faker } from '@faker-js/faker';
 import { MockRecipeService } from './__mocks__/recipe.service.mock';
-import { RedisCacheModule } from '../cache/redisCache.module';
+import { RedisCacheModule } from '../cache/redis-cache.module';
 import { MockRecipeCacheService } from './__mocks__/recipe.cache.mock';
 import { RecipeCacheService } from './recipe.cache.service';
 
