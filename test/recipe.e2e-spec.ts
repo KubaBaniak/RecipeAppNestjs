@@ -11,7 +11,7 @@ import { AuthModule } from '../src/auth/auth.module';
 import { createUser } from './user.factory';
 import { createRecipe } from './recipe.factory';
 import { Recipe } from '@prisma/client';
-import { RedisCacheModule } from '../src/cache/redisCache.module';
+import { RedisCacheModule } from '../src/cache/redis-cache.module';
 import { RecipeCacheService } from '../src/recipe/recipe.cache.service';
 
 describe('RecipeController (e2e)', () => {
