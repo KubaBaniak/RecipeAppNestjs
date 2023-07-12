@@ -2,8 +2,8 @@ import { RecipeCacheService } from '../recipe.cache.service';
 import { Recipe } from '@prisma/client';
 
 export class MockRecipeCacheService implements Required<RecipeCacheService> {
-  getCachedRecipe(_id: number): Promise<any> {
-    return Promise.resolve();
+  getCachedRecipe(_id: number): Promise<Recipe> {
+    return Promise.resolve(null);
   }
 
   cacheRecipe(_recipe: Recipe): Promise<void> {
