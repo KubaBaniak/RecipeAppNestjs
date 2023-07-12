@@ -25,7 +25,7 @@ services:
     networks:
       - recipe-app-network
   cache:
-    image: redis:7.0.12-apline
+    image: redis:7.0.12-alpine
     restart: always
     ports:
       - '6379:6379'
