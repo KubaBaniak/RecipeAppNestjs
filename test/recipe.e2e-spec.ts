@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { Test } from '@nestjs/testing';
-import { HttpStatus, INestApplication } from '@nestjs/common';
+import { HttpStatus, INestApplication, Response } from '@nestjs/common';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { RecipeModule } from '../src/recipe/recipe.module';
 import { RecipeService } from '../src/recipe/recipe.service';
@@ -10,25 +10,30 @@ import { AuthService } from '../src/auth/auth.service';
 import { AuthModule } from '../src/auth/auth.module';
 import { createUser } from './user.factory';
 import { createRecipe } from './recipe.factory';
-import { Recipe } from '@prisma/client';
+import { Recipe, User } from '@prisma/client';
+import { JwtAuthGuard } from '../src/auth/guards/jwt-auth.guard';
 
 describe('RecipeController (e2e)', () => {
   let app: INestApplication;
   let prismaService: PrismaService;
   let authService: AuthService;
+  let user: User;
   let accessToken: string;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [RecipeModule, AuthModule],
-      providers: [RecipeService, PrismaService],
+      providers: [RecipeService, PrismaService, JwtAuthGuard],
     }).compile();
 
     app = moduleRef.createNestApplication();
     prismaService = moduleRef.get<PrismaService>(PrismaService);
     authService = moduleRef.get<AuthService>(AuthService);
 
-    accessToken = await authService.signIn(createUser());
+    user = await prismaService.user.create({
+      data: createUser(),
+    });
+    accessToken = await authService.signIn(user);
 
     app.useGlobalPipes(
       new ValidationPipe({
@@ -57,6 +62,7 @@ describe('RecipeController (e2e)', () => {
             description,
             ingredients,
             preparation,
+            isPublic,
           } = response.body;
           expect(id).toEqual(expect.any(Number));
           expect(createdAt).toEqual(expect.any(String));
@@ -64,6 +70,7 @@ describe('RecipeController (e2e)', () => {
           expect(description).toEqual(recipe.description);
           expect(ingredients).toEqual(recipe.ingredients);
           expect(preparation).toEqual(recipe.preparation);
+          expect(isPublic).toEqual(recipe.isPublic);
         })
         .expect(HttpStatus.CREATED);
     });
@@ -79,7 +86,7 @@ describe('RecipeController (e2e)', () => {
     it('should not create new recipe and return 401 error (UNAUTHORIZED)', () => {
       return request(app.getHttpServer())
         .post('/recipes')
-        .send(createRecipe())
+        .send(createUser())
         .expect(HttpStatus.UNAUTHORIZED);
     });
   });
@@ -89,7 +96,10 @@ describe('RecipeController (e2e)', () => {
 
     beforeEach(async () => {
       recipe = await prismaService.recipe.create({
-        data: createRecipe(),
+        data: {
+          ...createRecipe(),
+          authorId: user.id,
+        },
       });
     });
 
@@ -105,6 +115,8 @@ describe('RecipeController (e2e)', () => {
             description,
             ingredients,
             preparation,
+            isPublic,
+            authorId,
           } = response.body.fetchedRecipe;
           expect(id).toEqual(recipe.id);
           expect(createdAt).toEqual(expect.any(String));
@@ -112,6 +124,8 @@ describe('RecipeController (e2e)', () => {
           expect(description).toEqual(recipe.description);
           expect(ingredients).toEqual(recipe.ingredients);
           expect(preparation).toEqual(recipe.preparation);
+          expect(isPublic).toEqual(recipe.isPublic);
+          expect(authorId).toEqual(user.id);
         })
         .expect(HttpStatus.OK);
     });
@@ -132,8 +146,13 @@ describe('RecipeController (e2e)', () => {
 
   describe('GET /recipes', () => {
     it('should fetch all recipes', async () => {
+      const data = createRecipe();
       await prismaService.recipe.createMany({
-        data: [createRecipe(), createRecipe(), createRecipe()],
+        data: [
+          { ...data, authorId: user.id },
+          { ...data, authorId: user.id },
+          { ...data, authorId: user.id },
+        ],
       });
       return request(app.getHttpServer())
         .get(`/recipes`)
@@ -148,6 +167,8 @@ describe('RecipeController (e2e)', () => {
                 description: expect.any(String),
                 ingredients: expect.any(String),
                 preparation: expect.any(String),
+                isPublic: expect.any(Boolean),
+                authorId: expect.any(Number),
               },
             ]),
           );
@@ -171,11 +192,15 @@ describe('RecipeController (e2e)', () => {
       description: faker.lorem.text(),
       ingredients: faker.lorem.word(8),
       preparation: faker.lorem.lines(4),
+      isPublic: true,
     };
 
     beforeEach(async () => {
       recipe = await prismaService.recipe.create({
-        data: createRecipe(),
+        data: {
+          ...createRecipe(),
+          authorId: user.id,
+        },
       });
     });
 
@@ -185,12 +210,13 @@ describe('RecipeController (e2e)', () => {
         .send(requestData)
         .set({ Authorization: `Bearer ${accessToken}` })
         .expect((response: request.Response) => {
-          const { title, description, ingredients, preparation } =
+          const { title, description, ingredients, preparation, isPublic } =
             response.body;
           expect(title).toEqual(requestData.title);
           expect(description).toEqual(requestData.description);
           expect(ingredients).toEqual(requestData.ingredients);
           expect(preparation).toEqual(requestData.preparation);
+          expect(isPublic).toEqual(requestData.isPublic);
         })
         .expect(HttpStatus.OK);
     });
@@ -216,7 +242,10 @@ describe('RecipeController (e2e)', () => {
 
     beforeEach(async () => {
       recipe = await prismaService.recipe.create({
-        data: createRecipe(),
+        data: {
+          ...createRecipe(),
+          authorId: user.id,
+        },
       });
     });
 

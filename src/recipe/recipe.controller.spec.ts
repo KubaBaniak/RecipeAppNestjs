@@ -32,7 +32,9 @@ describe('RecipeController', () => {
   describe('CreateRecipe', () => {
     it('should create recipe', async () => {
       //given
-      const userId: number = faker.number.int();
+      const userObjectId: { user: { id: number } } = {
+        user: { id: faker.number.int() },
+      };
       const request = {
         title: faker.word.noun(),
         description: faker.lorem.text(),
@@ -43,7 +45,7 @@ describe('RecipeController', () => {
 
       //when
       const createdRecipe = await recipeController.createRecipe(
-        { userId },
+        userObjectId,
         request,
       );
 
@@ -52,7 +54,7 @@ describe('RecipeController', () => {
         id: expect.any(Number),
         createdAt: expect.any(Date),
         ...request,
-        authorId: userId,
+        authorId: userObjectId.user.id,
       });
     });
   });
@@ -61,11 +63,13 @@ describe('RecipeController', () => {
     it('should fetch recipe given id', async () => {
       //given
       const recipeId = faker.number.int();
-      const userId = faker.number.int();
+      const userObjectId: { user: { id: number } } = {
+        user: { id: faker.number.int() },
+      };
 
       //when
       const fetchedRecipe = await recipeController.fetchRecipe(
-        { userId },
+        userObjectId,
         recipeId,
       );
 
@@ -79,16 +83,20 @@ describe('RecipeController', () => {
           ingredients: expect.any(String),
           preparation: expect.any(String),
           isPublic: true,
-          authorId: userId,
+          authorId: userObjectId.user.id,
         },
       });
     });
     it('should fetch all recipes', async () => {
       //given
-      const userId = faker.number.int();
+      const userObjectId: { user: { id: number } } = {
+        user: { id: faker.number.int() },
+      };
 
       //when
-      const fetchedAllRecipes = await recipeController.fetchRecipes({ userId });
+      const fetchedAllRecipes = await recipeController.fetchRecipes(
+        userObjectId,
+      );
 
       //then
       expect(fetchedAllRecipes.fetchedRecipes).toEqual(
@@ -111,7 +119,9 @@ describe('RecipeController', () => {
   describe('UpdateRecipe', () => {
     it('should update recipe with given credentials', async () => {
       //given
-      const userId = faker.number.int();
+      const userObjectId: { user: { id: number } } = {
+        user: { id: faker.number.int() },
+      };
       const recipeId = faker.number.int();
       const request = {
         title: faker.word.noun(),
@@ -124,7 +134,7 @@ describe('RecipeController', () => {
       //when
       const updatedRecipe = await recipeController.updateRecipe(
         recipeId,
-        { userId },
+        userObjectId,
         request,
       );
 
@@ -132,7 +142,7 @@ describe('RecipeController', () => {
       expect(updatedRecipe).toEqual({
         id: recipeId,
         ...request,
-        authorId: userId,
+        authorId: userObjectId.user.id,
       });
     });
   });
@@ -141,11 +151,13 @@ describe('RecipeController', () => {
     it('should delete recipe with given id', async () => {
       //given
       const recipeId = faker.number.int();
-      const userId = faker.number.int();
+      const userObjectId: { user: { id: number } } = {
+        user: { id: faker.number.int() },
+      };
 
       //when
       const deletedRecipe = await recipeController.deleteRecipe(
-        { userId },
+        userObjectId,
         recipeId,
       );
 

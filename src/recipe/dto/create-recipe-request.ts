@@ -25,5 +25,6 @@ export class CreateRecipeRequest {
   @ApiProperty({
     description: 'Sets recipe to public',
   })
+  @IsNotEmpty()
   isPublic: boolean;
 }

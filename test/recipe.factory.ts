@@ -5,6 +5,7 @@ type CreateRecipeOverrides = {
   description?: string;
   ingredients?: string;
   preparation?: string;
+  isPublic?: boolean;
 };
 
 export const createRecipe = (overrides: CreateRecipeOverrides = {}) => ({
@@ -12,4 +13,5 @@ export const createRecipe = (overrides: CreateRecipeOverrides = {}) => ({
   description: overrides.description ?? faker.lorem.text(),
   ingredients: overrides.ingredients ?? faker.lorem.word(8),
   preparation: overrides.preparation ?? faker.lorem.lines(4),
+  isPublic: overrides.isPublic ?? true,
 });
