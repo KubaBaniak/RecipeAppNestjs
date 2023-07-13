@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { Test } from '@nestjs/testing';
-import { HttpStatus, INestApplication, Response } from '@nestjs/common';
+import { HttpStatus, INestApplication } from '@nestjs/common';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { RecipeModule } from '../src/recipe/recipe.module';
 import { RecipeService } from '../src/recipe/recipe.service';
@@ -44,7 +44,7 @@ describe('RecipeController (e2e)', () => {
   });
 
   afterEach(async () => {
-    await prismaService.recipe.deleteMany();
+    await prismaService.recipe.deleteMany({});
   });
 
   describe('POST /recipes', () => {
@@ -86,7 +86,7 @@ describe('RecipeController (e2e)', () => {
     it('should not create new recipe and return 401 error (UNAUTHORIZED)', () => {
       return request(app.getHttpServer())
         .post('/recipes')
-        .send(createUser())
+        .send(createRecipe())
         .expect(HttpStatus.UNAUTHORIZED);
     });
   });
@@ -272,5 +272,10 @@ describe('RecipeController (e2e)', () => {
 
   afterAll(async () => {
     await app.close();
+    prismaService.user.delete({
+      where: {
+        id: user.id,
+      },
+    });
   });
 });

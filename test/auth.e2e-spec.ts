@@ -13,6 +13,7 @@ describe('AuthController (e2e)', () => {
   let app: INestApplication;
   let prismaService: PrismaService;
   let authService: AuthService;
+  let user: { email: string; password: string };
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -23,20 +24,15 @@ describe('AuthController (e2e)', () => {
     app = moduleRef.createNestApplication();
     prismaService = moduleRef.get<PrismaService>(PrismaService);
     authService = moduleRef.get<AuthService>(AuthService);
+    user = createUser();
     await app.init();
   });
 
   afterEach(async () => {
-    await prismaService.user.deleteMany();
+    await prismaService.user.delete({ where: { email: user.email } });
   });
 
   describe('POST /auth/signup', () => {
-    let user: { email: string; password: string };
-
-    beforeEach(() => {
-      user = createUser();
-    });
-
     it('should register a user and return the new user object', async () => {
       return request(app.getHttpServer())
         .post('/auth/signup')
@@ -62,10 +58,7 @@ describe('AuthController (e2e)', () => {
   });
 
   describe('POST /auth/signin', () => {
-    let user: { email: string; password: string };
-
     beforeEach(async () => {
-      user = createUser();
       await authService.signUp(user);
     });
 
