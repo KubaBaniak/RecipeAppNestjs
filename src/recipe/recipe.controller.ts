@@ -78,6 +78,28 @@ export class RecipeController {
     return FetchRecipeResponse.from(fetchedRecipe);
   }
 
+  @HttpCode(200)
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Get all users recipe' })
+  @ApiBearerAuth()
+  @ApiUnauthorizedResponse({ description: 'User is not authenticated' })
+  @ApiParam({
+    name: 'email',
+    description: 'Email of a user',
+  })
+  @Get(':email')
+  async fetchUsersRecipes(
+    @Request() userIdObject: { user: { id: number } },
+    @Param('email') email: string,
+  ): Promise<FetchRecipesResponse> {
+    const fetchedUsersRecipes = await this.recipeService.fetchUsersRecipes(
+      email,
+      userIdObject.user.id,
+    );
+
+    return FetchRecipesResponse.from(fetchedUsersRecipes);
+  }
+
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Get list of all recipes' })
   @ApiBearerAuth()

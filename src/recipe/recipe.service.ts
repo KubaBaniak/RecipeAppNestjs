@@ -59,6 +59,33 @@ export class RecipeService {
     return recipe;
   }
 
+  async fetchUsersRecipes(email: string, userId: number): Promise<Recipe[]> {
+    const recipesOwner = await this.prisma.user.findUnique({
+      where: { email },
+    });
+    if (!recipesOwner) {
+      throw new NotFoundException();
+    }
+    const visitor = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (recipesOwner.id === visitor.id || visitor.role == 'ADMIN') {
+      return this.prisma.recipe.findMany({
+        where: {
+          authorId: recipesOwner.id,
+        },
+      });
+    } else {
+      return this.prisma.recipe.findMany({
+        where: {
+          authorId: recipesOwner.id,
+          isPublic: true,
+        },
+      });
+    }
+  }
+
   async fetchAllRecipes(userId: number): Promise<Recipe[]> {
     const user = await this.prisma.user.findUnique({
       where: {
