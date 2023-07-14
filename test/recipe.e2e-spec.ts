@@ -13,6 +13,7 @@ import { createRecipe } from './recipe.factory';
 import { Recipe } from '@prisma/client';
 import { RedisCacheModule } from '../src/cache/redis-cache.module';
 import { RecipeCacheService } from '../src/recipe/recipe.cache.service';
+import { RecipeRepository } from '../src/recipe/recipe.repository';
 
 describe('RecipeController (e2e)', () => {
   let app: INestApplication;
@@ -23,7 +24,12 @@ describe('RecipeController (e2e)', () => {
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [RecipeModule, AuthModule, RedisCacheModule],
-      providers: [RecipeService, PrismaService, RecipeCacheService],
+      providers: [
+        RecipeService,
+        RecipeRepository,
+        PrismaService,
+        RecipeCacheService,
+      ],
     }).compile();
 
     app = moduleRef.createNestApplication();
@@ -41,7 +47,7 @@ describe('RecipeController (e2e)', () => {
   });
 
   afterEach(async () => {
-    await prismaService.recipe.deleteMany();
+    await prismaService.recipe.deleteMany({});
   });
 
   describe('POST /recipes', () => {
@@ -231,7 +237,7 @@ describe('RecipeController (e2e)', () => {
 
     it('should not delete recipe and return 404 error (NOT FOUND)', async () => {
       return request(app.getHttpServer())
-        .delete(`/recipes/${recipe.id + 1}`)
+        .delete(`/recipes/${recipe.id + 999}`)
         .set({ Authorization: `Bearer ${accessToken}` })
         .expect(HttpStatus.NOT_FOUND);
     });
