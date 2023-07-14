@@ -9,11 +9,14 @@ import { User } from '@prisma/client';
 import { bcryptConstants } from './constants';
 import * as bcrypt from 'bcrypt';
 import { SignInRequest, SignUpRequest, UserRequest } from './dto';
+import { UserRepository } from '../user/user.repository';
+import { UserDto } from '../user/dto/user-response';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly userService: UserService,
+    private readonly userRepository: UserRepository,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -21,8 +24,10 @@ export class AuthService {
     return this.jwtService.signAsync(signInRequest);
   }
 
-  async signUp(signUpRequest: SignUpRequest): Promise<User> {
-    const user = await this.userService.findOneUser(signUpRequest.email);
+  async signUp(signUpRequest: SignUpRequest): Promise<UserDto> {
+    const user = await this.userRepository.getUserWithPassword({
+      email: signUpRequest.email,
+    });
 
     if (user) {
       throw new ForbiddenException();
@@ -39,7 +44,9 @@ export class AuthService {
   }
 
   async validateUser(userRequest: UserRequest): Promise<User> {
-    const user = await this.userService.findOneUser(userRequest.email);
+    const user = await this.userRepository.getUserWithPassword({
+      email: userRequest.email,
+    });
 
     if (!user) {
       throw new UnauthorizedException();

@@ -3,6 +3,7 @@ import { UserService } from './user.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { faker } from '@faker-js/faker';
 import { MockPrismaService } from '../prisma/__mocks__/prisma.service.mock';
+import { UserRepository } from './user.repository';
 
 describe('UserService', () => {
   let userService: UserService;
@@ -11,6 +12,7 @@ describe('UserService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UserService,
+        UserRepository,
         { provide: PrismaService, useClass: MockPrismaService },
       ],
     }).compile();
@@ -37,7 +39,6 @@ describe('UserService', () => {
       expect(createdUser).toEqual({
         id: expect.any(Number),
         email: request.email,
-        password: request.password,
         role: 'USER',
       });
     });
@@ -55,15 +56,12 @@ describe('UserService', () => {
       };
 
       //when
-      const createdUser = await userService.updateUser({
-        data,
-        where,
-      });
+      const createdUser = await userService.updateUser(where, data);
 
       //then
       expect(createdUser).toEqual({
         id: where.id,
-        ...data,
+        email: data.email,
         role: 'USER',
       });
     });
