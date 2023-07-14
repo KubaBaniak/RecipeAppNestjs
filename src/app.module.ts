@@ -5,9 +5,16 @@ import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { RecipeModule } from './recipe/recipe.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { RedisCacheModule } from './cache/redis-cache.module';
 
 @Module({
-  imports: [AuthModule, UserModule, RecipeModule, PrismaModule],
+  imports: [
+    AuthModule,
+    UserModule,
+    RedisCacheModule,
+    RecipeModule,
+    PrismaModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

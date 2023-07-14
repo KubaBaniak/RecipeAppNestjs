@@ -136,7 +136,6 @@ export class RecipeController {
       recipeId,
       updateRecipeRequest,
     );
-
     return UpdatedRecipeResponse.from(updatedRecipe);
   }
 

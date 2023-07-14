@@ -22,7 +22,7 @@ model Recipe {
   id          Int      @id @default(autoincrement())
   createdAt   DateTime @default(now())
   title       String
-  description String
+  description String?
   ingredients String
   preparation String
   isPublic      Boolean  @default(false)

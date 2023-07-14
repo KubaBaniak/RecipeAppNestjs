@@ -1,18 +1,26 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { RecipeService } from './recipe.service';
 import { RecipeController } from './recipe.controller';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { faker } from '@faker-js/faker';
 import { MockRecipeService } from './__mocks__/recipe.service.mock';
+import { RedisCacheModule } from '../cache/redis-cache.module';
+import { MockRecipeCacheService } from './__mocks__/recipe.cache.mock';
+import { RecipeCacheService } from './recipe.cache.service';
 
 describe('RecipeController', () => {
   let recipeController: RecipeController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
+      imports: [RedisCacheModule],
       controllers: [RecipeController],
       providers: [
         PrismaService,
+        {
+          provide: RecipeCacheService,
+          useClass: MockRecipeCacheService,
+        },
         {
           provide: RecipeService,
           useClass: MockRecipeService,

@@ -4,19 +4,23 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Recipe } from '@prisma/client';
+import { Recipe, Prisma } from '@prisma/client';
 import { CreateRecipeRequest, UpdateRecipeRequest } from './dto';
+import { RecipeCacheService } from './recipe.cache.service';
 
 @Injectable()
 export class RecipeService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private readonly recipeCacheService: RecipeCacheService,
+  ) {}
 
   async createRecipe(
     data: CreateRecipeRequest,
     userId: number,
   ): Promise<Recipe> {
     const { title, description, ingredients, preparation, isPublic } = data;
-    return this.prisma.recipe.create({
+    const recipe = await this.prisma.recipe.create({
       data: {
         title,
         description,
@@ -26,6 +30,9 @@ export class RecipeService {
         authorId: userId,
       },
     });
+    this.recipeCacheService.cacheRecipe(recipe);
+
+    return recipe;
   }
 
   async fetchRecipe(recipeId: number, userId: number): Promise<Recipe> {
@@ -34,11 +41,17 @@ export class RecipeService {
         id: userId,
       },
     });
-    const recipe = await this.prisma.recipe.findUnique({
-      where: {
-        id: recipeId,
-      },
-    });
+
+    let recipe: Recipe = await this.recipeCacheService.getCachedRecipe(
+      recipeId,
+    );
+    if (!recipe) {
+      recipe = await this.prisma.recipe.findUnique({
+        where: {
+          id: recipeId,
+        },
+      });
+    }
 
     if (!recipe) {
       throw new NotFoundException();
@@ -123,10 +136,12 @@ export class RecipeService {
       if (user.id != recipe.authorId && user.role != 'ADMIN') {
         throw new ForbiddenException();
       }
+
       recipe = await this.prisma.recipe.update({
         where: { id: recipeId },
         data: payload,
       });
+      this.recipeCacheService.cacheRecipe(recipe);
     } catch {
       throw new NotFoundException();
     }
@@ -152,6 +167,7 @@ export class RecipeService {
       await this.prisma.recipe.delete({
         where: { id: recipeId },
       });
+      this.recipeCacheService.deleteCachedRecipe(recipeId);
     } catch {
       throw new NotFoundException();
     }

@@ -3,6 +3,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { RecipeService } from './recipe.service';
 import { faker } from '@faker-js/faker';
 import { MockPrismaService } from '../prisma/__mocks__/prisma.service.mock';
+import { RecipeCacheService } from './recipe.cache.service';
+import { MockRecipeCacheService } from './__mocks__/recipe.cache.mock';
 
 describe('RecipeService', () => {
   let recipeService: RecipeService;
@@ -14,6 +16,10 @@ describe('RecipeService', () => {
         {
           provide: PrismaService,
           useClass: MockPrismaService,
+        },
+        {
+          provide: RecipeCacheService,
+          useClass: MockRecipeCacheService,
         },
       ],
     }).compile();
