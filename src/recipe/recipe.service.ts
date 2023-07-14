@@ -4,7 +4,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Recipe, Prisma } from '@prisma/client';
+import { Recipe } from '@prisma/client';
 import { CreateRecipeRequest, UpdateRecipeRequest } from './dto';
 import { RecipeCacheService } from './recipe.cache.service';
 

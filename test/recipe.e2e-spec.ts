@@ -165,7 +165,7 @@ describe('RecipeController (e2e)', () => {
           { ...otherPrivateRecipe, authorId: otherUser.id },
         ],
       });
-      const result = request(app.getHttpServer())
+      request(app.getHttpServer())
         .get(`/recipes`)
         .set({ Authorization: `Bearer ${accessToken}` })
         .expect((response: request.Response) => {
