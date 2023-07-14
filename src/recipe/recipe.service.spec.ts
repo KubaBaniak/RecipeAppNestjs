@@ -6,7 +6,6 @@ import { MockPrismaService } from '../prisma/__mocks__/prisma.service.mock';
 
 describe('RecipeService', () => {
   let recipeService: RecipeService;
-  let prismaService: PrismaService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -19,7 +18,6 @@ describe('RecipeService', () => {
       ],
     }).compile();
 
-    prismaService = module.get<PrismaService>(PrismaService);
     recipeService = module.get<RecipeService>(RecipeService);
   });
 
