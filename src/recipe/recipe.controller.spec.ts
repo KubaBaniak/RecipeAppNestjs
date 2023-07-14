@@ -4,7 +4,6 @@ import { RecipeController } from './recipe.controller';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { faker } from '@faker-js/faker';
 import { MockRecipeService } from './__mocks__/recipe.service.mock';
-import { JwtStrategy } from 'src/auth/strategies/jwt.strategy';
 
 describe('RecipeController', () => {
   let recipeController: RecipeController;
@@ -14,7 +13,6 @@ describe('RecipeController', () => {
       controllers: [RecipeController],
       providers: [
         PrismaService,
-        JwtStrategy,
         {
           provide: RecipeService,
           useClass: MockRecipeService,
