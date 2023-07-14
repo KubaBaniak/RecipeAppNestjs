@@ -17,8 +17,9 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  signIn(signInRequest: SignInRequest): Promise<string> {
-    return this.jwtService.signAsync(signInRequest);
+  async signIn(signInRequest: SignInRequest): Promise<string> {
+    const user = await this.userService.findOneUser(signInRequest.email);
+    return this.jwtService.signAsync(user);
   }
 
   async signUp(signUpRequest: SignUpRequest): Promise<User> {

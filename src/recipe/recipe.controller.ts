@@ -10,6 +10,7 @@ import {
   Patch,
   Delete,
   Request,
+  Query,
 } from '@nestjs/common';
 import { RecipeService } from './recipe.service';
 import {
@@ -87,10 +88,10 @@ export class RecipeController {
     name: 'email',
     description: 'Email of a user',
   })
-  @Get(':email')
+  @Get('/user/:EMAIL')
   async fetchUsersRecipes(
     @Request() userIdObject: { user: { id: number } },
-    @Param('email') email: string,
+    @Param('EMAIL') email: string,
   ): Promise<FetchRecipesResponse> {
     const fetchedUsersRecipes = await this.recipeService.fetchUsersRecipes(
       email,

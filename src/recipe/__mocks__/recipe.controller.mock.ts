@@ -41,6 +41,37 @@ export class MockRecipeController {
     return Promise.resolve(FetchRecipeResponse.from(fetchedRecipe));
   }
 
+  fetchUsersRecipes(
+    _req: { userId: number },
+    _email: string,
+  ): Promise<FetchRecipesResponse> {
+    const authorId = faker.number.int();
+    const fetchedUsersRecipes = [
+      {
+        id: 0,
+        createdAt: new Date(),
+        title: faker.word.noun(),
+        description: faker.lorem.text(),
+        ingredients: faker.lorem.words(4),
+        preparation: faker.lorem.lines(5),
+        isPublic: true,
+        authorId,
+      },
+      {
+        id: 1,
+        createdAt: new Date(),
+        title: faker.word.noun(),
+        description: faker.lorem.text(),
+        ingredients: faker.lorem.words(4),
+        preparation: faker.lorem.lines(5),
+        isPublic: true,
+        authorId,
+      },
+    ];
+
+    return Promise.resolve(FetchRecipesResponse.from(fetchedUsersRecipes));
+  }
+
   fetchAllRecipes(req: { userId: number }): Promise<FetchRecipesResponse> {
     const fetchedRecipes = [
       {
@@ -67,6 +98,7 @@ export class MockRecipeController {
 
     return Promise.resolve(FetchRecipesResponse.from(fetchedRecipes));
   }
+
   updateRecipe(
     req: { userId: number },
     id: number,

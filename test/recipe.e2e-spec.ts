@@ -33,7 +33,10 @@ describe('RecipeController (e2e)', () => {
     user = await prismaService.user.create({
       data: createUser(),
     });
-    accessToken = await authService.signIn(user);
+    accessToken = await authService.signIn({
+      email: user.email,
+      password: user.password,
+    });
 
     app.useGlobalPipes(
       new ValidationPipe({
@@ -141,6 +144,68 @@ describe('RecipeController (e2e)', () => {
       return request(app.getHttpServer())
         .get(`/recipes/${recipe.id}`)
         .expect(HttpStatus.UNAUTHORIZED);
+    });
+  });
+
+  describe('GET /recipes/user/:email', () => {
+    it('should fetch all users recipes', async () => {
+      const userPublicRecipe = createRecipe();
+      const userPrivateRecipe = createRecipe({ isPublic: false });
+      const otherUser = await prismaService.user.create({
+        data: createUser(),
+      });
+      const otherPublicRecipe = createRecipe();
+      const otherPrivateRecipe = createRecipe({ isPublic: false });
+      await prismaService.recipe.createMany({
+        data: [
+          { ...userPublicRecipe, authorId: user.id },
+          { ...userPrivateRecipe, authorId: user.id },
+          { ...otherPublicRecipe, authorId: otherUser.id },
+          { ...otherPrivateRecipe, authorId: otherUser.id },
+        ],
+      });
+      const result = request(app.getHttpServer())
+        .get(`/recipes`)
+        .set({ Authorization: `Bearer ${accessToken}` })
+        .expect((response: request.Response) => {
+          expect(response.body.fetchedRecipes).toEqual(
+            expect.arrayContaining([
+              {
+                id: expect.any(Number),
+                createdAt: expect.any(String),
+                title: expect.any(String),
+                description: expect.any(String),
+                ingredients: expect.any(String),
+                preparation: expect.any(String),
+                isPublic: expect.any(true),
+                authorId: expect.any(otherUser.id),
+              },
+              {
+                id: expect.any(Number),
+                createdAt: expect.any(String),
+                title: expect.any(String),
+                description: expect.any(String),
+                ingredients: expect.any(String),
+                preparation: expect.any(String),
+                isPublic: expect.any(Boolean),
+                authorId: expect.any(user.id),
+              },
+            ]),
+          );
+          expect(response.body.fetchedRecipes).toHaveLength(3);
+        })
+        .expect(HttpStatus.OK);
+
+      prismaService.recipe.deleteMany({
+        where: {
+          authorId: otherUser.id,
+        },
+      });
+      prismaService.user.delete({
+        where: {
+          id: otherUser.id,
+        },
+      });
     });
   });
 

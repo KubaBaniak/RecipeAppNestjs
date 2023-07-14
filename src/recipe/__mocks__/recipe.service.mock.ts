@@ -28,6 +28,35 @@ export class MockRecipeService {
     });
   }
 
+  fetchUsersRecipes(
+    _req: { userId: number },
+    _email: string,
+  ): Promise<Recipe[]> {
+    const authorId = faker.number.int();
+    return Promise.all([
+      {
+        id: 0,
+        createdAt: new Date(),
+        title: faker.word.noun(),
+        description: faker.lorem.text(),
+        ingredients: faker.lorem.words(4),
+        preparation: faker.lorem.lines(5),
+        isPublic: true,
+        authorId,
+      },
+      {
+        id: 1,
+        createdAt: new Date(),
+        title: faker.word.noun(),
+        description: faker.lorem.text(),
+        ingredients: faker.lorem.words(4),
+        preparation: faker.lorem.lines(5),
+        isPublic: true,
+        authorId,
+      },
+    ]);
+  }
+
   fetchAllRecipes(userId: number): Promise<Recipe[]> {
     return Promise.all([
       {

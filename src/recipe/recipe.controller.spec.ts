@@ -87,6 +87,35 @@ describe('RecipeController', () => {
         },
       });
     });
+    it('should fetch all users recipe recipes', async () => {
+      //given
+      const userObjectId: { user: { id: number } } = {
+        user: { id: faker.number.int() },
+      };
+      const email = faker.internet.password();
+
+      //when
+      const fetchedUsersRecipes = await recipeController.fetchUsersRecipes(
+        userObjectId,
+        email,
+      );
+
+      //then
+      expect(fetchedUsersRecipes.fetchedRecipes).toEqual(
+        expect.arrayContaining([
+          {
+            id: expect.any(Number),
+            createdAt: expect.any(Date),
+            title: expect.any(String),
+            description: expect.any(String),
+            ingredients: expect.any(String),
+            preparation: expect.any(String),
+            isPublic: true,
+            authorId: expect.any(Number),
+          },
+        ]),
+      );
+    });
     it('should fetch all recipes', async () => {
       //given
       const userObjectId: { user: { id: number } } = {
