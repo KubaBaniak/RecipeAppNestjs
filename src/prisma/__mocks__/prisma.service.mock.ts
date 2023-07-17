@@ -40,7 +40,7 @@ export class MockPrismaService {
         id: userId,
         email: faker.internet.email(),
         password: faker.internet.password(),
-        role: 'USER',
+        role: Role.USER,
       });
     },
   };
