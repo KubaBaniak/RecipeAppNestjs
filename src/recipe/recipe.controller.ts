@@ -9,6 +9,10 @@ import {
   ParseIntPipe,
   Patch,
   Delete,
+  UseInterceptors,
+  UploadedFile,
+  ParseFilePipeBuilder,
+  HttpStatus,
 } from '@nestjs/common';
 import { RecipeService } from './recipe.service';
 import {
@@ -28,7 +32,9 @@ import {
   ApiUnauthorizedResponse,
   ApiNotFoundResponse,
   ApiBadRequestResponse,
+  ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('recipes')
 @ApiTags('Recipes')
@@ -115,5 +121,38 @@ export class RecipeController {
   @Delete(':id')
   async deleteRecipe(@Param('id', ParseIntPipe) id: number): Promise<void> {
     await this.recipeService.deleteRecipe(id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Upload image(s) of recipe' })
+  @ApiBearerAuth()
+  @ApiNotFoundResponse({ description: 'Recipe does not exist' })
+  @ApiUnauthorizedResponse({ description: 'User is not authenticated' })
+  @ApiUnprocessableEntityResponse({ description: 'Wrong image format' })
+  @ApiParam({
+    name: 'id',
+    description: 'Positive integer (≥1) to upload image(s) to specified recipe',
+  })
+  @Post('upload/:id')
+  @UseInterceptors(FileInterceptor('file'))
+  uploadFile(
+    @UploadedFile(
+      new ParseFilePipeBuilder()
+        .addMaxSizeValidator({
+          maxSize: 1024 * 1024 * 4,
+        })
+        .addFileTypeValidator({
+          fileType: '.(png|jpeg|jpg)',
+        })
+        .build({
+          errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+        }),
+    )
+    files: Array<Express.Multer.File>,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    console.log(id);
+    console.log(files);
+    // IMPLEMENT DATA TRANSFER TO S3 BUCKET
   }
 }
