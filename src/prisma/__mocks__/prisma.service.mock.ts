@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { Prisma, Recipe, User } from '@prisma/client';
+import { Prisma, Recipe, User, Role } from '@prisma/client';
 import { UpdateRecipeRequest } from 'src/recipe/dto';
 
 let userId: number;
@@ -13,7 +13,7 @@ export class MockPrismaService {
         id: faker.number.int(),
         email: request.data.email,
         password: request.data.password,
-        role: 'USER',
+        role: Role.USER,
       });
     },
 
@@ -26,7 +26,7 @@ export class MockPrismaService {
         id: request.where.id,
         email,
         password,
-        role: 'USER',
+        role: Role.USER,
       });
     },
 

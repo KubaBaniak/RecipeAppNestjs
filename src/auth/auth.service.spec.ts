@@ -64,7 +64,7 @@ describe('AuthService', () => {
           id: faker.number.int(),
           email: request.email,
           password: request.password,
-          role: 'USER',
+          role: Role.USER,
         });
       });
 
@@ -76,7 +76,7 @@ describe('AuthService', () => {
         id: expect.any(Number),
         password: expect.any(String),
         email: request.email,
-        role: 'USER',
+        role: Role.USER,
       });
     });
   });

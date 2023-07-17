@@ -1,9 +1,9 @@
 import { SignInRequest, SignUpRequest, UserRequest } from '../dto';
 import { faker } from '@faker-js/faker';
-import { User } from '@prisma/client';
+import { User, Role } from '@prisma/client';
 
 export class MockAuthService {
-  signIn(_signInRequest: SignInRequest): Promise<String> {
+  signIn(_signInRequest: SignInRequest): Promise<string> {
     return Promise.resolve(faker.string.sample(64));
   }
 
@@ -12,7 +12,7 @@ export class MockAuthService {
       id: faker.number.int(),
       email: signUpRequest.email,
       password: signUpRequest.password,
-      role: 'USER',
+      role: Role.USER,
     });
   }
 
@@ -21,7 +21,7 @@ export class MockAuthService {
       id: faker.number.int(),
       email: userRequest.email,
       password: userRequest.password,
-      role: 'USER',
+      role: Role.USER,
     });
   }
 }
