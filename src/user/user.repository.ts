@@ -1,24 +1,26 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Prisma, User } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { UserDto } from './dto/user-response';
 
 @Injectable()
 export class UserRepository {
   constructor(private prisma: PrismaService) {}
 
-  async getUser(where: Prisma.UserWhereUniqueInput): Promise<UserDto> {
+  async getUserById(id: number): Promise<UserDto> {
     const user = await this.prisma.user.findUnique({
-      where,
+      where: { id },
     });
 
     return UserDto.from(user);
   }
 
-  getUserWithPassword(where: Prisma.UserWhereUniqueInput): Promise<User> {
-    return this.prisma.user.findUnique({
-      where,
+  async getUserByIdWithPassword(id: number): Promise<UserDto> {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
     });
+
+    return UserDto.fromWithPassword(user);
   }
 
   async createUser(data: Prisma.UserCreateInput): Promise<UserDto> {
@@ -41,9 +43,9 @@ export class UserRepository {
     return UserDto.from(user);
   }
 
-  async removeUser(where: Prisma.UserWhereUniqueInput): Promise<void> {
+  async removeUserById(id: number): Promise<void> {
     this.prisma.user.delete({
-      where,
+      where: { id },
     });
   }
 }

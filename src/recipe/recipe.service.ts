@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Recipe, Prisma } from '@prisma/client';
-import { UpdateRecipeRequest } from './dto';
+import { CreateRecipeRequest, UpdateRecipeRequest } from './dto';
 import { RecipeCacheService } from './recipe.cache.service';
 import { RecipeRepository } from './recipe.repository';
 
@@ -11,7 +11,7 @@ export class RecipeService {
     private readonly recipeCacheService: RecipeCacheService,
   ) {}
 
-  async createRecipe(data: Prisma.RecipeCreateInput): Promise<Recipe> {
+  async createRecipe(data: CreateRecipeRequest): Promise<Recipe> {
     const recipe = await this.recipeRepository.createRecipe(data);
     this.recipeCacheService.cacheRecipe(recipe);
 
