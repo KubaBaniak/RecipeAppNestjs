@@ -10,31 +10,28 @@ import { createRecipeResponse } from '../test/recipe.factory';
 
 export class MockRecipeController {
   createRecipe(
-    userObjectId: number,
+    userId: number,
     createRecipeRequest: CreateRecipeRequest,
   ): Promise<CreateRecipeResponse> {
     const createdRecipe = createRecipeResponse({
-      authorId: userObjectId,
+      authorId: userId,
       ...createRecipeRequest,
     });
 
     return Promise.resolve(CreateRecipeResponse.from(createdRecipe));
   }
 
-  fetchRecipe(
-    req: { userId: number },
-    recipeId: number,
-  ): Promise<FetchRecipeResponse> {
+  fetchRecipe(userId: number, recipeId: number): Promise<FetchRecipeResponse> {
     const fetchedRecipe = createRecipeResponse({
       id: recipeId,
-      authorId: req.userId,
+      authorId: userId,
     });
 
     return Promise.resolve(FetchRecipeResponse.from(fetchedRecipe));
   }
 
   fetchRecipesByAuthorId(
-    _req: { userId: number },
+    _userId: number,
     _email: string,
   ): Promise<FetchRecipesResponse> {
     const fetchedUsersRecipes = [
@@ -45,9 +42,9 @@ export class MockRecipeController {
     return Promise.resolve(FetchRecipesResponse.from(fetchedUsersRecipes));
   }
 
-  fetchAllRecipes(req: { userId: number }): Promise<FetchRecipesResponse> {
+  fetchRecipes(userId: number): Promise<FetchRecipesResponse> {
     const fetchedRecipes = [
-      createRecipeResponse({ id: 0, authorId: req.userId }),
+      createRecipeResponse({ id: 0, authorId: userId }),
       createRecipeResponse({ id: 1 }),
     ];
 
@@ -55,20 +52,20 @@ export class MockRecipeController {
   }
 
   updateRecipe(
-    req: { userId: number },
+    userId: number,
     id: number,
     updateRecipeRequest: UpdateRecipeRequest,
   ): UpdatedRecipeResponse {
     const updatedRecipe = createRecipeResponse({
       id,
       ...updateRecipeRequest,
-      authorId: req.userId,
+      authorId: userId,
     });
 
     return UpdatedRecipeResponse.from(updatedRecipe);
   }
 
-  deleteRecipe(_req: { userId: number }, _id: number): Promise<void> {
+  deleteRecipe(_userId: number, _id: number): Promise<void> {
     return Promise.resolve();
   }
 }
