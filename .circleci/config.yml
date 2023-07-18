@@ -58,7 +58,7 @@ jobs:
       - run:
           name: Run unit tests
           command: |
-            UNIT_TEST_FILES=$(circleci tests glob "./src/*/*{spec}.ts" | circleci tests split --split-by=timings)
+            UNIT_TEST_FILES=$(circleci tests glob "./src/**/*.spec.ts" | circleci tests split --split-by=timings)
             npm test -- $UNIT_TEST_FILES
       - store_test_results:
           path: ./test_reports
