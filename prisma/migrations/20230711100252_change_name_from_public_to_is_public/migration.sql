@@ -5,4 +5,4 @@
 
 */
 -- AlterTable
-ALTER TABLE "Recipe" RENAME COLUMN "public" TO "isPublic",
+ALTER TABLE "Recipe" RENAME COLUMN "public" TO "isPublic";
