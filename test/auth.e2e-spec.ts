@@ -7,7 +7,7 @@ import { UserService } from '../src/user/user.service';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { Role } from '@prisma/client';
 import { faker } from '@faker-js/faker';
-import { createUser } from './user.factory';
+import { createUser } from '../src/user/test/user.factory';
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication;

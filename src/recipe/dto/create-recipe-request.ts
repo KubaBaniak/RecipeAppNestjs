@@ -1,12 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional } from 'class-validator';
 
 export class CreateRecipeRequest {
   @IsNotEmpty()
   title: string;
 
   @IsOptional()
-  description: string;
+  description?: string;
 
   @IsNotEmpty()
   @ApiProperty({
@@ -25,6 +25,6 @@ export class CreateRecipeRequest {
   @ApiProperty({
     description: 'Sets recipe to public',
   })
-  @IsNotEmpty()
+  @IsBoolean()
   isPublic: boolean;
 }

@@ -4,7 +4,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Recipe } from '@prisma/client';
+import { Recipe, Role } from '@prisma/client';
 import { CreateRecipeRequest, UpdateRecipeRequest } from './dto';
 import { RecipeCacheService } from './recipe.cache.service';
 
@@ -59,10 +59,13 @@ export class RecipeService {
 
     if (
       user.id != recipe.authorId &&
-      user.role != 'ADMIN' &&
+      user.role != Role.ADMIN &&
       !recipe.isPublic
     ) {
-      throw new ForbiddenException();
+      throw new ForbiddenException(
+        `You do not have permission to access this recipe. 
+         Ensure that you are logged in the correct account and have the necessary privileges to view this content.`,
+      );
     }
 
     if (user.id != recipe.authorId && !recipe.isPublic) {
@@ -72,31 +75,34 @@ export class RecipeService {
     return recipe;
   }
 
-  async fetchUsersRecipes(email: string, userId: number): Promise<Recipe[]> {
-    const recipesOwner = await this.prisma.user.findUnique({
-      where: { email },
+  async fetchRecipesByAuthorId(
+    authorId: number,
+    principalId: number,
+  ): Promise<Recipe[]> {
+    const author = await this.prisma.user.findUnique({
+      where: { id: authorId },
     });
-    if (!recipesOwner) {
+    if (!author) {
       throw new NotFoundException();
     }
-    const visitor = await this.prisma.user.findUnique({
-      where: { id: userId },
+    const principal = await this.prisma.user.findUnique({
+      where: { id: principalId },
     });
 
-    if (recipesOwner.id === visitor.id || visitor.role == 'ADMIN') {
+    if (author.id === principal.id || principal.role == Role.ADMIN) {
       return this.prisma.recipe.findMany({
         where: {
-          authorId: recipesOwner.id,
-        },
-      });
-    } else {
-      return this.prisma.recipe.findMany({
-        where: {
-          authorId: recipesOwner.id,
-          isPublic: true,
+          authorId: author.id,
         },
       });
     }
+
+    return this.prisma.recipe.findMany({
+      where: {
+        authorId: author.id,
+        isPublic: true,
+      },
+    });
   }
 
   async fetchAllRecipes(userId: number): Promise<Recipe[]> {
@@ -105,7 +111,7 @@ export class RecipeService {
         id: userId,
       },
     });
-    if (user.role === 'ADMIN') {
+    if (user.role === Role.ADMIN) {
       return this.prisma.recipe.findMany();
     } else {
       return this.prisma.recipe.findMany({
@@ -133,7 +139,7 @@ export class RecipeService {
     });
 
     try {
-      if (user.id != recipe.authorId && user.role != 'ADMIN') {
+      if (user.id != recipe.authorId && user.role != Role.ADMIN) {
         throw new ForbiddenException();
       }
 
@@ -161,7 +167,7 @@ export class RecipeService {
       },
     });
     try {
-      if (user.id != recipe.authorId && user.role != 'ADMIN') {
+      if (user.id != recipe.authorId && user.role != Role.ADMIN) {
         throw new ForbiddenException();
       }
       await this.prisma.recipe.delete({

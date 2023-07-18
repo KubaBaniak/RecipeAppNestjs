@@ -1,10 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PrismaService } from '../prisma/prisma.service';
-import { RecipeService } from './recipe.service';
+import { PrismaService } from '../../prisma/prisma.service';
+import { RecipeService } from '../recipe.service';
 import { faker } from '@faker-js/faker';
-import { MockPrismaService } from '../prisma/__mocks__/prisma.service.mock';
-import { RecipeCacheService } from './recipe.cache.service';
-import { MockRecipeCacheService } from './__mocks__/recipe.cache.mock';
+import { MockPrismaService } from '../../prisma/__mocks__/prisma.service.mock';
+import { RecipeCacheService } from '../recipe.cache.service';
+import { MockRecipeCacheService } from '../__mocks__/recipe.cache.mock';
 
 describe('RecipeService', () => {
   let recipeService: RecipeService;

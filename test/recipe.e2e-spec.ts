@@ -8,8 +8,8 @@ import { faker } from '@faker-js/faker';
 import { ValidationPipe } from '@nestjs/common';
 import { AuthService } from '../src/auth/auth.service';
 import { AuthModule } from '../src/auth/auth.module';
-import { createUser } from './user.factory';
-import { createRecipe } from './recipe.factory';
+import { createUser } from '../src/user/test/user.factory';
+import { createRecipe } from '../src/recipe/test/recipe.factory';
 import { Recipe, User } from '@prisma/client';
 import { RedisCacheModule } from '../src/cache/redis-cache.module';
 import { RecipeCacheService } from '../src/recipe/recipe.cache.service';
@@ -107,7 +107,7 @@ describe('RecipeController (e2e)', () => {
       });
     });
 
-    it('should fetch specific recipe by by given id', async () => {
+    it('should find specific recipe by by given id', async () => {
       return request(app.getHttpServer())
         .get(`/recipes/${recipe.id}`)
         .set({ Authorization: `Bearer ${accessToken}` })
@@ -134,14 +134,14 @@ describe('RecipeController (e2e)', () => {
         .expect(HttpStatus.OK);
     });
 
-    it('should not fetch recipe and return 404 error (NOT FOUND)', async () => {
+    it('should not find recipe and return 404 error (NOT FOUND)', async () => {
       return request(app.getHttpServer())
         .get(`/recipes/${recipe.id + 1}`)
         .set({ Authorization: `Bearer ${accessToken}` })
         .expect(HttpStatus.NOT_FOUND);
     });
 
-    it('should not fetch specific recipe and return 401 error (UNAUTHORIZED)', async () => {
+    it('should not find specific recipe and return 401 error (UNAUTHORIZED)', async () => {
       return request(app.getHttpServer())
         .get(`/recipes/${recipe.id}`)
         .expect(HttpStatus.UNAUTHORIZED);
@@ -149,23 +149,14 @@ describe('RecipeController (e2e)', () => {
   });
 
   describe('GET /recipes/user/:email', () => {
-    it('should fetch all users recipes', async () => {
-      const userPublicRecipe = createRecipe();
-      const userPrivateRecipe = createRecipe({ isPublic: false });
-      const otherUser = await prismaService.user.create({
-        data: createUser(),
+    it('should find all recipes and check if it has all fields', async () => {
+      await prismaService.recipe.create({
+        data: {
+          ...createRecipe(),
+          authorId: user.id,
+        },
       });
-      const otherPublicRecipe = createRecipe();
-      const otherPrivateRecipe = createRecipe({ isPublic: false });
-      await prismaService.recipe.createMany({
-        data: [
-          { ...userPublicRecipe, authorId: user.id },
-          { ...userPrivateRecipe, authorId: user.id },
-          { ...otherPublicRecipe, authorId: otherUser.id },
-          { ...otherPrivateRecipe, authorId: otherUser.id },
-        ],
-      });
-      request(app.getHttpServer())
+      return request(app.getHttpServer())
         .get(`/recipes`)
         .set({ Authorization: `Bearer ${accessToken}` })
         .expect((response: request.Response) => {
@@ -178,18 +169,39 @@ describe('RecipeController (e2e)', () => {
                 description: expect.any(String),
                 ingredients: expect.any(String),
                 preparation: expect.any(String),
-                isPublic: expect.any(true),
-                authorId: expect.any(otherUser.id),
+                isPublic: expect.any(Boolean),
+                authorId: expect.any(Number),
+              },
+            ]),
+          );
+        })
+        .expect(HttpStatus.OK);
+    });
+    it('should find all users recipes based on visibility', async () => {
+      const otherUser = await prismaService.user.create({
+        data: createUser(),
+      });
+      await prismaService.recipe.createMany({
+        data: [
+          { ...createRecipe(), authorId: user.id },
+          { ...createRecipe({ isPublic: false }), authorId: user.id },
+          { ...createRecipe(), authorId: otherUser.id },
+          { ...createRecipe({ isPublic: false }), authorId: otherUser.id },
+        ],
+      });
+      request(app.getHttpServer())
+        .get(`/recipes`)
+        .set({ Authorization: `Bearer ${accessToken}` })
+        .expect((response: request.Response) => {
+          expect(response.body.fetchedRecipes).toEqual(
+            expect.arrayContaining([
+              {
+                isPublic: true,
+                authorId: otherUser.id,
               },
               {
-                id: expect.any(Number),
-                createdAt: expect.any(String),
-                title: expect.any(String),
-                description: expect.any(String),
-                ingredients: expect.any(String),
-                preparation: expect.any(String),
                 isPublic: expect.any(Boolean),
-                authorId: expect.any(user.id),
+                authorId: user.id,
               },
             ]),
           );
@@ -211,7 +223,7 @@ describe('RecipeController (e2e)', () => {
   });
 
   describe('GET /recipes', () => {
-    it('should fetch all recipes', async () => {
+    it('should find all recipes', async () => {
       const data = createRecipe();
       await prismaService.recipe.createMany({
         data: [
@@ -240,11 +252,10 @@ describe('RecipeController (e2e)', () => {
           );
           expect(response.body.fetchedRecipes).toHaveLength(3);
         })
-
         .expect(HttpStatus.OK);
     });
 
-    it('should not fetch all recipes and return 401 error (UNAUTHORIZED)', () => {
+    it('should not find all recipes and return 401 error (UNAUTHORIZED)', () => {
       return request(app.getHttpServer())
         .get(`/recipes`)
         .expect(HttpStatus.UNAUTHORIZED);

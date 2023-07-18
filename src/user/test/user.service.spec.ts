@@ -1,9 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UserService } from './user.service';
-import { PrismaService } from '../prisma/prisma.service';
+import { UserService } from '../user.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { faker } from '@faker-js/faker';
-import { MockPrismaService } from '../prisma/__mocks__/prisma.service.mock';
+import { MockPrismaService } from '../../prisma/__mocks__/prisma.service.mock';
 import { Role } from '@prisma/client';
+import { createUser } from './user.factory';
 
 describe('UserService', () => {
   let userService: UserService;
@@ -26,10 +27,7 @@ describe('UserService', () => {
   describe('CreateUser', () => {
     it('should create default User', async () => {
       //given
-      const request = {
-        email: faker.internet.email(),
-        password: faker.internet.password(),
-      };
+      const request = createUser();
 
       //when
       const createdUser = await userService.createUser(request);
@@ -50,10 +48,7 @@ describe('UserService', () => {
       const where = {
         id: faker.number.int(),
       };
-      const data = {
-        email: faker.internet.email(),
-        password: faker.internet.password(),
-      };
+      const data = createUser();
 
       //when
       const createdUser = await userService.updateUser({

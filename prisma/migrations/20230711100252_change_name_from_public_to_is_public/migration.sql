@@ -5,5 +5,4 @@
 
 */
 -- AlterTable
-ALTER TABLE "Recipe" DROP COLUMN "public",
-ADD COLUMN     "isPublic" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "Recipe" RENAME COLUMN "public" TO "isPublic",

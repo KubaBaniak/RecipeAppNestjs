@@ -9,7 +9,6 @@ import {
   ParseIntPipe,
   Patch,
   Delete,
-  Request,
 } from '@nestjs/common';
 import { RecipeService } from './recipe.service';
 import {
@@ -30,6 +29,7 @@ import {
   ApiNotFoundResponse,
   ApiBadRequestResponse,
 } from '@nestjs/swagger';
+import { UserId } from '../common/decorators/req-user-id.decorator';
 
 @Controller('recipes')
 @ApiTags('Recipes')
@@ -44,12 +44,12 @@ export class RecipeController {
   @ApiUnauthorizedResponse({ description: 'User is unauthorized' })
   @Post()
   async createRecipe(
-    @Request() userIdObject: { user: { id: number } },
+    @UserId() userId: number,
     @Body() createRecipeRequest: CreateRecipeRequest,
   ): Promise<CreateRecipeResponse> {
     const createdRecipe = await this.recipeService.createRecipe(
       createRecipeRequest,
-      userIdObject.user.id,
+      userId,
     );
 
     return CreateRecipeResponse.from(createdRecipe);
@@ -67,12 +67,12 @@ export class RecipeController {
   })
   @Get(':id')
   async fetchRecipe(
-    @Request() userIdObject: { user: { id: number } },
+    @UserId() userId: number,
     @Param('id', ParseIntPipe) recipeId: number,
   ): Promise<FetchRecipeResponse> {
     const fetchedRecipe = await this.recipeService.fetchRecipe(
       recipeId,
-      userIdObject.user.id,
+      userId,
     );
 
     return FetchRecipeResponse.from(fetchedRecipe);
@@ -87,14 +87,14 @@ export class RecipeController {
     name: 'email',
     description: 'Email of a user',
   })
-  @Get('/user/:email')
-  async fetchUsersRecipes(
-    @Request() userIdObject: { user: { id: number } },
-    @Param('email') email: string,
+  @Get('/user/:id')
+  async fetchRecipesByAuthorId(
+    @UserId() userId: number,
+    @Param('id') authorId: number,
   ): Promise<FetchRecipesResponse> {
-    const fetchedUsersRecipes = await this.recipeService.fetchUsersRecipes(
-      email,
-      userIdObject.user.id,
+    const fetchedUsersRecipes = await this.recipeService.fetchRecipesByAuthorId(
+      authorId,
+      userId,
     );
 
     return FetchRecipesResponse.from(fetchedUsersRecipes);
@@ -105,12 +105,8 @@ export class RecipeController {
   @ApiBearerAuth()
   @ApiUnauthorizedResponse({ description: 'User is not authenticated' })
   @Get()
-  async fetchRecipes(
-    @Request() userIdObject: { user: { id: number } },
-  ): Promise<FetchRecipesResponse> {
-    const fetchedRecipes = await this.recipeService.fetchAllRecipes(
-      userIdObject.user.id,
-    );
+  async fetchRecipes(@UserId() userId: number): Promise<FetchRecipesResponse> {
+    const fetchedRecipes = await this.recipeService.fetchAllRecipes(userId);
 
     return FetchRecipesResponse.from(fetchedRecipes);
   }
@@ -128,11 +124,11 @@ export class RecipeController {
   @Patch(':id')
   async updateRecipe(
     @Param('id', ParseIntPipe) recipeId: number,
-    @Request() userIdObject: { user: { id: number } },
+    @UserId() userId: number,
     @Body() updateRecipeRequest: UpdateRecipeRequest,
   ): Promise<UpdatedRecipeResponse> {
     const updatedRecipe = await this.recipeService.updateRecipe(
-      userIdObject.user.id,
+      userId,
       recipeId,
       updateRecipeRequest,
     );
@@ -150,9 +146,9 @@ export class RecipeController {
   })
   @Delete(':id')
   async deleteRecipe(
-    @Request() userIdObject: { user: { id: number } },
+    @UserId() userId: number,
     @Param('id', ParseIntPipe) recipeId: number,
   ): Promise<void> {
-    await this.recipeService.deleteRecipe(recipeId, userIdObject.user.id);
+    await this.recipeService.deleteRecipe(recipeId, userId);
   }
 }

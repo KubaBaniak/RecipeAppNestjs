@@ -96,11 +96,16 @@ export class MockPrismaService {
       where: { id: number };
       data: UpdateRecipeRequest;
     }): Promise<Recipe> {
+      const { title, description, ingredients, preparation, isPublic } =
+        request.data;
       return Promise.resolve({
         id: request.where.id,
         createdAt: new Date(),
-        ...request.data,
-        isPublic: true,
+        title: title ?? 'base_title',
+        description: description ?? 'base_description',
+        ingredients: ingredients ?? 'base_ingredients',
+        preparation: preparation ?? 'base_preparation',
+        isPublic: isPublic ?? true,
         authorId: userId,
       });
     },

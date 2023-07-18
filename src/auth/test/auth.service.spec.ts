@@ -1,13 +1,13 @@
 import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from 'src/user/user.service';
-import { AuthService } from './auth.service';
+import { AuthService } from '../auth.service';
 import { faker } from '@faker-js/faker';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Role } from '@prisma/client';
-import { MockJwtService } from './__mocks__/jwt.service.mock';
-import { bcryptConstants } from './constants';
+import { MockJwtService } from '../__mocks__/jwt.service.mock';
+import { bcryptConstants } from '../constants';
 
 describe('AuthService', () => {
   let authService: AuthService;
