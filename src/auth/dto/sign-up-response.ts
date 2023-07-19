@@ -1,4 +1,4 @@
-import { UserDto } from 'src/user/dto/user-response';
+import { UserDto } from '../../user/dto/user-response';
 
 export class SignUpResponse {
   constructor(public id: number, public email: string, public role: string) {}

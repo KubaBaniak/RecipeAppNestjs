@@ -56,7 +56,7 @@ describe('UserService', () => {
       };
 
       //when
-      const createdUser = await userService.updateUser(where, data);
+      const createdUser = await userService.updateUser({ where, data });
 
       //then
       expect(createdUser).toEqual({
@@ -70,12 +70,10 @@ describe('UserService', () => {
   describe('DeleteUser', () => {
     it('should delete User', async () => {
       //given
-      const where = {
-        id: faker.number.int(),
-      };
+      const id = faker.number.int();
 
       //when
-      const deletedUser = await userService.deleteUser(where);
+      const deletedUser = await userService.deleteUser(id);
 
       //then
       expect(deletedUser).toBeUndefined();

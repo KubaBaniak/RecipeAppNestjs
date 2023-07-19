@@ -9,7 +9,7 @@ import { bcryptConstants } from './constants';
 import * as bcrypt from 'bcrypt';
 import { SignInRequest, SignUpRequest, UserRequest } from './dto';
 import { UserRepository } from '../user/user.repository';
-import { UserDto } from '../user/dto/user-response';
+import { UserDto } from '../user/dto';
 
 @Injectable()
 export class AuthService {
