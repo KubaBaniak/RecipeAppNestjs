@@ -1,36 +1,45 @@
-import { Injectable } from '@nestjs/common';
-import * as AWS from '@aws-sdk/client-s3';
+import { ForbiddenException, Injectable } from '@nestjs/common';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 
 @Injectable()
 export class S3Service {
   AWS_S3_BUCKET = process.env.AWS_S3_BUCKET;
-  s3 = new AWS.S3({
-    //accessKeyId: process.env.AWS_S3_ACCESS_KEY,
-    //secretAccessKey: process.env.AWS_S3_KEY_SECRET,
+  REGION = 'eu-north-1';
+  client = new S3Client({
+    region: this.REGION,
+    credentials: {
+      accessKeyId: process.env.AWS_S3_ACCESS_KEY,
+      secretAccessKey: process.env.AWS_S3_KEY_SECRET,
+    },
   });
 
-  async uploadFile(file: Express.Multer.File) {
-    const { originalname } = file;
-
-    await this.s3_upload(file, this.AWS_S3_BUCKET, originalname, file.mimetype);
+  prepareKey(userId: number, recipeId: number): string {
+    return `userId-${userId}/recipeId-${recipeId}/${Date.now().toString()}`;
   }
 
-  async s3_upload(
+  async uploadFile(
     file: Express.Multer.File,
-    bucket: string,
-    name: string,
-    mimetype: string,
+    userId: number,
+    recipeId: number,
   ) {
+    const key = this.prepareKey(userId, recipeId);
+    await this.s3_upload(this.AWS_S3_BUCKET, file.buffer, file.mimetype, key);
+    return key;
+  }
+
+  async s3_upload(bucket: string, file: Buffer, mimetype: string, key: string) {
     const params = {
       Bucket: bucket,
-      Key: String(name),
+      Key: key,
       Body: file,
       ACL: 'public-read',
       ContentType: mimetype,
-      ContentDisposition: 'inline',
-      CreateBucketConfiguration: {
-        LocationConstraint: 'ap-south-1',
-      },
     };
+    const command = new PutObjectCommand(params);
+    try {
+      await this.client.send(command);
+    } catch {
+      throw new ForbiddenException('Could not send image(s) to storage.');
+    }
   }
 }

@@ -13,6 +13,7 @@ import {
   UploadedFile,
   ParseFilePipeBuilder,
   HttpStatus,
+  UploadedFiles,
 } from '@nestjs/common';
 import { RecipeService } from './recipe.service';
 import {
@@ -34,12 +35,16 @@ import {
   ApiBadRequestResponse,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { S3Service } from './s3-bucket.service';
 
 @Controller('recipes')
 @ApiTags('Recipes')
 export class RecipeController {
-  constructor(private readonly recipeService: RecipeService) {}
+  constructor(
+    private readonly recipeService: RecipeService,
+    private readonly s3Service: S3Service,
+  ) {}
 
   @HttpCode(201)
   @UseGuards(JwtAuthGuard)
@@ -134,9 +139,9 @@ export class RecipeController {
     description: 'Positive integer (≥1) to upload image(s) to specified recipe',
   })
   @Post('upload/:id')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FilesInterceptor('file'))
   uploadFile(
-    @UploadedFile(
+    @UploadedFiles(
       new ParseFilePipeBuilder()
         .addMaxSizeValidator({
           maxSize: 1024 * 1024 * 4,
@@ -149,10 +154,11 @@ export class RecipeController {
         }),
     )
     files: Array<Express.Multer.File>,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseIntPipe) recipeId: number,
   ) {
-    console.log(id);
-    console.log(files);
-    // IMPLEMENT DATA TRANSFER TO S3 BUCKET
+    const tempUserId = 3;
+    for (let i = 0; i < files.length; i++) {
+      this.s3Service.uploadFile(files[i], tempUserId, recipeId);
+    }
   }
 }
