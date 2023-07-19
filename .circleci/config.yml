@@ -87,7 +87,7 @@ jobs:
     steps:
       - checkout
       - install_dependencies
-      - run: npx semantic-release
+      - run: npm semantic-release
 
   deploy:
     docker:
