@@ -94,7 +94,7 @@ describe('AuthService', () => {
         bcryptConstants.test_salt,
       );
       jest
-        .spyOn(userRepository, 'getUserWithPassword')
+        .spyOn(userRepository, 'getUserByEmailWithPassword')
         .mockImplementation(() => {
           return Promise.resolve({
             id: faker.number.int(),

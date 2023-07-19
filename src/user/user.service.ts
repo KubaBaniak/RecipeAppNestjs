@@ -19,6 +19,6 @@ export class UserService {
   }
 
   deleteUser(where: Prisma.UserWhereUniqueInput): Promise<void> {
-    return this.userRepository.removeUser(where);
+    return this.userRepository.removeUserById(where.id);
   }
 }

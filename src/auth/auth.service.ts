@@ -5,7 +5,6 @@ import {
 } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
-import { User } from '@prisma/client';
 import { bcryptConstants } from './constants';
 import * as bcrypt from 'bcrypt';
 import { SignInRequest, SignUpRequest, UserRequest } from './dto';
@@ -25,9 +24,9 @@ export class AuthService {
   }
 
   async signUp(signUpRequest: SignUpRequest): Promise<UserDto> {
-    const user = await this.userRepository.getUserWithPassword({
-      email: signUpRequest.email,
-    });
+    const user = await this.userRepository.getUserByEmailWithPassword(
+      signUpRequest.email,
+    );
 
     if (user) {
       throw new ForbiddenException();
@@ -43,10 +42,10 @@ export class AuthService {
     return this.userService.createUser(data);
   }
 
-  async validateUser(userRequest: UserRequest): Promise<User> {
-    const user = await this.userRepository.getUserWithPassword({
-      email: userRequest.email,
-    });
+  async validateUser(userRequest: UserRequest): Promise<UserDto> {
+    const user = await this.userRepository.getUserByEmailWithPassword(
+      userRequest.email,
+    );
 
     if (!user) {
       throw new UnauthorizedException();

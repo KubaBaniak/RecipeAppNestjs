@@ -15,10 +15,14 @@ export class UserRepository {
     return UserDto.from(user);
   }
 
-  async getUserByIdWithPassword(id: number): Promise<UserDto> {
+  async getUserByEmailWithPassword(email: string): Promise<UserDto> {
     const user = await this.prisma.user.findUnique({
-      where: { id },
+      where: { email },
     });
+
+    if (!user) {
+      return null;
+    }
 
     return UserDto.fromWithPassword(user);
   }
