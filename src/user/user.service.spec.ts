@@ -47,20 +47,18 @@ describe('UserService', () => {
   describe('UpdateUser', () => {
     it('should update User', async () => {
       //given
-      const where = {
-        id: faker.number.int(),
-      };
+      const id = faker.number.int();
       const data = {
         email: faker.internet.email(),
         password: faker.internet.password(),
       };
 
       //when
-      const createdUser = await userService.updateUser({ where, data });
+      const createdUser = await userService.updateUser({ id, data });
 
       //then
       expect(createdUser).toEqual({
-        id: where.id,
+        id,
         email: data.email,
         role: 'USER',
       });

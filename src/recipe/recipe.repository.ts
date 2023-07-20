@@ -7,15 +7,13 @@ import { CreateRecipeRequest, UpdateRecipeRequest } from './dto';
 export class RecipeRepository {
   constructor(private prisma: PrismaService) {}
 
-  async createRecipe(data: CreateRecipeRequest): Promise<Recipe> {
-    const recipe = await this.prisma.recipe.create({
+  createRecipe(data: CreateRecipeRequest): Promise<Recipe> {
+    return this.prisma.recipe.create({
       data,
     });
-
-    return recipe;
   }
 
-  async getRecipeById(id: number): Promise<Recipe> {
+  getRecipeById(id: number): Promise<Recipe> {
     return this.prisma.recipe.findUnique({
       where: {
         id,
@@ -34,7 +32,7 @@ export class RecipeRepository {
     });
   }
 
-  async deleteRecipe(id: number): Promise<Recipe> {
+  deleteRecipe(id: number): Promise<Recipe> {
     return this.prisma.recipe.delete({
       where: { id },
     });

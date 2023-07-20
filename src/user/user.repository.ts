@@ -1,50 +1,46 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
-import { UserDto } from './dto';
+import { UserPayloadRequest } from './dto';
 
 @Injectable()
 export class UserRepository {
   constructor(private prisma: PrismaService) {}
 
-  async getUserById(id: number): Promise<UserDto> {
+  async getUserById(id: number): Promise<UserPayloadRequest> {
     const user = await this.prisma.user.findUnique({
       where: { id },
     });
 
-    return UserDto.from(user);
+    return user ? UserPayloadRequest.from(user) : null;
   }
 
-  async getUserByEmailWithPassword(email: string): Promise<UserDto> {
+  async getUserByEmailWithPassword(email: string): Promise<UserPayloadRequest> {
     const user = await this.prisma.user.findUnique({
       where: { email },
     });
 
-    if (!user) {
-      return null;
-    }
-
-    return UserDto.fromWithPassword(user);
+    return user ? UserPayloadRequest.withPasswordFrom(user) : null;
   }
 
-  async createUser(data: Prisma.UserCreateInput): Promise<UserDto> {
+  async createUser(data: Prisma.UserCreateInput): Promise<UserPayloadRequest> {
     const user = await this.prisma.user.create({
       data,
     });
 
-    return UserDto.from(user);
+    return user ? UserPayloadRequest.from(user) : null;
   }
 
-  async updateUser(
-    where: Prisma.UserWhereUniqueInput,
+  async updateUserById(
+    id: number,
     data: Prisma.UserUpdateInput,
-  ): Promise<UserDto> {
+  ): Promise<UserPayloadRequest> {
     const user = await this.prisma.user.update({
       data,
-      where,
+      where: { id },
     });
 
-    return UserDto.from(user);
+    return user ? UserPayloadRequest.from(user) : null;
   }
 
   async removeUserById(id: number): Promise<void> {

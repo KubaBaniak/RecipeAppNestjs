@@ -9,7 +9,7 @@ import { bcryptConstants } from './constants';
 import * as bcrypt from 'bcrypt';
 import { SignInRequest, SignUpRequest, UserRequest } from './dto';
 import { UserRepository } from '../user/user.repository';
-import { UserDto } from '../user/dto';
+import { UserPayloadRequest } from '../user/dto';
 
 @Injectable()
 export class AuthService {
@@ -23,7 +23,7 @@ export class AuthService {
     return this.jwtService.signAsync(signInRequest);
   }
 
-  async signUp(signUpRequest: SignUpRequest): Promise<UserDto> {
+  async signUp(signUpRequest: SignUpRequest): Promise<UserPayloadRequest> {
     const user = await this.userRepository.getUserByEmailWithPassword(
       signUpRequest.email,
     );
@@ -42,7 +42,7 @@ export class AuthService {
     return this.userService.createUser(data);
   }
 
-  async validateUser(userRequest: UserRequest): Promise<UserDto> {
+  async validateUser(userRequest: UserRequest): Promise<UserPayloadRequest> {
     const user = await this.userRepository.getUserByEmailWithPassword(
       userRequest.email,
     );
