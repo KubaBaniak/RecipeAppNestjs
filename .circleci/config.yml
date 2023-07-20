@@ -13,8 +13,8 @@ commands:
   install_dependencies:
     steps:
       - run:
-          name: Install node dependencies
-          command: npm install
+          name: Install node dependencies from package-lock
+          command: npm ci
   setup_prisma:
     steps:
       - run:
