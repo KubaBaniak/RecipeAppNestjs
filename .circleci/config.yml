@@ -35,7 +35,7 @@ commands:
       - run:
           name: Create test.env file
           command: |
-            echo 'DATABASE_URL="postgresql://postgres:postgres@localhost:5432/postgres" > test.env
+            echo 'DATABASE_URL="postgresql://postgres:postgres@localhost:5432/postgres"' > test.env
             echo 'POSTGRES_USER="test_postgres"' >> test.env
             echo 'POSTGRES_PASSWORD="test_postgres"' >> test.env
             echo 'PGADMIN_EMAIL="test@email.com"' >> test.env
