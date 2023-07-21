@@ -30,6 +30,11 @@ commands:
       - run:
           name: Run images of services declared in docker-compose.yml
           command: docker-compose up -d
+  create_test_env:
+    steps:
+      - run:
+          name: Create test.env file
+          command: echo 'DATABASE_URL="postgresql://postgres:postgres@localhost:5432/postgres"\nPOSTGRES_USER="test_postgres"\nPOSTGRES_PASSWORD="test_postgres"\nPGADMIN_EMAIL="test@email.com"\nPGADMIN_PASSWORD="test_password"\nJWT_SECRET="testJWTValue4590823HadToAddIt"\nBCRYPT_SALT="10"\nREDIS_PASSWORD="red_test_password"\nREDIS_URL="redis://localhost:6379"' >> test.env
 
 jobs:
   build:
@@ -51,6 +56,7 @@ jobs:
     parallelism: 2
     steps:
       - checkout
+      - create_test_env
       - restore_cache:
           key: ${CACHE_VERSION}-deps-{{ checksum "package-lock.json" }}
       - setup_prisma
@@ -69,6 +75,7 @@ jobs:
     parallelism: 2
     steps:
       - checkout
+      - create_test_env
       - restore_cache:
           key: ${CACHE_VERSION}-deps-{{ checksum "package-lock.json" }}
       - setup_prisma
