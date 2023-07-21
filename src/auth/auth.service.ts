@@ -5,15 +5,22 @@ import {
 } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
-import { User } from '@prisma/client';
 import { bcryptConstants } from './constants';
 import * as bcrypt from 'bcrypt';
-import { SignInRequest, SignUpRequest, UserRequest } from './dto';
+import {
+  SignInRequest,
+  SignUpRequest,
+  SignUpResponse,
+  UserRequest,
+} from './dto';
+import { UserRepository } from '../user/user.repository';
+import { UserPayloadRequest } from '../user/dto';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly userService: UserService,
+    private readonly userRepository: UserRepository,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -21,8 +28,10 @@ export class AuthService {
     return this.jwtService.signAsync(signInRequest);
   }
 
-  async signUp(signUpRequest: SignUpRequest): Promise<User> {
-    const user = await this.userService.findOneUser(signUpRequest.email);
+  async signUp(signUpRequest: SignUpRequest): Promise<SignUpResponse> {
+    const user = await this.userRepository.getUserByEmailWithPassword(
+      signUpRequest.email,
+    );
 
     if (user) {
       throw new ForbiddenException();
@@ -38,8 +47,10 @@ export class AuthService {
     return this.userService.createUser(data);
   }
 
-  async validateUser(userRequest: UserRequest): Promise<User> {
-    const user = await this.userService.findOneUser(userRequest.email);
+  async validateUser(userRequest: UserRequest): Promise<UserPayloadRequest> {
+    const user = await this.userRepository.getUserByEmailWithPassword(
+      userRequest.email,
+    );
 
     if (!user) {
       throw new UnauthorizedException();

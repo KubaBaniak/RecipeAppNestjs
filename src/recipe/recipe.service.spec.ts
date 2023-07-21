@@ -5,6 +5,7 @@ import { faker } from '@faker-js/faker';
 import { MockPrismaService } from '../prisma/__mocks__/prisma.service.mock';
 import { RecipeCacheService } from './recipe.cache.service';
 import { MockRecipeCacheService } from './__mocks__/recipe.cache.mock';
+import { RecipeRepository } from './recipe.repository';
 
 describe('RecipeService', () => {
   let recipeService: RecipeService;
@@ -13,6 +14,7 @@ describe('RecipeService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         RecipeService,
+        RecipeRepository,
         {
           provide: PrismaService,
           useClass: MockPrismaService,

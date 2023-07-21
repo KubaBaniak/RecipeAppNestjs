@@ -1,20 +1,18 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
 import { Recipe, Prisma } from '@prisma/client';
-import { UpdateRecipeRequest } from './dto';
+import { CreateRecipeRequest, UpdateRecipeRequest } from './dto';
 import { RecipeCacheService } from './recipe.cache.service';
+import { RecipeRepository } from './recipe.repository';
 
 @Injectable()
 export class RecipeService {
   constructor(
-    private prisma: PrismaService,
+    private readonly recipeRepository: RecipeRepository,
     private readonly recipeCacheService: RecipeCacheService,
   ) {}
 
-  async createRecipe(data: Prisma.RecipeCreateInput): Promise<Recipe> {
-    const recipe = await this.prisma.recipe.create({
-      data,
-    });
+  async createRecipe(data: CreateRecipeRequest): Promise<Recipe> {
+    const recipe = await this.recipeRepository.createRecipe(data);
     this.recipeCacheService.cacheRecipe(recipe);
 
     return recipe;
@@ -24,11 +22,7 @@ export class RecipeService {
     let recipe: Recipe = await this.recipeCacheService.getCachedRecipe(id);
 
     if (!recipe) {
-      recipe = await this.prisma.recipe.findUnique({
-        where: {
-          id,
-        },
-      });
+      recipe = await this.recipeRepository.getRecipeById(id);
     }
 
     if (!recipe) {
@@ -39,7 +33,7 @@ export class RecipeService {
   }
 
   fetchAllRecipes(): Promise<Recipe[]> {
-    return this.prisma.recipe.findMany();
+    return this.recipeRepository.getAllRecipes();
   }
 
   async updateRecipe(
@@ -47,10 +41,7 @@ export class RecipeService {
     payload: UpdateRecipeRequest,
   ): Promise<Recipe> {
     try {
-      const recipe = await this.prisma.recipe.update({
-        where: { id },
-        data: payload,
-      });
+      const recipe = await this.recipeRepository.updateRecipe(id, payload);
       this.recipeCacheService.cacheRecipe(recipe);
       return recipe;
     } catch {
@@ -60,9 +51,7 @@ export class RecipeService {
 
   async deleteRecipe(id: number): Promise<void> {
     try {
-      await this.prisma.recipe.delete({
-        where: { id },
-      });
+      await this.recipeRepository.deleteRecipe(id);
       this.recipeCacheService.deleteCachedRecipe(id);
     } catch {
       throw new NotFoundException();
