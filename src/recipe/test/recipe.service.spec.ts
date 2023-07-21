@@ -5,6 +5,8 @@ import { faker } from '@faker-js/faker';
 import { MockPrismaService } from '../../prisma/__mocks__/prisma.service.mock';
 import { RecipeCacheService } from '../recipe.cache.service';
 import { MockRecipeCacheService } from '../__mocks__/recipe.cache.mock';
+import { RecipeRepository } from '../recipe.repository';
+import { UserRepository } from 'src/user/user.repository';
 
 describe('RecipeService', () => {
   let recipeService: RecipeService;
@@ -13,6 +15,8 @@ describe('RecipeService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         RecipeService,
+        RecipeRepository,
+        UserRepository,
         {
           provide: PrismaService,
           useClass: MockPrismaService,
@@ -41,10 +45,11 @@ describe('RecipeService', () => {
         ingredients: faker.lorem.word(5),
         preparation: faker.lorem.lines(3),
         isPublic: true,
+        authorId: userId,
       };
 
       //when
-      const createdRecipe = await recipeService.createRecipe(request, userId);
+      const createdRecipe = await recipeService.createRecipe(userId, request);
 
       //then
       expect(createdRecipe).toEqual({

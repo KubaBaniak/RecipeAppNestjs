@@ -13,7 +13,7 @@ export const createRecipe = (overrides: CreateRecipeOverrides = {}) => ({
   description: overrides.description ?? faker.lorem.text(),
   ingredients: overrides.ingredients ?? faker.lorem.word(8),
   preparation: overrides.preparation ?? faker.lorem.lines(4),
-  isPublic: overrides.isPublic ?? true,
+  isPublic: overrides.isPublic ?? false,
 });
 
 type CreateRecipeResponseOverrides = {
@@ -36,6 +36,6 @@ export const createRecipeResponse = (
   description: overrides.description ?? faker.lorem.text(),
   ingredients: overrides.ingredients ?? faker.lorem.word(8),
   preparation: overrides.preparation ?? faker.lorem.lines(4),
-  isPublic: overrides.isPublic ?? true,
+  isPublic: overrides.isPublic ?? false,
   authorId: overrides.authorId ?? faker.number.int(),
 });

@@ -9,6 +9,7 @@ import {
   ParseIntPipe,
   Patch,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { RecipeService } from './recipe.service';
 import {
@@ -48,8 +49,8 @@ export class RecipeController {
     @Body() createRecipeRequest: CreateRecipeRequest,
   ): Promise<CreateRecipeResponse> {
     const createdRecipe = await this.recipeService.createRecipe(
-      createRecipeRequest,
       userId,
+      createRecipeRequest,
     );
 
     return CreateRecipeResponse.from(createdRecipe);
@@ -78,36 +79,24 @@ export class RecipeController {
     return FetchRecipeResponse.from(fetchedRecipe);
   }
 
-  @HttpCode(200)
-  @UseGuards(JwtAuthGuard)
-  @ApiOperation({ summary: 'Get all users recipes' })
-  @ApiBearerAuth()
-  @ApiUnauthorizedResponse({ description: 'User is not authenticated' })
-  @ApiParam({
-    name: 'email',
-    description: 'Email of a user',
-  })
-  @Get('/user/:id')
-  async fetchRecipesByAuthorId(
-    @UserId() userId: number,
-    @Param('id') authorId: number,
-  ): Promise<FetchRecipesResponse> {
-    const fetchedUsersRecipes = await this.recipeService.fetchRecipesByAuthorId(
-      authorId,
-      userId,
-    );
-
-    return FetchRecipesResponse.from(fetchedUsersRecipes);
-  }
-
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Get list of all recipes' })
   @ApiBearerAuth()
   @ApiUnauthorizedResponse({ description: 'User is not authenticated' })
   @Get()
-  async fetchRecipes(@UserId() userId: number): Promise<FetchRecipesResponse> {
+  async fetchRecipes(
+    @UserId() userId: number,
+    @Query('authorId') authorId?: string,
+  ): Promise<FetchRecipesResponse> {
+    console.log(authorId);
+    if (authorId) {
+      const fetchedRecipes = await this.recipeService.fetchRecipesByAuthorId(
+        +authorId,
+        userId,
+      );
+      return FetchRecipesResponse.from(fetchedRecipes);
+    }
     const fetchedRecipes = await this.recipeService.fetchAllRecipes(userId);
-
     return FetchRecipesResponse.from(fetchedRecipes);
   }
 

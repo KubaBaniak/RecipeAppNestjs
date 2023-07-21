@@ -3,55 +3,36 @@ import {
   NotFoundException,
   ForbiddenException,
 } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { Recipe, Role } from '@prisma/client';
+import { Recipe } from '@prisma/client';
 import { CreateRecipeRequest, UpdateRecipeRequest } from './dto';
 import { RecipeCacheService } from './recipe.cache.service';
+import { RecipeRepository } from './recipe.repository';
+import { UserRepository } from '../user/user.repository';
+import { Role } from '@prisma/client';
 
 @Injectable()
 export class RecipeService {
   constructor(
-    private prisma: PrismaService,
+    private readonly recipeRepository: RecipeRepository,
+    private readonly userRepository: UserRepository,
     private readonly recipeCacheService: RecipeCacheService,
   ) {}
 
   async createRecipe(
-    data: CreateRecipeRequest,
     userId: number,
+    data: CreateRecipeRequest,
   ): Promise<Recipe> {
-    const { title, description, ingredients, preparation, isPublic } = data;
-    const recipe = await this.prisma.recipe.create({
-      data: {
-        title,
-        description,
-        ingredients,
-        preparation,
-        isPublic,
-        authorId: userId,
-      },
-    });
+    const recipe = await this.recipeRepository.createRecipe(userId, data);
     this.recipeCacheService.cacheRecipe(recipe);
 
     return recipe;
   }
 
   async fetchRecipe(recipeId: number, userId: number): Promise<Recipe> {
-    const user = await this.prisma.user.findUnique({
-      where: {
-        id: userId,
-      },
-    });
-
-    let recipe: Recipe = await this.recipeCacheService.getCachedRecipe(
-      recipeId,
-    );
-    if (!recipe) {
-      recipe = await this.prisma.recipe.findUnique({
-        where: {
-          id: recipeId,
-        },
-      });
-    }
+    const user = await this.userRepository.getUserById(userId);
+    const recipe =
+      (await this.recipeCacheService.getCachedRecipe(recipeId)) ??
+      (await this.recipeRepository.getRecipeById(recipeId));
 
     if (!recipe) {
       throw new NotFoundException();
@@ -79,46 +60,25 @@ export class RecipeService {
     authorId: number,
     principalId: number,
   ): Promise<Recipe[]> {
-    const author = await this.prisma.user.findUnique({
-      where: { id: authorId },
-    });
+    const author = await this.userRepository.getUserById(authorId);
     if (!author) {
       throw new NotFoundException();
     }
-    const principal = await this.prisma.user.findUnique({
-      where: { id: principalId },
-    });
+    const principal = await this.userRepository.getUserById(principalId);
 
     if (author.id === principal.id || principal.role == Role.ADMIN) {
-      return this.prisma.recipe.findMany({
-        where: {
-          authorId: author.id,
-        },
-      });
+      return this.recipeRepository.getUsersRecipes(authorId);
     }
 
-    return this.prisma.recipe.findMany({
-      where: {
-        authorId: author.id,
-        isPublic: true,
-      },
-    });
+    return this.recipeRepository.getUsersPublicRecipes(authorId);
   }
 
   async fetchAllRecipes(userId: number): Promise<Recipe[]> {
-    const user = await this.prisma.user.findUnique({
-      where: {
-        id: userId,
-      },
-    });
+    const user = await this.userRepository.getUserById(userId);
     if (user.role === Role.ADMIN) {
-      return this.prisma.recipe.findMany();
+      return this.recipeRepository.getAllRecipes();
     } else {
-      return this.prisma.recipe.findMany({
-        where: {
-          isPublic: true,
-        },
-      });
+      return this.recipeRepository.getAllPublicRecipes();
     }
   }
 
@@ -127,26 +87,15 @@ export class RecipeService {
     recipeId: number,
     payload: UpdateRecipeRequest,
   ): Promise<Recipe> {
-    const user = await this.prisma.user.findUnique({
-      where: {
-        id: userId,
-      },
-    });
-    let recipe = await this.prisma.recipe.findUnique({
-      where: {
-        id: recipeId,
-      },
-    });
+    const user = await this.userRepository.getUserById(userId);
+    let recipe = await this.recipeRepository.getRecipeById(recipeId);
+
+    if (user.id != recipe.authorId && user.role != Role.ADMIN) {
+      throw new ForbiddenException();
+    }
 
     try {
-      if (user.id != recipe.authorId && user.role != Role.ADMIN) {
-        throw new ForbiddenException();
-      }
-
-      recipe = await this.prisma.recipe.update({
-        where: { id: recipeId },
-        data: payload,
-      });
+      recipe = await this.recipeRepository.updateRecipe(recipeId, payload);
       this.recipeCacheService.cacheRecipe(recipe);
     } catch {
       throw new NotFoundException();
@@ -156,23 +105,13 @@ export class RecipeService {
   }
 
   async deleteRecipe(recipeId: number, userId: number): Promise<void> {
-    const user = await this.prisma.user.findUnique({
-      where: {
-        id: userId,
-      },
-    });
-    const recipe = await this.prisma.recipe.findUnique({
-      where: {
-        id: recipeId,
-      },
-    });
+    const user = await this.userRepository.getUserById(userId);
+    const recipe = await this.recipeRepository.getRecipeById(recipeId);
     try {
       if (user.id != recipe.authorId && user.role != Role.ADMIN) {
         throw new ForbiddenException();
       }
-      await this.prisma.recipe.delete({
-        where: { id: recipeId },
-      });
+      await this.recipeRepository.deleteRecipe(recipeId);
       this.recipeCacheService.deleteCachedRecipe(recipeId);
     } catch {
       throw new NotFoundException();

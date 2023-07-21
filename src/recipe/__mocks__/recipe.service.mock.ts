@@ -4,8 +4,8 @@ import { createRecipeResponse } from '../test/recipe.factory';
 
 export class MockRecipeService {
   createRecipe(
-    createRecipeRequest: CreateRecipeRequest,
     userId: number,
+    createRecipeRequest: CreateRecipeRequest,
   ): Promise<Recipe> {
     return Promise.resolve(
       createRecipeResponse({ ...createRecipeRequest, authorId: userId }),

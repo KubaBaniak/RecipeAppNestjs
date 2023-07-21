@@ -13,8 +13,8 @@ commands:
   install_dependencies:
     steps:
       - run:
-          name: Install node dependencies
-          command: npm install
+          name: Install node dependencies from package-lock
+          command: npm ci
   setup_prisma:
     steps:
       - run:
@@ -79,7 +79,15 @@ jobs:
             E2E_TEST_FILES=$(circleci tests glob "./test/*{e2e-spec}.ts" | circleci tests split --split-by=timings)
             npm test -- $E2E_TEST_FILES --config ./test/jest-e2e.json
       - store_test_results:
-          path: ./test_reports
+          path: ./test_reportssrc
+
+  release:
+    docker:
+      - image: cimg/node:18.16.0
+    steps:
+      - checkout
+      - install_dependencies
+      - run: npm run release
 
   deploy:
     docker:
@@ -98,6 +106,11 @@ workflows:
       - e2e_test:
           requires:
             - build
+      - release:
+          requires:
+            - unit_test
+            - e2e_test
+
   deploy:
     jobs:
       - deploy:

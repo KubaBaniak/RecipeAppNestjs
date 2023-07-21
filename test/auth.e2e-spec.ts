@@ -8,6 +8,7 @@ import { PrismaService } from '../src/prisma/prisma.service';
 import { Role } from '@prisma/client';
 import { faker } from '@faker-js/faker';
 import { createUser } from '../src/user/test/user.factory';
+import { UserRepository } from '../src/user/user.repository';
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication;
@@ -18,7 +19,7 @@ describe('AuthController (e2e)', () => {
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [AuthModule],
-      providers: [AuthService, UserService, PrismaService],
+      providers: [AuthService, UserService, UserRepository, PrismaService],
     }).compile();
 
     app = moduleRef.createNestApplication();
@@ -29,7 +30,7 @@ describe('AuthController (e2e)', () => {
   });
 
   afterEach(async () => {
-    await prismaService.user.delete({ where: { email: user.email } });
+    await prismaService.user.deleteMany();
   });
 
   describe('POST /auth/signup', () => {

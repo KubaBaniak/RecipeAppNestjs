@@ -45,6 +45,7 @@ describe('RecipeController', () => {
         ingredients: faker.lorem.words(4),
         preparation: faker.lorem.lines(5),
         isPublic: true,
+        authorId: userId,
       };
 
       //when
@@ -58,7 +59,6 @@ describe('RecipeController', () => {
         id: expect.any(Number),
         createdAt: expect.any(Date),
         ...request,
-        authorId: userId,
       });
     });
   });
@@ -88,33 +88,6 @@ describe('RecipeController', () => {
           authorId: userId,
         },
       });
-    });
-    it('should fetch all users recipes', async () => {
-      //given
-      const userId = faker.number.int();
-      const authorId = faker.number.int();
-
-      //when
-      const fetchedUsersRecipes = await recipeController.fetchRecipesByAuthorId(
-        userId,
-        authorId,
-      );
-
-      //then
-      expect(fetchedUsersRecipes.fetchedRecipes).toEqual(
-        expect.arrayContaining([
-          {
-            id: expect.any(Number),
-            createdAt: expect.any(Date),
-            title: expect.any(String),
-            description: expect.any(String),
-            ingredients: expect.any(String),
-            preparation: expect.any(String),
-            isPublic: true,
-            authorId: expect.any(Number),
-          },
-        ]),
-      );
     });
     it('should fetch all recipes', async () => {
       //given
