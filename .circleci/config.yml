@@ -34,7 +34,16 @@ commands:
     steps:
       - run:
           name: Create test.env file
-          command: echo 'DATABASE_URL="postgresql://postgres:postgres@localhost:5432/postgres"\nPOSTGRES_USER="test_postgres"\nPOSTGRES_PASSWORD="test_postgres"\nPGADMIN_EMAIL="test@email.com"\nPGADMIN_PASSWORD="test_password"\nJWT_SECRET="testJWTValue4590823HadToAddIt"\nBCRYPT_SALT="10"\nREDIS_PASSWORD="red_test_password"\nREDIS_URL="redis://localhost:6379"' >> test.env
+          command: |
+            echo 'DATABASE_URL="postgresql://postgres:postgres@localhost:5432/postgres" > test.env
+            echo 'POSTGRES_USER="test_postgres"' >> test.env
+            echo 'POSTGRES_PASSWORD="test_postgres"' >> test.env
+            echo 'PGADMIN_EMAIL="test@email.com"' >> test.env
+            echo 'PGADMIN_PASSWORD="test_password"' >> test.env
+            echo 'JWT_SECRET="testJWTValue4590823HadToAddIt"' >> test.env
+            echo 'BCRYPT_SALT="10"' >> test.env
+            echo 'REDIS_PASSWORD="red_test_password"' >> test.env
+            echo 'REDIS_URL="redis://localhost:6379"' >> test.env
 
 jobs:
   build:
