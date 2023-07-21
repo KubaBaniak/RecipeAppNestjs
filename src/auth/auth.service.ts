@@ -7,7 +7,12 @@ import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { bcryptConstants } from './constants';
 import * as bcrypt from 'bcrypt';
-import { SignInRequest, SignUpRequest, UserRequest } from './dto';
+import {
+  SignInRequest,
+  SignUpRequest,
+  SignUpResponse,
+  UserRequest,
+} from './dto';
 import { UserRepository } from '../user/user.repository';
 import { UserPayloadRequest } from '../user/dto';
 
@@ -23,7 +28,7 @@ export class AuthService {
     return this.jwtService.signAsync(signInRequest);
   }
 
-  async signUp(signUpRequest: SignUpRequest): Promise<UserPayloadRequest> {
+  async signUp(signUpRequest: SignUpRequest): Promise<SignUpResponse> {
     const user = await this.userRepository.getUserByEmailWithPassword(
       signUpRequest.email,
     );
