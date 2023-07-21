@@ -30,7 +30,7 @@ describe('AuthController (e2e)', () => {
   });
 
   afterEach(async () => {
-    await prismaService.user.deleteMany();
+    await prismaService.user.deleteMany({ where: { email: user.email } });
   });
 
   describe('POST /auth/signup', () => {

@@ -6,7 +6,7 @@ import {
 import { Recipe } from '@prisma/client';
 import { CreateRecipeRequest, UpdateRecipeRequest } from './dto';
 import { RecipeCacheService } from './recipe.cache.service';
-import { RecipeRepository } from './recipe.repository';
+import { RecipeRepository } from '../recipe/recipe.repository';
 import { UserRepository } from '../user/user.repository';
 import { Role } from '@prisma/client';
 
@@ -89,17 +89,16 @@ export class RecipeService {
   ): Promise<Recipe> {
     const user = await this.userRepository.getUserById(userId);
     let recipe = await this.recipeRepository.getRecipeById(recipeId);
+    if (!recipe) {
+      throw new NotFoundException();
+    }
 
     if (user.id != recipe.authorId && user.role != Role.ADMIN) {
       throw new ForbiddenException();
     }
 
-    try {
-      recipe = await this.recipeRepository.updateRecipe(recipeId, payload);
-      this.recipeCacheService.cacheRecipe(recipe);
-    } catch {
-      throw new NotFoundException();
-    }
+    recipe = await this.recipeRepository.updateRecipe(recipeId, payload);
+    this.recipeCacheService.cacheRecipe(recipe);
 
     return recipe;
   }
@@ -107,14 +106,13 @@ export class RecipeService {
   async deleteRecipe(recipeId: number, userId: number): Promise<void> {
     const user = await this.userRepository.getUserById(userId);
     const recipe = await this.recipeRepository.getRecipeById(recipeId);
-    try {
-      if (user.id != recipe.authorId && user.role != Role.ADMIN) {
-        throw new ForbiddenException();
-      }
-      await this.recipeRepository.deleteRecipe(recipeId);
-      this.recipeCacheService.deleteCachedRecipe(recipeId);
-    } catch {
+    if (!recipe) {
       throw new NotFoundException();
     }
+    if (user.id != recipe.authorId && user.role != Role.ADMIN) {
+      throw new ForbiddenException();
+    }
+    await this.recipeRepository.deleteRecipe(recipeId);
+    this.recipeCacheService.deleteCachedRecipe(recipeId);
   }
 }

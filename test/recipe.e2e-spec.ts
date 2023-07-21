@@ -160,11 +160,11 @@ describe('RecipeController (e2e)', () => {
     });
   });
 
-  describe('GET /recipes/user/:email', () => {
+  describe('GET /recipes', () => {
     it('should find all recipes and check if it has all fields', async () => {
       await prismaService.recipe.create({
         data: {
-          ...createRecipe(),
+          ...createRecipe({ isPublic: true }),
           authorId: user.id,
         },
       });
@@ -190,6 +190,25 @@ describe('RecipeController (e2e)', () => {
         })
         .expect(HttpStatus.OK);
     });
+    it('should find all recipes', async () => {
+      const data = createRecipe();
+      await prismaService.recipe.createMany({
+        data: [
+          { ...data, isPublic: true, authorId: user.id },
+          { ...data, isPublic: true, authorId: user.id },
+          { ...data, isPublic: true, authorId: user.id },
+        ],
+      });
+      return request(app.getHttpServer())
+        .get(`/recipes`)
+        .set({ Authorization: `Bearer ${accessToken}` })
+        .set({ user: { id: user.id } })
+        .expect((response: request.Response) => {
+          expect(response.body.fetchedRecipes).toHaveLength(3);
+        })
+        .expect(HttpStatus.OK);
+    });
+
     it('should find all users recipes based on visibility', async () => {
       const otherUser = await prismaService.user.create({
         data: createUser(),
@@ -234,41 +253,6 @@ describe('RecipeController (e2e)', () => {
         },
       });
     });
-  });
-
-  describe('GET /recipes', () => {
-    it('should find all recipes', async () => {
-      const data = createRecipe();
-      await prismaService.recipe.createMany({
-        data: [
-          { ...data, authorId: user.id },
-          { ...data, authorId: user.id },
-          { ...data, authorId: user.id },
-        ],
-      });
-      return request(app.getHttpServer())
-        .get(`/recipes`)
-        .set({ Authorization: `Bearer ${accessToken}` })
-        .set({ user: { id: user.id } })
-        .expect((response: request.Response) => {
-          expect(response.body.fetchedRecipes).toEqual(
-            expect.arrayContaining([
-              {
-                id: expect.any(Number),
-                createdAt: expect.any(String),
-                title: expect.any(String),
-                description: expect.any(String),
-                ingredients: expect.any(String),
-                preparation: expect.any(String),
-                isPublic: expect.any(Boolean),
-                authorId: expect.any(Number),
-              },
-            ]),
-          );
-          expect(response.body.fetchedRecipes).toHaveLength(3);
-        })
-        .expect(HttpStatus.OK);
-    });
 
     it('should not find all recipes and return 401 error (UNAUTHORIZED)', () => {
       return request(app.getHttpServer())
@@ -277,7 +261,7 @@ describe('RecipeController (e2e)', () => {
     });
   });
 
-  describe('PATCH /recipe/:id', () => {
+  describe('PATCH /recipes/:id', () => {
     let recipe: Recipe;
     const requestData = {
       title: faker.word.noun(5),
@@ -316,7 +300,8 @@ describe('RecipeController (e2e)', () => {
 
     it('should not update recipe and return 404 error (NOT FOUND)', async () => {
       return request(app.getHttpServer())
-        .patch(`/recipes/${recipe.id + 1}`)
+        .patch(`/recipes/${recipe.id + 999}`)
+        .set({ user: { id: user.id } })
         .send(requestData)
         .set({ Authorization: `Bearer ${accessToken}` })
         .set({ user: { id: user.id } })

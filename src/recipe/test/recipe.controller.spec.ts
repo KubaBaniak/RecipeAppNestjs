@@ -84,7 +84,7 @@ describe('RecipeController', () => {
           description: expect.any(String),
           ingredients: expect.any(String),
           preparation: expect.any(String),
-          isPublic: true,
+          isPublic: false,
           authorId: userId,
         },
       });
@@ -106,7 +106,7 @@ describe('RecipeController', () => {
             description: expect.any(String),
             ingredients: expect.any(String),
             preparation: expect.any(String),
-            isPublic: true,
+            isPublic: false,
             authorId: expect.any(Number),
           },
         ]),

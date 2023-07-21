@@ -45,6 +45,16 @@ describe('AuthService', () => {
         password: faker.internet.password(),
       };
 
+      jest
+        .spyOn(userRepository, 'getUserByEmailWithPassword')
+        .mockImplementation((email) => {
+          return Promise.resolve({
+            id: faker.number.int(),
+            email,
+            password: request.password,
+            role: Role.USER,
+          });
+        });
       //when
       const accessToken = authService.signIn(request);
 

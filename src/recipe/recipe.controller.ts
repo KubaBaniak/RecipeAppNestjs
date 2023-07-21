@@ -88,7 +88,6 @@ export class RecipeController {
     @UserId() userId: number,
     @Query('authorId') authorId?: string,
   ): Promise<FetchRecipesResponse> {
-    console.log(authorId);
     if (authorId) {
       const fetchedRecipes = await this.recipeService.fetchRecipesByAuthorId(
         +authorId,

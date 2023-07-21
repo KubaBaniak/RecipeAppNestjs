@@ -1,6 +1,7 @@
 import {
   ForbiddenException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -26,7 +27,11 @@ export class AuthService {
     const user = await this.userRepository.getUserByEmailWithPassword(
       signInRequest.email,
     );
-    return this.jwtService.signAsync({ id: user.id, email: user.email });
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    return await this.jwtService.signAsync({ id: user.id, email: user.email });
   }
 
   async signUp(signUpRequest: SignUpRequest): Promise<SignUpResponse> {
