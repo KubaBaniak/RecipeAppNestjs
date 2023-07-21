@@ -3,7 +3,7 @@
 /node_modules
 
 #env variables
-**/.env
+**.env
 #BUT NOT example.env
 !example.env
 
