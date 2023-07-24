@@ -51,6 +51,7 @@ export class MockPrismaService {
         id: faker.number.int(),
         createdAt: new Date(),
         ...request.data,
+        imagesUrls: [],
       });
     },
 
@@ -64,6 +65,7 @@ export class MockPrismaService {
         preparation: faker.lorem.lines(5),
         isPublic: true,
         authorId: userId,
+        imagesUrls: [],
       });
     },
 
@@ -78,6 +80,7 @@ export class MockPrismaService {
           preparation: faker.lorem.lines(5),
           isPublic: true,
           authorId: faker.number.int(),
+          imagesUrls: [],
         },
         {
           id: 1,
@@ -88,6 +91,7 @@ export class MockPrismaService {
           preparation: faker.lorem.lines(5),
           isPublic: true,
           authorId: faker.number.int(),
+          imagesUrls: [],
         },
       ]);
     },
@@ -107,6 +111,7 @@ export class MockPrismaService {
         preparation: preparation ?? 'base_preparation',
         isPublic: isPublic ?? true,
         authorId: userId,
+        imagesUrls: [],
       });
     },
 

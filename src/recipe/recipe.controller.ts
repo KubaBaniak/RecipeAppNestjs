@@ -37,16 +37,13 @@ import {
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { S3Service } from './s3-bucket.service';
 import { UserId } from '../common/decorators/req-user-id.decorator';
+import { UploadImagesResponse } from './dto/upload-images-response';
 
 @Controller('recipes')
 @ApiTags('Recipes')
 export class RecipeController {
-  constructor(
-    private readonly recipeService: RecipeService,
-    private readonly s3Service: S3Service,
-  ) {}
+  constructor(private readonly recipeService: RecipeService) {}
 
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Get list of all recipes' })
@@ -164,7 +161,9 @@ export class RecipeController {
   })
   @Post('upload/:id')
   @UseInterceptors(FilesInterceptor('file'))
-  uploadFile(
+  async uploadFile(
+    @UserId() userId: number,
+    @Param('id', ParseIntPipe) recipeId: number,
     @UploadedFiles(
       new ParseFilePipeBuilder()
         .addMaxSizeValidator({
@@ -178,11 +177,9 @@ export class RecipeController {
         }),
     )
     files: Array<Express.Multer.File>,
-    @Param('id', ParseIntPipe) recipeId: number,
-  ) {
-    const tempUserId = 3;
-    for (let i = 0; i < files.length; i++) {
-      this.s3Service.uploadFile(files[i], tempUserId, recipeId);
-    }
+  ): Promise<UploadImagesResponse> {
+    const urls = await this.recipeService.uploadImages(userId, recipeId, files);
+
+    return UploadImagesResponse.from(urls);
   }
 }

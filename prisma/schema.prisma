@@ -11,10 +11,10 @@ datasource db {
 }
 
 model User {
-  id       Int    @id @default(autoincrement())
-  email    String @unique
+  id       Int      @id @default(autoincrement())
+  email    String   @unique
   password String
-  role     Role   @default(USER)
+  role     Role     @default(USER)
   recipes  Recipe[]
 }
 
@@ -28,6 +28,7 @@ model Recipe {
   isPublic    Boolean  @default(false)
   author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   authorId    Int
+  imagesUrls  String[] @unique
 }
 
 enum Role {

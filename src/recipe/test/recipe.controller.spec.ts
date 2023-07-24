@@ -7,6 +7,7 @@ import { MockRecipeService } from '../__mocks__/recipe.service.mock';
 import { RedisCacheModule } from '../../cache/redis-cache.module';
 import { MockRecipeCacheService } from '../__mocks__/recipe.cache.mock';
 import { RecipeCacheService } from '../recipe.cache.service';
+import { S3Service } from '../s3-bucket.service';
 
 describe('RecipeController', () => {
   let recipeController: RecipeController;
@@ -17,6 +18,7 @@ describe('RecipeController', () => {
       controllers: [RecipeController],
       providers: [
         PrismaService,
+        S3Service,
         {
           provide: RecipeCacheService,
           useClass: MockRecipeCacheService,
