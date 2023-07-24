@@ -38,4 +38,5 @@ export const createRecipeResponse = (
   preparation: overrides.preparation ?? faker.lorem.lines(4),
   isPublic: overrides.isPublic ?? false,
   authorId: overrides.authorId ?? faker.number.int(),
+  imagesUrls: [],
 });
