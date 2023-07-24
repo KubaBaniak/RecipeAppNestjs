@@ -125,17 +125,16 @@ export class RecipeService {
   ): Promise<string[]> {
     const user = await this.userRepository.getUserById(userId);
     const recipe = await this.recipeRepository.getRecipeById(recipeId);
+    const filesLength = files.length;
+    const urls: Array<string> = Array(filesLength);
 
     if (!recipe) {
       throw new NotFoundException('Recipe not found');
     }
 
-    const filesLength = files.length;
-
     if (user.id != recipe.authorId && user.role !== Role.ADMIN) {
       throw new ForbiddenException();
     }
-    const urls: Array<string> = Array(filesLength);
 
     for (let i = 0; i < filesLength; i++) {
       const url = this.s3Service.uploadFile(files[i], userId, recipeId);
