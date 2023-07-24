@@ -93,6 +93,9 @@
       "json",
       "ts"
     ],
+    "setupFiles": [
+      "<rootDir>/test.env"
+    ],
     "rootDir": "./",
     "moduleDirectories": [
       "node_modules",

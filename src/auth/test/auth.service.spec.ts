@@ -101,7 +101,7 @@ describe('AuthService', () => {
 
       const hashed_password = await bcrypt.hash(
         request.password,
-        bcryptConstants.test_salt,
+        bcryptConstants.salt,
       );
       jest
         .spyOn(userRepository, 'getUserByEmailWithPassword')
