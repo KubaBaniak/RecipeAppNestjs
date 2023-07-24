@@ -7,9 +7,12 @@ import { CreateRecipeRequest, UpdateRecipeRequest } from './dto';
 export class RecipeRepository {
   constructor(private prisma: PrismaService) {}
 
-  createRecipe(data: CreateRecipeRequest): Promise<Recipe> {
+  createRecipe(userId: number, data: CreateRecipeRequest): Promise<Recipe> {
     return this.prisma.recipe.create({
-      data,
+      data: {
+        ...data,
+        authorId: userId,
+      },
     });
   }
 
@@ -21,8 +24,33 @@ export class RecipeRepository {
     });
   }
 
+  getUsersRecipes(authorId: number): Promise<Recipe[]> {
+    return this.prisma.recipe.findMany({
+      where: {
+        authorId,
+      },
+    });
+  }
+
+  getUsersPublicRecipes(authorId: number): Promise<Recipe[]> {
+    return this.prisma.recipe.findMany({
+      where: {
+        authorId,
+        isPublic: true,
+      },
+    });
+  }
+
   getAllRecipes(): Promise<Recipe[]> {
     return this.prisma.recipe.findMany();
+  }
+
+  getAllPublicRecipes(): Promise<Recipe[]> {
+    return this.prisma.recipe.findMany({
+      where: {
+        isPublic: true,
+      },
+    });
   }
 
   updateRecipe(id: number, payload: UpdateRecipeRequest): Promise<Recipe> {

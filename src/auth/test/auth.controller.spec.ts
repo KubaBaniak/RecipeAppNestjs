@@ -1,8 +1,9 @@
 import { faker } from '@faker-js/faker';
 import { Test, TestingModule } from '@nestjs/testing';
-import { AuthController } from './auth.controller';
-import { AuthService } from './auth.service';
-import { MockAuthService } from './__mocks__/auth.service.mock';
+import { AuthController } from '../auth.controller';
+import { AuthService } from '../auth.service';
+import { MockAuthService } from '../__mocks__/auth.service.mock';
+import { Role } from '@prisma/client';
 
 describe('AuthController', () => {
   let authController: AuthController;
@@ -56,7 +57,7 @@ describe('AuthController', () => {
       expect(signedUpUser).toEqual({
         id: expect.any(Number),
         email: request.email,
-        role: 'USER',
+        role: Role.USER,
       });
     });
   });

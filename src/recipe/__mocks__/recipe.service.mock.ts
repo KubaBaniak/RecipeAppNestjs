@@ -1,60 +1,52 @@
-import { faker } from '@faker-js/faker';
 import { CreateRecipeRequest, UpdateRecipeRequest } from '../dto';
 import { Recipe } from '@prisma/client';
+import { createRecipeResponse } from '../test/recipe.factory';
 
 export class MockRecipeService {
-  createRecipe(createRecipeRequest: CreateRecipeRequest): Promise<Recipe> {
-    return Promise.resolve({
-      id: faker.number.int(),
-      createdAt: new Date(),
-      ...createRecipeRequest,
-    });
+  createRecipe(
+    userId: number,
+    createRecipeRequest: CreateRecipeRequest,
+  ): Promise<Recipe> {
+    return Promise.resolve(
+      createRecipeResponse({ ...createRecipeRequest, authorId: userId }),
+    );
   }
 
-  fetchRecipe(id: number): Promise<Recipe> {
-    return Promise.resolve({
-      id,
-      createdAt: new Date(),
-      title: faker.word.noun(),
-      description: faker.lorem.text(),
-      ingredients: faker.lorem.words(4),
-      preparation: faker.lorem.lines(5),
-    });
+  fetchRecipe(recipeId: number, userId: number): Promise<Recipe> {
+    return Promise.resolve(
+      createRecipeResponse({ id: recipeId, authorId: userId }),
+    );
   }
 
-  fetchAllRecipes(): Promise<Recipe[]> {
+  fetchRecipesByAuthorId(
+    authorId: number,
+    _principalId: string,
+  ): Promise<Recipe[]> {
     return Promise.all([
-      {
-        id: 0,
-        createdAt: new Date(),
-        title: faker.word.noun(),
-        description: faker.lorem.text(),
-        ingredients: faker.lorem.words(4),
-        preparation: faker.lorem.lines(5),
-      },
-      {
-        id: 1,
-        createdAt: new Date(),
-        title: faker.word.noun(),
-        description: faker.lorem.text(),
-        ingredients: faker.lorem.words(4),
-        preparation: faker.lorem.lines(5),
-      },
+      createRecipeResponse({ authorId }),
+      createRecipeResponse({ authorId }),
     ]);
   }
 
-  updateRecipe(
-    id: number,
-    updateRecipeRequest: UpdateRecipeRequest,
-  ): Promise<Recipe> {
-    return Promise.resolve({
-      id,
-      createdAt: new Date(),
-      ...updateRecipeRequest,
-    });
+  fetchAllRecipes(_userId: number): Promise<Recipe[]> {
+    return Promise.all([createRecipeResponse(), createRecipeResponse()]);
   }
 
-  deleteRecipe(_id: number): Promise<void> {
+  updateRecipe(
+    userId: number,
+    recipeId: number,
+    updateRecipeRequest: UpdateRecipeRequest,
+  ): Promise<Recipe> {
+    return Promise.resolve(
+      createRecipeResponse({
+        id: recipeId,
+        ...updateRecipeRequest,
+        authorId: userId,
+      }),
+    );
+  }
+
+  deleteRecipe(_userId: number, _id: number): Promise<void> {
     return Promise.resolve();
   }
 }

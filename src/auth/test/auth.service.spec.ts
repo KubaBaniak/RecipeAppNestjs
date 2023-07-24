@@ -1,14 +1,14 @@
 import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
-import { AuthService } from './auth.service';
+import { UserService } from '../../user/user.service';
+import { AuthService } from '../auth.service';
 import { faker } from '@faker-js/faker';
 import * as bcrypt from 'bcrypt';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { Role } from '@prisma/client';
-import { MockJwtService } from './__mocks__/jwt.service.mock';
-import { bcryptConstants } from './constants';
-import { UserRepository } from '../user/user.repository';
-import { UserService } from '../user/user.service';
+import { MockJwtService } from '../__mocks__/jwt.service.mock';
+import { bcryptConstants } from '../constants';
+import { UserRepository } from '../../user/user.repository';
 
 describe('AuthService', () => {
   let authService: AuthService;
@@ -45,6 +45,16 @@ describe('AuthService', () => {
         password: faker.internet.password(),
       };
 
+      jest
+        .spyOn(userRepository, 'getUserByEmailWithPassword')
+        .mockImplementation((email) => {
+          return Promise.resolve({
+            id: faker.number.int(),
+            email,
+            password: request.password,
+            role: Role.USER,
+          });
+        });
       //when
       const accessToken = authService.signIn(request);
 
@@ -65,7 +75,7 @@ describe('AuthService', () => {
         return Promise.resolve({
           id: faker.number.int(),
           email: request.email,
-          role: 'USER',
+          role: Role.USER,
         });
       });
 
@@ -76,7 +86,7 @@ describe('AuthService', () => {
       expect(signedUpUser).toEqual({
         id: expect.any(Number),
         email: request.email,
-        role: 'USER',
+        role: Role.USER,
       });
     });
   });

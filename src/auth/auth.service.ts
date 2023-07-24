@@ -1,9 +1,9 @@
 import {
   ForbiddenException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { bcryptConstants } from './constants';
 import * as bcrypt from 'bcrypt';
@@ -19,13 +19,19 @@ import { UserPayloadRequest } from '../user/dto';
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly userService: UserService,
     private readonly userRepository: UserRepository,
     private readonly jwtService: JwtService,
   ) {}
 
-  signIn(signInRequest: SignInRequest): Promise<string> {
-    return this.jwtService.signAsync(signInRequest);
+  async signIn(signInRequest: SignInRequest): Promise<string> {
+    const user = await this.userRepository.getUserByEmailWithPassword(
+      signInRequest.email,
+    );
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    return await this.jwtService.signAsync({ id: user.id, email: user.email });
   }
 
   async signUp(signUpRequest: SignUpRequest): Promise<SignUpResponse> {
@@ -44,7 +50,7 @@ export class AuthService {
 
     const data = { email: signUpRequest.email, password: hash };
 
-    return this.userService.createUser(data);
+    return this.userRepository.createUser(data);
   }
 
   async validateUser(userRequest: UserRequest): Promise<UserPayloadRequest> {

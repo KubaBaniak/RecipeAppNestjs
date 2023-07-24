@@ -7,6 +7,8 @@ export class CreateRecipeResponse {
   public description: string;
   public ingredients: string;
   public preparation: string;
+  public isPublic: boolean;
+  public authorId: number;
 
   constructor(
     id: number,
@@ -15,6 +17,8 @@ export class CreateRecipeResponse {
     description: string,
     ingredients: string,
     preparation: string,
+    isPublic: boolean,
+    authorId: number,
   ) {
     this.id = id;
     this.createdAt = createdAt;
@@ -22,6 +26,8 @@ export class CreateRecipeResponse {
     this.description = description;
     this.ingredients = ingredients;
     this.preparation = preparation;
+    this.isPublic = isPublic;
+    this.authorId = authorId;
   }
 
   public static from(createdRecipe: Recipe): CreateRecipeResponse {
@@ -32,6 +38,8 @@ export class CreateRecipeResponse {
       createdRecipe.description,
       createdRecipe.ingredients,
       createdRecipe.preparation,
+      createdRecipe.isPublic,
+      createdRecipe.authorId,
     );
   }
 }

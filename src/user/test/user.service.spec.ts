@@ -1,9 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UserService } from './user.service';
-import { PrismaService } from '../prisma/prisma.service';
+import { UserService } from '../user.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { faker } from '@faker-js/faker';
-import { MockPrismaService } from '../prisma/__mocks__/prisma.service.mock';
-import { UserRepository } from './user.repository';
+import { MockPrismaService } from '../../prisma/__mocks__/prisma.service.mock';
+import { Role } from '@prisma/client';
+import { createUser } from './user.factory';
+import { UserRepository } from '../user.repository';
 
 describe('UserService', () => {
   let userService: UserService;
@@ -27,10 +29,7 @@ describe('UserService', () => {
   describe('CreateUser', () => {
     it('should create default User', async () => {
       //given
-      const request = {
-        email: faker.internet.email(),
-        password: faker.internet.password(),
-      };
+      const request = createUser();
 
       //when
       const createdUser = await userService.createUser(request);
@@ -39,7 +38,7 @@ describe('UserService', () => {
       expect(createdUser).toEqual({
         id: expect.any(Number),
         email: request.email,
-        role: 'USER',
+        role: Role.USER,
       });
     });
   });
@@ -48,10 +47,7 @@ describe('UserService', () => {
     it('should update User', async () => {
       //given
       const id = faker.number.int();
-      const data = {
-        email: faker.internet.email(),
-        password: faker.internet.password(),
-      };
+      const data = createUser();
 
       //when
       const createdUser = await userService.updateUser({ id, data });
@@ -60,7 +56,7 @@ describe('UserService', () => {
       expect(createdUser).toEqual({
         id,
         email: data.email,
-        role: 'USER',
+        role: Role.USER,
       });
     });
   });
