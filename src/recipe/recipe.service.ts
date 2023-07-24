@@ -140,6 +140,7 @@ export class RecipeService {
       const url = this.s3Service.uploadFile(files[i], userId, recipeId);
       urls[i] = url;
     }
+    await this.recipeRepository.addImageUrls(recipeId, urls);
     return urls;
   }
 }
