@@ -19,6 +19,7 @@ import {
   FetchRecipesResponse,
   UpdatedRecipeResponse,
   UpdateRecipeRequest,
+  OptionalAuthorRequest,
 } from './dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import {
@@ -36,6 +37,27 @@ import { UserId } from '../common/decorators/req-user-id.decorator';
 @ApiTags('Recipes')
 export class RecipeController {
   constructor(private readonly recipeService: RecipeService) {}
+
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Get list of all recipes' })
+  @ApiBearerAuth()
+  @ApiUnauthorizedResponse({ description: 'User is not authenticated' })
+  @Get()
+  async fetchRecipes(
+    @UserId() userId: number,
+    @Query('authorId') authorData?: OptionalAuthorRequest,
+  ): Promise<FetchRecipesResponse> {
+    const authorId: number = authorData?.authorId;
+    if (authorId) {
+      const fetchedRecipes = await this.recipeService.fetchRecipesByAuthorId(
+        authorId,
+        userId,
+      );
+      return FetchRecipesResponse.from(fetchedRecipes);
+    }
+    const fetchedRecipes = await this.recipeService.fetchAllRecipes(userId);
+    return FetchRecipesResponse.from(fetchedRecipes);
+  }
 
   @HttpCode(201)
   @UseGuards(JwtAuthGuard)
@@ -77,26 +99,6 @@ export class RecipeController {
     );
 
     return FetchRecipeResponse.from(fetchedRecipe);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @ApiOperation({ summary: 'Get list of all recipes' })
-  @ApiBearerAuth()
-  @ApiUnauthorizedResponse({ description: 'User is not authenticated' })
-  @Get()
-  async fetchRecipes(
-    @UserId() userId: number,
-    @Query('authorId', ParseIntPipe) authorId?: number,
-  ): Promise<FetchRecipesResponse> {
-    if (authorId) {
-      const fetchedRecipes = await this.recipeService.fetchRecipesByAuthorId(
-        authorId,
-        userId,
-      );
-      return FetchRecipesResponse.from(fetchedRecipes);
-    }
-    const fetchedRecipes = await this.recipeService.fetchAllRecipes(userId);
-    return FetchRecipesResponse.from(fetchedRecipes);
   }
 
   @UseGuards(JwtAuthGuard)
