@@ -17,7 +17,6 @@ export class MockRecipeController {
       authorId: userId,
       ...createRecipeRequest,
     });
-    console.log(createdRecipe);
 
     return Promise.resolve(CreateRecipeResponse.from(createdRecipe));
   }

@@ -86,11 +86,11 @@ export class RecipeController {
   @Get()
   async fetchRecipes(
     @UserId() userId: number,
-    @Query('authorId') authorId?: string,
+    @Query('authorId', ParseIntPipe) authorId?: number,
   ): Promise<FetchRecipesResponse> {
     if (authorId) {
       const fetchedRecipes = await this.recipeService.fetchRecipesByAuthorId(
-        +authorId,
+        authorId,
         userId,
       );
       return FetchRecipesResponse.from(fetchedRecipes);
