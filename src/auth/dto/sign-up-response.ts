@@ -1,9 +1,9 @@
-import { User } from '@prisma/client';
+import { UserPayloadRequest } from '../../user/dto/user-request';
 
 export class SignUpResponse {
   constructor(public id: number, public email: string, public role: string) {}
 
-  public static from(user: User): SignUpResponse {
+  public static from(user: UserPayloadRequest): SignUpResponse {
     return new SignUpResponse(user.id, user.email, user.role);
   }
 }

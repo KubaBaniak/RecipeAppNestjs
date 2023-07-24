@@ -1,6 +1,8 @@
 import { faker } from '@faker-js/faker';
-import { Prisma, Recipe, User } from '@prisma/client';
+import { Prisma, Recipe, User, Role } from '@prisma/client';
 import { UpdateRecipeRequest } from 'src/recipe/dto';
+
+let userId: number;
 
 export class MockPrismaService {
   user = {
@@ -11,7 +13,7 @@ export class MockPrismaService {
         id: faker.number.int(),
         email: request.data.email,
         password: request.data.password,
-        role: 'USER',
+        role: Role.USER,
       });
     },
 
@@ -24,12 +26,22 @@ export class MockPrismaService {
         id: request.where.id,
         email,
         password,
-        role: 'USER',
+        role: Role.USER,
       });
     },
 
     delete: function (_request: { id: number }): Promise<void> {
       return Promise.resolve();
+    },
+
+    findUnique: function (request: { where: { id: number } }): Promise<User> {
+      userId = request.where.id;
+      return Promise.resolve({
+        id: userId,
+        email: faker.internet.email(),
+        password: faker.internet.password(),
+        role: Role.USER,
+      });
     },
   };
 
@@ -50,6 +62,8 @@ export class MockPrismaService {
         description: faker.lorem.text(),
         ingredients: faker.lorem.words(4),
         preparation: faker.lorem.lines(5),
+        isPublic: true,
+        authorId: userId,
       });
     },
 
@@ -62,6 +76,8 @@ export class MockPrismaService {
           description: faker.lorem.text(),
           ingredients: faker.lorem.words(4),
           preparation: faker.lorem.lines(5),
+          isPublic: true,
+          authorId: faker.number.int(),
         },
         {
           id: 1,
@@ -70,6 +86,8 @@ export class MockPrismaService {
           description: faker.lorem.text(),
           ingredients: faker.lorem.words(4),
           preparation: faker.lorem.lines(5),
+          isPublic: true,
+          authorId: faker.number.int(),
         },
       ]);
     },
@@ -78,10 +96,17 @@ export class MockPrismaService {
       where: { id: number };
       data: UpdateRecipeRequest;
     }): Promise<Recipe> {
+      const { title, description, ingredients, preparation, isPublic } =
+        request.data;
       return Promise.resolve({
         id: request.where.id,
         createdAt: new Date(),
-        ...request.data,
+        title: title ?? 'base_title',
+        description: description ?? 'base_description',
+        ingredients: ingredients ?? 'base_ingredients',
+        preparation: preparation ?? 'base_preparation',
+        isPublic: isPublic ?? true,
+        authorId: userId,
       });
     },
 

@@ -1,4 +1,3 @@
-import { faker } from '@faker-js/faker';
 import {
   CreateRecipeRequest,
   CreateRecipeResponse,
@@ -7,74 +6,66 @@ import {
   UpdatedRecipeResponse,
   UpdateRecipeRequest,
 } from '../dto';
+import { createRecipeResponse } from '../test/recipe.factory';
 
 export class MockRecipeController {
   createRecipe(
+    userId: number,
     createRecipeRequest: CreateRecipeRequest,
   ): Promise<CreateRecipeResponse> {
-    const createdRecipe = {
-      id: faker.number.int(),
-      createdAt: new Date(),
+    const createdRecipe = createRecipeResponse({
+      authorId: userId,
       ...createRecipeRequest,
-    };
+    });
 
     return Promise.resolve(CreateRecipeResponse.from(createdRecipe));
   }
 
-  fetchRecipe(id: number): Promise<FetchRecipeResponse> {
-    const fetchedRecipe = {
-      id,
-      createdAt: new Date(),
-      title: faker.word.noun(),
-      description: faker.lorem.text(),
-      ingredients: faker.lorem.words(4),
-      preparation: faker.lorem.lines(5),
-    };
+  fetchRecipe(userId: number, recipeId: number): Promise<FetchRecipeResponse> {
+    const fetchedRecipe = createRecipeResponse({
+      id: recipeId,
+      authorId: userId,
+    });
 
     return Promise.resolve(FetchRecipeResponse.from(fetchedRecipe));
   }
 
-  fetchAllRecipes(): Promise<FetchRecipesResponse> {
+  fetchRecipesByAuthorId(
+    _userId: number,
+    _email: string,
+  ): Promise<FetchRecipesResponse> {
+    const fetchedUsersRecipes = [
+      createRecipeResponse({ id: 0 }),
+      createRecipeResponse({ id: 1 }),
+    ];
+
+    return Promise.resolve(FetchRecipesResponse.from(fetchedUsersRecipes));
+  }
+
+  fetchRecipes(userId: number): Promise<FetchRecipesResponse> {
     const fetchedRecipes = [
-      {
-        id: 0,
-        createdAt: new Date(),
-        title: faker.word.noun(),
-        description: faker.lorem.text(),
-        ingredients: faker.lorem.words(4),
-        preparation: faker.lorem.lines(5),
-      },
-      {
-        id: 1,
-        createdAt: new Date(),
-        title: faker.word.noun(),
-        description: faker.lorem.text(),
-        ingredients: faker.lorem.words(4),
-        preparation: faker.lorem.lines(5),
-      },
+      createRecipeResponse({ id: 0, authorId: userId }),
+      createRecipeResponse({ id: 1 }),
     ];
 
     return Promise.resolve(FetchRecipesResponse.from(fetchedRecipes));
   }
+
   updateRecipe(
+    userId: number,
     id: number,
     updateRecipeRequest: UpdateRecipeRequest,
   ): UpdatedRecipeResponse {
-    const { title, description, ingredients, preparation } =
-      updateRecipeRequest;
-    const updatedRecipe = {
+    const updatedRecipe = createRecipeResponse({
       id,
-      createdAt: new Date(),
-      title: title ?? faker.word.noun(),
-      description: description ?? faker.lorem.text(),
-      ingredients: ingredients ?? faker.lorem.words(4),
-      preparation: preparation ?? faker.lorem.lines(5),
-    };
+      ...updateRecipeRequest,
+      authorId: userId,
+    });
 
     return UpdatedRecipeResponse.from(updatedRecipe);
   }
 
-  deleteRecipe(_id: number): Promise<void> {
+  deleteRecipe(_userId: number, _id: number): Promise<void> {
     return Promise.resolve();
   }
 }

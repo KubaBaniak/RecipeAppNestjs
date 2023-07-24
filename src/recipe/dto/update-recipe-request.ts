@@ -1,17 +1,21 @@
-import { IsNotEmpty, IsOptional } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional } from 'class-validator';
 
 export class UpdateRecipeRequest {
   @IsNotEmpty()
   @IsOptional()
-  title: string;
+  title?: string;
 
   @IsOptional()
-  description: string;
+  description?: string;
 
   @IsOptional()
   @IsNotEmpty()
-  ingredients: string;
+  ingredients?: string;
 
   @IsOptional()
-  preparation: string;
+  preparation?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isPublic?: boolean;
 }

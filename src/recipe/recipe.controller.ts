@@ -10,10 +10,10 @@ import {
   Patch,
   Delete,
   UseInterceptors,
-  UploadedFile,
   ParseFilePipeBuilder,
   HttpStatus,
   UploadedFiles,
+  Query,
 } from '@nestjs/common';
 import { RecipeService } from './recipe.service';
 import {
@@ -23,6 +23,7 @@ import {
   FetchRecipesResponse,
   UpdatedRecipeResponse,
   UpdateRecipeRequest,
+  OptionalAuthorRequest,
 } from './dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import {
@@ -37,6 +38,7 @@ import {
 } from '@nestjs/swagger';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { S3Service } from './s3-bucket.service';
+import { UserId } from '../common/decorators/req-user-id.decorator';
 
 @Controller('recipes')
 @ApiTags('Recipes')
@@ -46,6 +48,27 @@ export class RecipeController {
     private readonly s3Service: S3Service,
   ) {}
 
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Get list of all recipes' })
+  @ApiBearerAuth()
+  @ApiUnauthorizedResponse({ description: 'User is not authenticated' })
+  @Get()
+  async fetchRecipes(
+    @UserId() userId: number,
+    @Query('authorId') authorData?: OptionalAuthorRequest,
+  ): Promise<FetchRecipesResponse> {
+    const authorId: number = authorData?.authorId;
+    if (authorId) {
+      const fetchedRecipes = await this.recipeService.fetchRecipesByAuthorId(
+        authorId,
+        userId,
+      );
+      return FetchRecipesResponse.from(fetchedRecipes);
+    }
+    const fetchedRecipes = await this.recipeService.fetchAllRecipes(userId);
+    return FetchRecipesResponse.from(fetchedRecipes);
+  }
+
   @HttpCode(201)
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Create recipe' })
@@ -54,9 +77,11 @@ export class RecipeController {
   @ApiUnauthorizedResponse({ description: 'User is unauthorized' })
   @Post()
   async createRecipe(
+    @UserId() userId: number,
     @Body() createRecipeRequest: CreateRecipeRequest,
   ): Promise<CreateRecipeResponse> {
     const createdRecipe = await this.recipeService.createRecipe(
+      userId,
       createRecipeRequest,
     );
 
@@ -75,21 +100,15 @@ export class RecipeController {
   })
   @Get(':id')
   async fetchRecipe(
-    @Param('id', ParseIntPipe) id: number,
+    @UserId() userId: number,
+    @Param('id', ParseIntPipe) recipeId: number,
   ): Promise<FetchRecipeResponse> {
-    const fetchedRecipe = await this.recipeService.fetchRecipe(id);
+    const fetchedRecipe = await this.recipeService.fetchRecipe(
+      recipeId,
+      userId,
+    );
+
     return FetchRecipeResponse.from(fetchedRecipe);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @ApiOperation({ summary: 'Get list of all recipes' })
-  @ApiBearerAuth()
-  @ApiUnauthorizedResponse({ description: 'User is not authenticated' })
-  @Get()
-  async fetchRecipes(): Promise<FetchRecipesResponse> {
-    const fetchedRecipes = await this.recipeService.fetchAllRecipes();
-
-    return FetchRecipesResponse.from(fetchedRecipes);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -104,11 +123,13 @@ export class RecipeController {
   })
   @Patch(':id')
   async updateRecipe(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseIntPipe) recipeId: number,
+    @UserId() userId: number,
     @Body() updateRecipeRequest: UpdateRecipeRequest,
   ): Promise<UpdatedRecipeResponse> {
     const updatedRecipe = await this.recipeService.updateRecipe(
-      id,
+      userId,
+      recipeId,
       updateRecipeRequest,
     );
     return UpdatedRecipeResponse.from(updatedRecipe);
@@ -124,8 +145,11 @@ export class RecipeController {
     description: 'Positive integer (≥1) to delete recipe',
   })
   @Delete(':id')
-  async deleteRecipe(@Param('id', ParseIntPipe) id: number): Promise<void> {
-    await this.recipeService.deleteRecipe(id);
+  async deleteRecipe(
+    @UserId() userId: number,
+    @Param('id', ParseIntPipe) recipeId: number,
+  ): Promise<void> {
+    await this.recipeService.deleteRecipe(recipeId, userId);
   }
 
   @UseGuards(JwtAuthGuard)
