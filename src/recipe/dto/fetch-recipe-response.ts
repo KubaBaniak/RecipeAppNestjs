@@ -1,12 +1,5 @@
 import { Recipe } from '@prisma/client';
-class FetchedRecipe {
-  public id: number;
-  public createdAt: Date;
-  public title: string;
-  public description: string;
-  public ingredients: string;
-  public preparation: string;
-}
+import { FetchedRecipe } from './fetched-recipe';
 
 export class FetchRecipeResponse {
   public fetchedRecipe: FetchedRecipe;
