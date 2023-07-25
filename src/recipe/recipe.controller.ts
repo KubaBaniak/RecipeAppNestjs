@@ -39,6 +39,7 @@ import {
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { UserId } from '../common/decorators/req-user-id.decorator';
 import { UploadImagesResponse } from './dto/upload-images-response';
+import { S3_CONFIG } from './s3-config';
 
 @Controller('recipes')
 @ApiTags('Recipes')
@@ -167,10 +168,10 @@ export class RecipeController {
     @UploadedFiles(
       new ParseFilePipeBuilder()
         .addMaxSizeValidator({
-          maxSize: 1024 * 1024 * 4,
+          maxSize: S3_CONFIG.MAX_IMAGE_SIZE_IN_KB,
         })
         .addFileTypeValidator({
-          fileType: '.(png|jpeg|jpg)',
+          fileType: S3_CONFIG.FILE_FORMAT,
         })
         .build({
           errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,

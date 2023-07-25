@@ -125,8 +125,6 @@ export class RecipeService {
   ): Promise<string[]> {
     const user = await this.userRepository.getUserById(userId);
     const recipe = await this.recipeRepository.getRecipeById(recipeId);
-    const filesLength = files.length;
-    const urls: Array<string> = Array(filesLength);
 
     if (!recipe) {
       throw new NotFoundException('Recipe not found');
@@ -136,10 +134,10 @@ export class RecipeService {
       throw new ForbiddenException();
     }
 
-    for (let i = 0; i < filesLength; i++) {
-      const url = this.s3Service.uploadFile(files[i], userId, recipeId);
-      urls[i] = url;
-    }
+    const urls = await Promise.all(
+      files.map((file) => this.s3Service.uploadFile(file, userId, recipeId)),
+    );
+
     await this.recipeRepository.addImageUrls(recipeId, urls);
     return urls;
   }

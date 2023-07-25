@@ -1,5 +1,9 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import {
+  S3Client,
+  PutObjectCommand,
+  PutObjectCommandOutput,
+} from '@aws-sdk/client-s3';
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
@@ -17,13 +21,13 @@ export class S3Service {
     return `users/userId:${userId}/recipes/recipeId:${recipeId}/${uuidv4()}`;
   }
 
-  uploadFile(
+  async uploadFile(
     file: Express.Multer.File,
     userId: number,
     recipeId: number,
-  ): string {
+  ): Promise<string> {
     const key = this.prepareKey(userId, recipeId);
-    this.sendToS3(this.AWS_S3_BUCKET, file.buffer, file.mimetype, key);
+    await this.sendToS3(this.AWS_S3_BUCKET, file.buffer, file.mimetype, key);
     return key;
   }
 
@@ -32,7 +36,7 @@ export class S3Service {
     file: Buffer,
     mimetype: string,
     key: string,
-  ): Promise<void> {
+  ): Promise<PutObjectCommandOutput> {
     const params = {
       Bucket: bucket,
       Key: key,
@@ -42,7 +46,7 @@ export class S3Service {
     };
     const command = new PutObjectCommand(params);
     try {
-      await this.client.send(command);
+      return await this.client.send(command);
     } catch (e) {
       throw new ForbiddenException('Could not send image(s) to storage.');
     }
