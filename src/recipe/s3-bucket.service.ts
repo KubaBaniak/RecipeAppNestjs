@@ -2,9 +2,12 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import {
   S3Client,
   PutObjectCommand,
+  GetObjectCommand,
   PutObjectCommandOutput,
 } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { v4 as uuidv4 } from 'uuid';
+import { RecipeRepository } from './recipe.repository';
 
 @Injectable()
 export class S3Service {
@@ -16,6 +19,7 @@ export class S3Service {
       secretAccessKey: process.env.AWS_S3_KEY_SECRET,
     },
   });
+  constructor(public readonly recipeRepository: RecipeRepository) {}
 
   prepareKey(userId: number, recipeId: number): string {
     return `users/userId:${userId}/recipes/recipeId:${recipeId}/${uuidv4()}`;
@@ -50,5 +54,17 @@ export class S3Service {
     } catch (e) {
       throw new ForbiddenException('Could not send image(s) to storage.');
     }
+  }
+
+  getPresignedUrlWithClient(key: string) {
+    const EXPIRE_TIME_IN_SECONDS = 15 * 60;
+    const command = new GetObjectCommand({
+      Bucket: this.AWS_S3_BUCKET,
+      Key: key,
+    });
+
+    return getSignedUrl(this.client, command, {
+      expiresIn: EXPIRE_TIME_IN_SECONDS,
+    });
   }
 }

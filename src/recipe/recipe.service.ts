@@ -134,11 +134,13 @@ export class RecipeService {
       throw new ForbiddenException();
     }
 
-    const urls = await Promise.all(
-      files.map((file) => this.s3Service.uploadFile(file, userId, recipeId)),
+    const keys = await Promise.all(
+      files.map((key) => this.s3Service.uploadFile(key, userId, recipeId)),
     );
+    await this.recipeRepository.addImageUrls(recipeId, keys);
 
-    await this.recipeRepository.addImageUrls(recipeId, urls);
-    return urls;
+    return await Promise.all(
+      keys.map((key) => this.s3Service.getPresignedUrlWithClient(key)),
+    );
   }
 }
