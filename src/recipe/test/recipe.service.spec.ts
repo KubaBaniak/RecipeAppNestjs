@@ -7,6 +7,7 @@ import { RecipeCacheService } from '../recipe.cache.service';
 import { MockRecipeCacheService } from '../__mocks__/recipe.cache.mock';
 import { RecipeRepository } from '../recipe.repository';
 import { UserRepository } from 'src/user/user.repository';
+import { S3Service } from '../s3-bucket.service';
 
 describe('RecipeService', () => {
   let recipeService: RecipeService;
@@ -15,6 +16,7 @@ describe('RecipeService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         RecipeService,
+        S3Service,
         RecipeRepository,
         UserRepository,
         {
@@ -57,6 +59,7 @@ describe('RecipeService', () => {
         createdAt: expect.any(Date),
         ...request,
         authorId: userId,
+        imagesUrls: [],
       });
     });
   });
@@ -80,6 +83,7 @@ describe('RecipeService', () => {
         preparation: expect.any(String),
         isPublic: true,
         authorId: userId,
+        imagesUrls: [],
       });
     });
   });
@@ -104,6 +108,7 @@ describe('RecipeService', () => {
             preparation: expect.any(String),
             isPublic: true,
             authorId: expect.any(Number),
+            imagesUrls: [],
           },
         ]),
       );
@@ -136,6 +141,7 @@ describe('RecipeService', () => {
         createdAt: expect.any(Date),
         ...request,
         authorId: userId,
+        imagesUrls: [],
       });
     });
   });

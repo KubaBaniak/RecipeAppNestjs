@@ -5,6 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RedisCacheModule } from '../cache/redis-cache.module';
 import { RecipeCacheService } from './recipe.cache.service';
+import { S3Service } from './s3-bucket.service';
 import { RecipeRepository } from './recipe.repository';
 import { UserRepository } from '../user/user.repository';
 
@@ -13,10 +14,11 @@ import { UserRepository } from '../user/user.repository';
   providers: [
     RecipeService,
     RecipeRepository,
-    UserRepository,
+    RecipeCacheService,
     PrismaService,
     JwtAuthGuard,
-    RecipeCacheService,
+    S3Service,
+    UserRepository,
   ],
   controllers: [RecipeController],
   exports: [RecipeService],

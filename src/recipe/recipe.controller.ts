@@ -9,6 +9,10 @@ import {
   ParseIntPipe,
   Patch,
   Delete,
+  UseInterceptors,
+  ParseFilePipeBuilder,
+  HttpStatus,
+  UploadedFiles,
   Query,
 } from '@nestjs/common';
 import { RecipeService } from './recipe.service';
@@ -30,8 +34,12 @@ import {
   ApiUnauthorizedResponse,
   ApiNotFoundResponse,
   ApiBadRequestResponse,
+  ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { UserId } from '../common/decorators/req-user-id.decorator';
+import { UploadImagesResponse } from './dto/upload-images-response';
+import { S3_CONFIG } from './s3-config';
 
 @Controller('recipes')
 @ApiTags('Recipes')
@@ -140,5 +148,39 @@ export class RecipeController {
     @Param('id', ParseIntPipe) recipeId: number,
   ): Promise<void> {
     await this.recipeService.deleteRecipe(recipeId, userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Upload image(s) of recipe' })
+  @ApiBearerAuth()
+  @ApiNotFoundResponse({ description: 'Recipe does not exist' })
+  @ApiUnauthorizedResponse({ description: 'User is not authenticated' })
+  @ApiUnprocessableEntityResponse({ description: 'Wrong image format' })
+  @ApiParam({
+    name: 'id',
+    description: 'Positive integer (≥1) to upload image(s) to specified recipe',
+  })
+  @Post('upload/:id')
+  @UseInterceptors(FilesInterceptor('file'))
+  async uploadFile(
+    @UserId() userId: number,
+    @Param('id', ParseIntPipe) recipeId: number,
+    @UploadedFiles(
+      new ParseFilePipeBuilder()
+        .addMaxSizeValidator({
+          maxSize: S3_CONFIG.MAX_IMAGE_SIZE_IN_KB,
+        })
+        .addFileTypeValidator({
+          fileType: S3_CONFIG.FILE_FORMAT,
+        })
+        .build({
+          errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+        }),
+    )
+    files: Array<Express.Multer.File>,
+  ): Promise<UploadImagesResponse> {
+    const urls = await this.recipeService.uploadImages(userId, recipeId, files);
+
+    return UploadImagesResponse.from(urls);
   }
 }
