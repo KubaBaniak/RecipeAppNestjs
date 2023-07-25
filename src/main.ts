@@ -13,6 +13,8 @@ async function bootstrap() {
     }),
   );
 
+  app.enableShutdownHooks();
+
   const swaggerConfig = initalizeSwagger();
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api', app, document);
