@@ -23,13 +23,27 @@ commands:
       - run:
           name: Generate and apply migration
           command: npx prisma migrate dev
-  setup_docker_compose:
+  setup_docker_compose_dependencies:
     steps:
       - setup_remote_docker:
           version: 20.10.14
       - run:
           name: Run images of services declared in docker-compose.yml
-          command: docker-compose up -d
+          command: docker-compose --profile dependencies up -d
+  create_prod_env:
+    steps:
+      - run:
+          name: Create test.env file
+          command: |
+            echo "DATABASE_URL=$DATABASE_URL" > .env
+            echo "POSTGRES_USER=$POSTGRES_USER" >> .env
+            echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" >> .env
+            echo "PGADMIN_EMAIL=$PGADMIN_EMAIL" >> test.env
+            echo "PGADMIN_PASSWORD=$PGADMIN_PASSWORD" >> .env
+            echo "JWT_SECRET=$JWT_SECRET" >> .env
+            echo "BCRYPT_SALT=$BCRYPT_SALT" >> .env
+            echo "REDIS_PASSWORD=$REDIS_PASSWORD" >> .env
+            echo "REDIS_URL=$REDIS_URL" >> .env
   create_test_env:
     steps:
       - run:
@@ -44,6 +58,7 @@ commands:
             echo 'BCRYPT_SALT="10"' >> test.env
             echo 'REDIS_PASSWORD="red_test_password"' >> test.env
             echo 'REDIS_URL="redis://localhost:6379"' >> test.env
+      - run: cat test.env >> .env
 
 jobs:
   build:
@@ -69,7 +84,7 @@ jobs:
       - restore_cache:
           key: ${CACHE_VERSION}-deps-{{ checksum "package-lock.json" }}
       - setup_prisma
-      - setup_docker_compose
+      - setup_docker_compose_dependencies
       - run:
           name: Run unit tests
           command: |
@@ -88,7 +103,7 @@ jobs:
       - restore_cache:
           key: ${CACHE_VERSION}-deps-{{ checksum "package-lock.json" }}
       - setup_prisma
-      - setup_docker_compose
+      - setup_docker_compose_dependencies
       - run:
           name: Run e2e tests
           command: |
@@ -109,8 +124,35 @@ jobs:
     docker:
       - image: cimg/node:18.16.0
     steps:
-      - install_dependencies
-      - run: echo "!TODO"
+      - add_ssh_keys:
+          fingerprints:
+            - '97:69:fe:70:ca:84:59:06:98:ab:9c:ec:d5:26:49:8c'
+      - checkout
+      - setup_remote_docker:
+          version: 20.10.14
+      - run:
+          name: Build App image
+          command: docker build -t kuba1212/recipeapp-docker .
+      - run:
+          name: Save built image
+          command: docker save kuba1212/recipeapp-docker | gzip > appimage.tar.gz
+      - create_prod_env
+      - run:
+          name: Send production env
+          command: |
+            scp -o StrictHostKeyChecking=accept-new ./.env $SSH_USER@$SSH_HOST:.env
+      - run:
+          name: Send image to server
+          command: |
+            scp -o StrictHostKeyChecking=accept-new ./appimage.tar.gz $SSH_USER@$SSH_HOST:appimage.tar.gz
+      - run:
+          name: Send docker compose file
+          command: |
+            scp -o StrictHostKeyChecking=accept-new ./docker-compose.yml $SSH_USER@$SSH_HOST:docker-compose.yml
+      - run:
+          name: Deploy over SSH
+          command: |
+            ssh -o StrictHostKeyChecking=accept-new $SSH_USER@$SSH_HOST "sudo docker load < appimage.tar.gz && source .env && ./recipe_app_setup.sh"
 
 workflows:
   build_and_test:
@@ -129,7 +171,4 @@ workflows:
 
   deploy:
     jobs:
-      - deploy:
-          filters:
-            branches:
-              only: main
+      - deploy
