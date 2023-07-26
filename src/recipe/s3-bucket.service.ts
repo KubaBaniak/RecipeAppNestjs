@@ -57,14 +57,13 @@ export class S3Service {
   }
 
   getPresignedUrlWithClient(key: string) {
-    const EXPIRE_TIME_IN_SECONDS = 15 * 60;
     const command = new GetObjectCommand({
       Bucket: this.AWS_S3_BUCKET,
       Key: key,
     });
 
     return getSignedUrl(this.client, command, {
-      expiresIn: EXPIRE_TIME_IN_SECONDS,
+      expiresIn: +process.env.S3_URL_EXPIRY_TIME_IN_SEC,
     });
   }
 }

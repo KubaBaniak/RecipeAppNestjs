@@ -41,13 +41,13 @@ export class RecipeRepository {
     });
   }
 
-  addImageUrls(recipeId: number, keys: string[]): Promise<Recipe> {
+  addImageKeys(recipeId: number, keys: string[]): Promise<Recipe> {
     return this.prisma.recipe.update({
       where: {
         id: recipeId,
       },
       data: {
-        imagesUrls: keys,
+        imageKeys: keys,
       },
     });
   }

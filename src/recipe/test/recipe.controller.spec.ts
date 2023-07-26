@@ -90,7 +90,7 @@ describe('RecipeController', () => {
           preparation: expect.any(String),
           isPublic: false,
           authorId: userId,
-          imagesUrls: [],
+          imageKeys: [],
         },
       });
     });
@@ -113,7 +113,7 @@ describe('RecipeController', () => {
             preparation: expect.any(String),
             isPublic: false,
             authorId: expect.any(Number),
-            imagesUrls: [],
+            imageKeys: [],
           },
         ]),
       );
