@@ -101,11 +101,7 @@ export default async () => {
         ],
         [
           import('./recipe/dto/fetch-recipe-response'),
-          {
-            FetchRecipeResponse: {
-              fetchedRecipe: { required: true, type: () => Object },
-            },
-          },
+          { FetchRecipeResponse: {} },
         ],
         [
           import('./recipe/dto/fetch-recipes-response'),
