@@ -1,9 +1,10 @@
-FROM node:18.16.0-alpine as development
+FROM node:18.16.0 as development
 
 WORKDIR /app
 
 COPY package*.json ./
 COPY tsconfig*.json ./
+COPY src ./src
 COPY /prisma ./prisma/
 
 RUN npm ci
@@ -12,7 +13,9 @@ RUN npx prisma generate
 
 RUN npm run build
 
-FROM node:18.16.0-alpine as production
+FROM node:18.16.0 as production
+
+WORKDIR /app
 
 COPY package*.json ./
 COPY tsconfig*.json ./
