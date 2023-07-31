@@ -9,8 +9,6 @@ COPY /prisma ./prisma/
 
 RUN npm ci
 
-RUN npx prisma generate
-
 RUN npm run build
 
 FROM node:18.16.0 as production
