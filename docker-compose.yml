@@ -39,7 +39,7 @@ services:
     networks:
       - recipe-app-network
   application:
-    image: '{$APP_IMAGE_NAME}'
+    image: '${APP_IMAGE_NAME}'
     build: .
     env_file: .env
     ports:
