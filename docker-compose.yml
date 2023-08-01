@@ -39,7 +39,8 @@ services:
     networks:
       - recipe-app-network
   application:
-    image: kuba1212/recipeapp-docker
+    image: '{$APP_IMAGE_NAME}'
+    build: .
     env_file: .env
     ports:
       - '3000:3000'
