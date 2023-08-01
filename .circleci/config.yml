@@ -123,7 +123,7 @@ jobs:
           command: docker build -t $APP_IMAGE_NAME .
       - run:
           name: Save built image
-          command: docker save $IMAGE_APP_NAME | gzip > appimage.tar.gz
+          command: docker save $APP_IMAGE_NAME | gzip > appimage.tar.gz
       - create_env_files
       - run:
           name: Send production env
