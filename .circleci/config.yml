@@ -120,7 +120,7 @@ jobs:
           version: 20.10.14
       - run:
           name: Build App image
-          command: docker build -t $IMAGE_APP_NAME .
+          command: docker build -t $APP_IMAGE_NAME .
       - run:
           name: Save built image
           command: docker save $IMAGE_APP_NAME | gzip > appimage.tar.gz
