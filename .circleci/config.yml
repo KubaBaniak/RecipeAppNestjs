@@ -142,7 +142,7 @@ jobs:
       - run:
           name: Deploy over SSH
           command: |
-            ssh -o StrictHostKeyChecking=accept-new $SSH_USER@$SSH_HOST "sudo docker load < appimage.tar.gz && source .env && ./recipe_app_setup.sh"
+            ssh -o StrictHostKeyChecking=accept-new $SSH_USER@$SSH_HOST "source .env && ./recipe_app_setup.sh"
 
 workflows:
   build_and_test:
