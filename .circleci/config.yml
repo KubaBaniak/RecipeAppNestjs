@@ -30,7 +30,7 @@ commands:
       - run:
           name: Run images of services declared in docker-compose.yml
           command: docker-compose --profile dependencies up -d
-  create_env:
+  create_env_files:
     steps:
       - run:
           name: Create .env file
@@ -47,8 +47,6 @@ commands:
             REDIS_URL="$REDIS_URL"
             EOF
             cat .env > test.env
-            cat .env
-            cat test.env
 
 jobs:
   build:
@@ -122,10 +120,10 @@ jobs:
           version: 20.10.14
       - run:
           name: Build App image
-          command: docker build -t kuba1212/recipeapp-docker .
+          command: docker build -t $IMAGE_APP_NAME .
       - run:
           name: Save built image
-          command: docker save kuba1212/recipeapp-docker | gzip > appimage.tar.gz
+          command: docker save $IMAGE_APP_NAME | gzip > appimage.tar.gz
       - create_env
       - run:
           name: Send production env
@@ -148,13 +146,13 @@ workflows:
   build_and_test:
     jobs:
       - build:
-          context: test
+          context: recipe-app-test
       - unit_test:
-          context: test
+          context: recipe-app-test
           requires:
             - build
       - e2e_test:
-          context: test
+          context: recipe-app-test
           requires:
             - build
       - release:
@@ -165,7 +163,7 @@ workflows:
   deploy:
     jobs:
       - deploy:
-          context: production
+          context: recipe-app-production
           filters:
             branches:
               only:
