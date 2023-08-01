@@ -3,7 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from '../../user/user.service';
 import { AuthService } from '../auth.service';
 import { faker } from '@faker-js/faker';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Role } from '@prisma/client';
 import { MockJwtService } from '../__mocks__/jwt.service.mock';
