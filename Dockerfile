@@ -1,4 +1,4 @@
-FROM node:18.16.0 as development
+FROM node:18-alpine as development
 
 WORKDIR /app
 
@@ -11,7 +11,7 @@ RUN npm ci
 
 RUN npm run build
 
-FROM node:18.16.0 as production
+FROM node:18-alpine as production
 
 WORKDIR /app
 
