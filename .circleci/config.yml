@@ -45,6 +45,7 @@ commands:
             BCRYPT_SALT="$BCRYPT_SALT"
             REDIS_PASSWORD="$REDIS_PASSWORD"
             REDIS_URL="$REDIS_URL"
+            APP_IMAGE_NAME="$APP_IMAGE_NAME"
             EOF
             cat .env > test.env
 
