@@ -28,7 +28,7 @@ model Recipe {
   isPublic    Boolean  @default(false)
   author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   authorId    Int
-  imagesUrls  String[] @unique
+  imageKeys  String[] @unique
 }
 
 enum Role {
