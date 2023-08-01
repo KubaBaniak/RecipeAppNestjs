@@ -56,7 +56,7 @@ export class S3Service {
     }
   }
 
-  getPresignedUrlWithClient(key: string) {
+  getPresignedUrl(key: string) {
     const command = new GetObjectCommand({
       Bucket: this.AWS_S3_BUCKET,
       Key: key,

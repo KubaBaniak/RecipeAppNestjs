@@ -135,12 +135,10 @@ export class RecipeService {
     }
 
     const keys = await Promise.all(
-      files.map((key) => this.s3Service.uploadFile(key, userId, recipeId)),
+      files.map((file) => this.s3Service.uploadFile(file, userId, recipeId)),
     );
     await this.recipeRepository.addImageKeys(recipeId, keys);
 
-    return await Promise.all(
-      keys.map((key) => this.s3Service.getPresignedUrlWithClient(key)),
-    );
+    return Promise.all(keys.map((key) => this.s3Service.getPresignedUrl(key)));
   }
 }
