@@ -59,7 +59,7 @@ describe('RecipeService', () => {
         createdAt: expect.any(Date),
         ...request,
         authorId: userId,
-        imagesUrls: [],
+        imageKeys: [],
       });
     });
   });
@@ -83,7 +83,7 @@ describe('RecipeService', () => {
         preparation: expect.any(String),
         isPublic: true,
         authorId: userId,
-        imagesUrls: [],
+        imageKeys: [],
       });
     });
   });
@@ -108,7 +108,7 @@ describe('RecipeService', () => {
             preparation: expect.any(String),
             isPublic: true,
             authorId: expect.any(Number),
-            imagesUrls: [],
+            imageKeys: [],
           },
         ]),
       );
@@ -141,7 +141,7 @@ describe('RecipeService', () => {
         createdAt: expect.any(Date),
         ...request,
         authorId: userId,
-        imagesUrls: [],
+        imageKeys: [],
       });
     });
   });
