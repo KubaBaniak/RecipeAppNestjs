@@ -70,7 +70,7 @@ jobs:
       - checkout
       - restore_cache:
           key: ${CACHE_VERSION}-deps-{{ checksum "package-lock.json" }}
-      - create_env
+      - create_env_files
       - setup_prisma
       - setup_docker_compose_dependencies
       - run:
@@ -89,7 +89,7 @@ jobs:
       - checkout
       - restore_cache:
           key: ${CACHE_VERSION}-deps-{{ checksum "package-lock.json" }}
-      - create_env
+      - create_env_files
       - setup_prisma
       - setup_docker_compose_dependencies
       - run:
@@ -124,7 +124,7 @@ jobs:
       - run:
           name: Save built image
           command: docker save $IMAGE_APP_NAME | gzip > appimage.tar.gz
-      - create_env
+      - create_env_files
       - run:
           name: Send production env
           command: |
