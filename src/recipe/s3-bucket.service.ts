@@ -13,10 +13,10 @@ import { RecipeRepository } from './recipe.repository';
 export class S3Service {
   AWS_S3_BUCKET = process.env.AWS_S3_BUCKET;
   client = new S3Client({
-    region: process.env.AWS_S3_REGION,
+    region: process.env.AWS_REGION,
     credentials: {
-      accessKeyId: process.env.AWS_S3_ACCESS_KEY,
-      secretAccessKey: process.env.AWS_S3_KEY_SECRET,
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     },
   });
   constructor(public readonly recipeRepository: RecipeRepository) {}
