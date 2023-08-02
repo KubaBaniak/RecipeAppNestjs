@@ -10,6 +10,9 @@
 #test_results
 /test_reports
 
+#metadata to compile
+metadata.ts
+
 # Logs
 logs
 *.log
