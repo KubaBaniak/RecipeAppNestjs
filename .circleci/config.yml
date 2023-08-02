@@ -46,6 +46,10 @@ commands:
             REDIS_PASSWORD="$REDIS_PASSWORD"
             REDIS_URL="$REDIS_URL"
             APP_IMAGE_NAME="$APP_IMAGE_NAME"
+            AWS_S3_BUCKET="$AWS_S3_BUCKET"
+            AWS_S3_ACCESS_KEY="$AWS_S3_ACCESS_KEY"
+            AWS_S3_KEY_SECRET="$AWS_S3_KEY_SECRET"
+            AWS_S3_REGION="$AWS_S3_REGION"
             EOF
             cat .env > test.env
 
