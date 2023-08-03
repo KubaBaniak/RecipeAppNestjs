@@ -1,3 +1,11 @@
+## [1.0.2](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.0.1...v1.0.2) (2023-08-03)
+
+
+### Bug Fixes
+
+* delete import ([2b514fd](https://github.com/KubaBaniak/RecipeAppNestjs/commit/2b514fd2d15f20288327894ec1bbfab36a3f0630))
+* fix fetching public and private recipes on endpoint ([2b8c6cc](https://github.com/KubaBaniak/RecipeAppNestjs/commit/2b8c6cc689f8d48a7c4bf6153ba6079397a3e97a))
+
 ## [1.0.1](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.0.0...v1.0.1) (2023-08-03)
 
 
