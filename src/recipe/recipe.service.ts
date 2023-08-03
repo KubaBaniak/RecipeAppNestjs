@@ -77,10 +77,10 @@ export class RecipeService {
 
   async fetchAllRecipes(userId: number): Promise<Recipe[]> {
     const user = await this.userRepository.getUserById(userId);
-    if (user.role === Role.ADMIN) {
+    if (user?.role === Role.ADMIN) {
       return this.recipeRepository.getAllRecipes();
     } else {
-      return this.recipeRepository.getAllPublicRecipes();
+      return this.recipeRepository.getAllPublicRecipes(userId);
     }
   }
 
