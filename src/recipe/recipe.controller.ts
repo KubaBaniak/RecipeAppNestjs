@@ -23,7 +23,6 @@ import {
   FetchRecipesResponse,
   UpdatedRecipeResponse,
   UpdateRecipeRequest,
-  OptionalAuthorRequest,
 } from './dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import {
