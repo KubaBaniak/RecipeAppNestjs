@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.0.0...v1.0.1) (2023-08-03)
+
+
+### Bug Fixes
+
+* autogenerate changelog ([8e052ec](https://github.com/KubaBaniak/RecipeAppNestjs/commit/8e052ecb6ce131c09f347594876cbfc4678e0a7f))
+
 # 1.0.0 (2023-08-03)
 
 
