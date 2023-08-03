@@ -107,7 +107,7 @@ jobs:
     steps:
       - checkout
       - install_dependencies
-      - run: npm run release
+      - run: HUSKY=0 npx semantic-release
 
   deploy:
     docker:

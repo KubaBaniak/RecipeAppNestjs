@@ -21,8 +21,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "test:e2e:watch": "jest --config ./test/jest-e2e.json --watch",
     "prisma:generate": "prisma generate",
-    "prepare": "husky install",
-    "release": "semantic-release --debug"
+    "prepare": "husky install"
   },
   "lint-staged": {
     "*.ts": "eslint",
