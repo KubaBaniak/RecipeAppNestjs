@@ -23,6 +23,7 @@ import {
   FetchRecipesResponse,
   UpdatedRecipeResponse,
   UpdateRecipeRequest,
+  OptionalAuthorRequest,
 } from './dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import {
@@ -52,8 +53,9 @@ export class RecipeController {
   @Get()
   async fetchRecipes(
     @UserId() userId: number,
-    @Query('authorId') authorId?: number,
+    @Query('authorId') authorData?: OptionalAuthorRequest,
   ): Promise<FetchRecipesResponse> {
+    const authorId: number = authorData?.authorId;
     if (authorId) {
       const fetchedRecipes = await this.recipeService.fetchRecipesByAuthorId(
         authorId,

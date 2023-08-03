@@ -56,10 +56,10 @@ export class RecipeRepository {
     return this.prisma.recipe.findMany();
   }
 
-  getAllRecipesForBasicUser(authorId: number): Promise<Recipe[]> {
+  getAllAvailableRecipesForUser(authorId: number): Promise<Recipe[]> {
     return this.prisma.recipe.findMany({
       where: {
-        OR: [{ isPublic: true }, { authorId, isPublic: false }],
+        isPublic: true,
       },
     });
   }
