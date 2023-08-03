@@ -56,7 +56,7 @@ export class RecipeRepository {
     return this.prisma.recipe.findMany();
   }
 
-  getAllPublicRecipes(authorId: number): Promise<Recipe[]> {
+  getAllRecipesForBasicUser(authorId: number): Promise<Recipe[]> {
     return this.prisma.recipe.findMany({
       where: {
         OR: [{ isPublic: true }, { authorId, isPublic: false }],

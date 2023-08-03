@@ -80,7 +80,7 @@ export class RecipeService {
     if (user?.role === Role.ADMIN) {
       return this.recipeRepository.getAllRecipes();
     } else {
-      return this.recipeRepository.getAllPublicRecipes(userId);
+      return this.recipeRepository.getAllRecipesForBasicUser(userId);
     }
   }
 
