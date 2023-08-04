@@ -5,3 +5,4 @@ export * from './fetch-recipes-response';
 export * from './update-recipe-request';
 export * from './update-recipe-response';
 export * from './optional-author-request';
+export * from './create-recipe-notification';

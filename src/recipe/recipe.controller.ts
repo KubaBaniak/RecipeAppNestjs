@@ -40,15 +40,11 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { UserId } from '../common/decorators/req-user-id.decorator';
 import { UploadImagesResponse } from './dto/upload-images-response';
 import { S3_CONFIG } from './s3-config';
-import { WebsocketService } from '../events/websocket.service';
 
 @Controller('recipes')
 @ApiTags('Recipes')
 export class RecipeController {
-  constructor(
-    private readonly recipeService: RecipeService,
-    private readonly websocketService: WebsocketService,
-  ) {}
+  constructor(private readonly recipeService: RecipeService) {}
 
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Get list of all recipes' })
@@ -86,7 +82,6 @@ export class RecipeController {
       userId,
       createRecipeRequest,
     );
-    this.websocketService.handleCreation(createdRecipe);
 
     return CreateRecipeResponse.from(createdRecipe);
   }

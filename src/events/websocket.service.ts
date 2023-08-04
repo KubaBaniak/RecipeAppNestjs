@@ -5,8 +5,8 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { Recipe } from '@prisma/client';
 import { Server } from 'socket.io';
+import { ICreateRecipeNotification } from '../recipe/dto';
 
 @Injectable()
 @WebSocketGateway()
@@ -15,11 +15,17 @@ export class WebsocketService {
   server: Server;
 
   @SubscribeMessage('notification')
-  handleCreation(@MessageBody() recipe: Recipe) {
-    if (recipe.isPublic) {
-      this.server.emit('notification', {
+  handleRecipeCreation(
+    @MessageBody() notificationData: ICreateRecipeNotification,
+  ) {
+    if (notificationData.isPublic) {
+      const all_listeners = this.server.sockets.sockets;
+      const message = {
         msg: 'New has been created Recipe',
-        content: recipe.title,
+        content: notificationData.title,
+      };
+      all_listeners.forEach((listener) => {
+        listener.emit('notification', message);
       });
     }
   }
