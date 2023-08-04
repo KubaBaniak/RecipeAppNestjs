@@ -8,6 +8,7 @@ import { RecipeCacheService } from './recipe.cache.service';
 import { S3Service } from './s3-bucket.service';
 import { RecipeRepository } from './recipe.repository';
 import { UserRepository } from '../user/user.repository';
+import { WebsocketService } from '../events/websocket.service';
 
 @Module({
   imports: [RedisCacheModule],
@@ -19,6 +20,7 @@ import { UserRepository } from '../user/user.repository';
     JwtAuthGuard,
     S3Service,
     UserRepository,
+    WebsocketService,
   ],
   controllers: [RecipeController],
   exports: [RecipeService],
