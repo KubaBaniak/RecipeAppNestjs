@@ -86,7 +86,7 @@ export class RecipeService {
     if (user.role === Role.ADMIN) {
       return this.recipeRepository.getAllRecipes();
     } else {
-      return this.recipeRepository.getAllPublicRecipes();
+      return this.recipeRepository.getAllAvailableRecipesForUser(userId);
     }
   }
 
