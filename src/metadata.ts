@@ -138,14 +138,6 @@ export default async () => {
           },
         ],
         [
-          import('./recipe/dto/optional-author-request'),
-          {
-            OptionalAuthorRequest: {
-              authorId: { required: false, type: () => Number },
-            },
-          },
-        ],
-        [
           import('./recipe/dto/upload-images-response'),
           {
             UploadImagesResponse: {
