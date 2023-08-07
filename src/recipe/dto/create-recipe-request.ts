@@ -3,9 +3,11 @@ import { IsBoolean, IsNotEmpty, IsOptional } from 'class-validator';
 
 export class CreateRecipeRequest {
   @IsNotEmpty()
+  @ApiProperty()
   title: string;
 
   @IsOptional()
+  @ApiProperty()
   description?: string;
 
   @IsNotEmpty()
