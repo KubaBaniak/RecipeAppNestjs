@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UseGuards } from '@nestjs/common';
 import {
   MessageBody,
   SubscribeMessage,
@@ -7,26 +7,26 @@ import {
 } from '@nestjs/websockets';
 import { Server } from 'socket.io';
 import { ICreateRecipeNotification } from '../recipe/dto';
+import { SocketCacheService } from './websocket-cache.service';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @Injectable()
 @WebSocketGateway()
 export class WebsocketService {
+  constructor(private readonly socketCacheService: SocketCacheService) {}
+
   @WebSocketServer()
   server: Server;
 
-  @SubscribeMessage('notification')
-  handleRecipeCreation(
-    @MessageBody() notificationData: ICreateRecipeNotification,
-  ) {
-    if (notificationData.isPublic) {
-      const all_listeners = this.server.sockets.sockets;
-      const message = {
-        msg: 'New has been created Recipe',
-        content: notificationData.title,
-      };
-      all_listeners.forEach((listener) => {
-        listener.emit('notification', message);
-      });
-    }
+  handleConnection() {
+    this.server.on('connection', (socket) => {
+      console.log(socket);
+      this.socketCacheService.cacheSocketId(socket.id);
+    });
   }
+
+  //@SubscribeMessage('notification')
+  //handleRecipeCreation(
+  //  @MessageBody() notificationData: ICreateRecipeNotification,
+  //) {}
 }

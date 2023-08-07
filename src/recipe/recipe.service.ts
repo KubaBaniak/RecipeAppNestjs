@@ -28,10 +28,10 @@ export class RecipeService {
   ): Promise<Recipe> {
     const recipe = await this.recipeRepository.createRecipe(userId, data);
     this.recipeCacheService.cacheRecipe(recipe);
-    this.websocketService.handleRecipeCreation({
-      title: recipe.title,
-      isPublic: recipe.isPublic,
-    });
+    //this.websocketService.handleRecipeCreation({
+    //  title: recipe.title,
+    //  isPublic: recipe.isPublic,
+    //});
 
     return recipe;
   }

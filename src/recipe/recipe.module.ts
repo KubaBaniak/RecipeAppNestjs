@@ -9,6 +9,7 @@ import { S3Service } from './s3-bucket.service';
 import { RecipeRepository } from './recipe.repository';
 import { UserRepository } from '../user/user.repository';
 import { WebsocketService } from '../events/websocket.service';
+import { SocketCacheService } from '../events/websocket-cache.service';
 
 @Module({
   imports: [RedisCacheModule],
@@ -16,6 +17,7 @@ import { WebsocketService } from '../events/websocket.service';
     RecipeService,
     RecipeRepository,
     RecipeCacheService,
+    SocketCacheService,
     PrismaService,
     JwtAuthGuard,
     S3Service,
