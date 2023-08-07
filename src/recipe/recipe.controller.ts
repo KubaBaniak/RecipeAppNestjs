@@ -52,8 +52,7 @@ export class RecipeController {
   @ApiUnauthorizedResponse({ description: 'User is not authenticated' })
   @ApiQuery({
     name: 'authorId',
-    description:
-      'Fetch all recipes that you have access to of user with such ID',
+    description: 'Fetch all public recipes of user with authorId',
   })
   @Get()
   async fetchRecipes(
