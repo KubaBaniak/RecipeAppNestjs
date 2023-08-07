@@ -34,6 +34,7 @@ import {
   ApiNotFoundResponse,
   ApiBadRequestResponse,
   ApiUnprocessableEntityResponse,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { UserId } from '../common/decorators/req-user-id.decorator';
@@ -49,6 +50,11 @@ export class RecipeController {
   @ApiOperation({ summary: 'Get list of all recipes' })
   @ApiBearerAuth()
   @ApiUnauthorizedResponse({ description: 'User is not authenticated' })
+  @ApiQuery({
+    name: 'authorId',
+    description:
+      'Fetch all recipes that you have access to of user with such ID',
+  })
   @Get()
   async fetchRecipes(
     @UserId() userId: number,
