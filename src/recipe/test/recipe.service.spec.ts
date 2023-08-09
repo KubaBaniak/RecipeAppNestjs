@@ -8,11 +8,11 @@ import { MockRecipeCacheService } from '../__mocks__/recipe.cache.mock';
 import { RecipeRepository } from '../recipe.repository';
 import { UserRepository } from '../../user/user.repository';
 import { S3Service } from '../s3-bucket.service';
-import { WebsocketService } from '../../events/websocket.service';
+import { WebsocketGateway } from '../../websocket/websocket.gateway';
 
 describe('RecipeService', () => {
   let recipeService: RecipeService;
-  let websocketService: WebsocketService;
+  let websocketService: WebsocketGateway;
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -20,7 +20,7 @@ describe('RecipeService', () => {
         S3Service,
         RecipeRepository,
         UserRepository,
-        WebsocketService,
+        WebsocketGateway,
         {
           provide: PrismaService,
           useClass: MockPrismaService,
@@ -32,7 +32,7 @@ describe('RecipeService', () => {
       ],
     }).compile();
 
-    websocketService = module.get<WebsocketService>(WebsocketService);
+    websocketService = module.get<WebsocketGateway>(WebsocketGateway);
     recipeService = module.get<RecipeService>(RecipeService);
   });
 
@@ -53,7 +53,7 @@ describe('RecipeService', () => {
         authorId: userId,
       };
       jest
-        .spyOn(websocketService, 'handleRecipeCreation')
+        .spyOn(websocketService, 'newRecipeEvent')
         .mockImplementationOnce(() => ({}));
 
       //when

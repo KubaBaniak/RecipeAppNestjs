@@ -10,7 +10,7 @@ import { RecipeRepository } from '../recipe/recipe.repository';
 import { UserRepository } from '../user/user.repository';
 import { Role } from '@prisma/client';
 import { S3Service } from './s3-bucket.service';
-import { WebsocketService } from '../events/websocket.service';
+import { WebsocketGateway } from '../websocket/websocket.gateway';
 
 @Injectable()
 export class RecipeService {
@@ -19,7 +19,7 @@ export class RecipeService {
     private readonly userRepository: UserRepository,
     private readonly recipeCacheService: RecipeCacheService,
     private readonly s3Service: S3Service,
-    private readonly websocketService: WebsocketService,
+    private readonly websocketGateway: WebsocketGateway,
   ) {}
 
   async createRecipe(
@@ -28,10 +28,7 @@ export class RecipeService {
   ): Promise<Recipe> {
     const recipe = await this.recipeRepository.createRecipe(userId, data);
     this.recipeCacheService.cacheRecipe(recipe);
-    //this.websocketService.handleRecipeCreation({
-    //  title: recipe.title,
-    //  isPublic: recipe.isPublic,
-    //});
+    this.websocketGateway.newRecipeEvent(recipe.title, recipe.isPublic);
 
     return recipe;
   }
