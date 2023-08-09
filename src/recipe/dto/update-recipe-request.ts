@@ -1,8 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsOptional, IsString } from 'class-validator';
 
 export class UpdateRecipeRequest {
-  @IsNotEmpty()
   @IsOptional()
   @IsString()
   @ApiProperty()
@@ -14,7 +13,6 @@ export class UpdateRecipeRequest {
   description?: string;
 
   @IsOptional()
-  @IsNotEmpty()
   @IsString()
   @ApiProperty()
   ingredients?: string;
