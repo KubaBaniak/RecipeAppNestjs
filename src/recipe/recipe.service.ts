@@ -20,6 +20,21 @@ export class RecipeService {
     private readonly s3Service: S3Service,
   ) {}
 
+  getPresignedUrlsForRecipeImages(recipe: Recipe): Promise<string[]> {
+    return Promise.all(
+      recipe.imageKeys.map((key) => this.s3Service.getPresignedUrl(key)),
+    );
+  }
+
+  getImageUrlsOfManyRecipes(recipes: Recipe[]): Promise<Recipe[]> {
+    return Promise.all(
+      recipes.map(async (recipe) => ({
+        ...recipe,
+        imageKeys: await this.getPresignedUrlsForRecipeImages(recipe),
+      })),
+    );
+  }
+
   async createRecipe(
     userId: number,
     data: CreateRecipeRequest,
@@ -55,7 +70,10 @@ export class RecipeService {
       throw new ForbiddenException();
     }
 
-    return recipe;
+    return {
+      ...recipe,
+      imageKeys: await this.getPresignedUrlsForRecipeImages(recipe),
+    };
   }
 
   async fetchRecipesByAuthorId(
@@ -69,18 +87,24 @@ export class RecipeService {
     const principal = await this.userRepository.getUserById(principalId);
 
     if (author.id === principal.id || principal.role == Role.ADMIN) {
-      return this.recipeRepository.getUsersRecipes(authorId);
+      const recipes = await this.recipeRepository.getUsersRecipes(authorId);
+      return this.getImageUrlsOfManyRecipes(recipes);
     }
 
-    return this.recipeRepository.getUsersPublicRecipes(authorId);
+    const recipes = await this.recipeRepository.getUsersPublicRecipes(authorId);
+    return this.getImageUrlsOfManyRecipes(recipes);
   }
 
   async fetchAllRecipes(userId: number): Promise<Recipe[]> {
     const user = await this.userRepository.getUserById(userId);
     if (user.role === Role.ADMIN) {
-      return this.recipeRepository.getAllRecipes();
+      const recipes = await this.recipeRepository.getAllRecipes();
+      return this.getImageUrlsOfManyRecipes(recipes);
     } else {
-      return this.recipeRepository.getAllAvailableRecipesForUser(userId);
+      const recipes = await this.recipeRepository.getAllAvailableRecipesForUser(
+        userId,
+      );
+      return this.getImageUrlsOfManyRecipes(recipes);
     }
   }
 
