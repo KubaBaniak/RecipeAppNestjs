@@ -1,3 +1,10 @@
+## [1.0.4](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.0.3...v1.0.4) (2023-08-09)
+
+
+### Bug Fixes
+
+* send presigned urls on fetch instead of keys ([d1ff0eb](https://github.com/KubaBaniak/RecipeAppNestjs/commit/d1ff0eb1d137a456cbeb21f8ea7550e86dff2b4f))
+
 ## [1.0.3](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.0.2...v1.0.3) (2023-08-09)
 
 
