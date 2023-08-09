@@ -1,3 +1,14 @@
+## [1.0.3](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.0.2...v1.0.3) (2023-08-09)
+
+
+### Bug Fixes
+
+* add validation and missing documentation for fields on create recipe ([39e978a](https://github.com/KubaBaniak/RecipeAppNestjs/commit/39e978ac4494a59d7882cde711870f7c40a8c34a))
+* append instead of overwrtie image keys ([291f689](https://github.com/KubaBaniak/RecipeAppNestjs/commit/291f6892fe6cfe8f7aaef4a424774b033280e3de))
+* resolve conflicts ([36798f0](https://github.com/KubaBaniak/RecipeAppNestjs/commit/36798f03cd3af0ed824caaa1e9fed64d4b5d6b03))
+* resolve conflicts ([e677ec7](https://github.com/KubaBaniak/RecipeAppNestjs/commit/e677ec773440b011bc81b52fee010731456d142e))
+* validation and add documentation ([14c0d0b](https://github.com/KubaBaniak/RecipeAppNestjs/commit/14c0d0bfe715d90360dca6795086c810dc74ddde))
+
 ## [1.0.2](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.0.1...v1.0.2) (2023-08-03)
 
 
