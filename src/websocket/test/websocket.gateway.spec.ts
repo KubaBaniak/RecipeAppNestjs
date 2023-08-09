@@ -21,7 +21,7 @@ describe('Websocket', () => {
       jest
         .spyOn(WebsocketGateway.prototype, 'sendRecipeNotification')
         .mockImplementation((_message: string) => {
-          return isPublic;
+          return true;
         });
 
       //when
