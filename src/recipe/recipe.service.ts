@@ -20,7 +20,7 @@ export class RecipeService {
     private readonly s3Service: S3Service,
   ) {}
 
-  getImageUrlsToUrls(recipe: Recipe): Promise<string[]> {
+  getPresignedUrlsForRecipeImages(recipe: Recipe): Promise<string[]> {
     return Promise.all(
       recipe.imageKeys.map((key) => this.s3Service.getPresignedUrl(key)),
     );
@@ -28,10 +28,10 @@ export class RecipeService {
 
   getImageUrlsOfManyRecipes(recipes: Recipe[]): Promise<Recipe[]> {
     return Promise.all(
-      recipes.map(async (recipe) => {
-        recipe.imageKeys = await this.getImageUrlsToUrls(recipe);
-        return recipe;
-      }),
+      recipes.map(async (recipe) => ({
+        ...recipe,
+        imageKeys: await this.getPresignedUrlsForRecipeImages(recipe),
+      })),
     );
   }
 
@@ -70,9 +70,10 @@ export class RecipeService {
       throw new ForbiddenException();
     }
 
-    recipe.imageKeys = await this.getImageUrlsToUrls(recipe);
-
-    return recipe;
+    return {
+      ...recipe,
+      imageKeys: await this.getPresignedUrlsForRecipeImages(recipe),
+    };
   }
 
   async fetchRecipesByAuthorId(
@@ -87,27 +88,23 @@ export class RecipeService {
 
     if (author.id === principal.id || principal.role == Role.ADMIN) {
       const recipes = await this.recipeRepository.getUsersRecipes(authorId);
-      const recipesWithUrls = this.getImageUrlsOfManyRecipes(recipes);
-      return recipesWithUrls;
+      return this.getImageUrlsOfManyRecipes(recipes);
     }
 
     const recipes = await this.recipeRepository.getUsersPublicRecipes(authorId);
-    const recipesWithUrls = this.getImageUrlsOfManyRecipes(recipes);
-    return recipesWithUrls;
+    return this.getImageUrlsOfManyRecipes(recipes);
   }
 
   async fetchAllRecipes(userId: number): Promise<Recipe[]> {
     const user = await this.userRepository.getUserById(userId);
     if (user.role === Role.ADMIN) {
       const recipes = await this.recipeRepository.getAllRecipes();
-      const recipesWithUrls = this.getImageUrlsOfManyRecipes(recipes);
-      return recipesWithUrls;
+      return this.getImageUrlsOfManyRecipes(recipes);
     } else {
       const recipes = await this.recipeRepository.getAllAvailableRecipesForUser(
         userId,
       );
-      const recipesWithUrls = this.getImageUrlsOfManyRecipes(recipes);
-      return recipesWithUrls;
+      return this.getImageUrlsOfManyRecipes(recipes);
     }
   }
 
