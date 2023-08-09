@@ -47,7 +47,9 @@ export class RecipeRepository {
         id: recipeId,
       },
       data: {
-        imageKeys: keys,
+        imageKeys: {
+          push: keys,
+        },
       },
     });
   }
