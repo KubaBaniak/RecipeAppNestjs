@@ -43,7 +43,11 @@ export class RecipeService {
   ): Promise<Recipe> {
     const recipe = await this.recipeRepository.createRecipe(userId, data);
     this.recipeCacheService.cacheRecipe(recipe);
-    this.websocketGateway.newRecipeEvent(recipe.title, recipe.isPublic);
+    this.websocketGateway.newRecipeEvent(
+      recipe.title,
+      recipe.isPublic,
+      recipe.authorId,
+    );
 
     return recipe;
   }

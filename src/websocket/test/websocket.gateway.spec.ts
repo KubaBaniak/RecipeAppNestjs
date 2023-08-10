@@ -1,12 +1,23 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotificationGateway } from '../notification.gateway';
+import { faker } from '@faker-js/faker';
+import { AuthService } from 'src/auth/auth.service';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { UserRepository } from 'src/user/user.repository';
+import { JwtService } from '@nestjs/jwt';
 
 describe('Websocket', () => {
   let notificationGateway: NotificationGateway;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [NotificationGateway],
+      providers: [
+        NotificationGateway,
+        AuthService,
+        UserRepository,
+        JwtService,
+        PrismaService,
+      ],
     }).compile();
 
     notificationGateway = module.get<NotificationGateway>(NotificationGateway);
@@ -14,6 +25,7 @@ describe('Websocket', () => {
 
   describe('Notification', () => {
     let isPublic: boolean;
+    const authorId = faker.number.int();
     const title = 'test_title';
     it('should send notification about new recipe when it is public', () => {
       //given
@@ -25,7 +37,7 @@ describe('Websocket', () => {
         });
 
       //when
-      notificationGateway.newRecipeEvent(title, isPublic);
+      notificationGateway.newRecipeEvent(title, isPublic, authorId);
 
       //then
       expect(notificationGateway.sendRecipeNotification).toHaveBeenCalled();
@@ -37,7 +49,7 @@ describe('Websocket', () => {
       isPublic = false;
 
       //when
-      notificationGateway.newRecipeEvent(title, isPublic);
+      notificationGateway.newRecipeEvent(title, isPublic, authorId);
 
       //then
       expect(notificationGateway.sendRecipeNotification).not.toHaveBeenCalled();

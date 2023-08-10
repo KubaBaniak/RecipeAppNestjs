@@ -9,6 +9,8 @@ import { RecipeRepository } from '../recipe.repository';
 import { UserRepository } from '../../user/user.repository';
 import { S3Service } from '../s3-bucket.service';
 import { NotificationGateway } from '../../websocket/notification.gateway';
+import { AuthService } from 'src/auth/auth.service';
+import { JwtService } from '@nestjs/jwt';
 
 describe('RecipeService', () => {
   let recipeService: RecipeService;
@@ -21,6 +23,8 @@ describe('RecipeService', () => {
         RecipeRepository,
         UserRepository,
         NotificationGateway,
+        AuthService,
+        JwtService,
         {
           provide: PrismaService,
           useClass: MockPrismaService,

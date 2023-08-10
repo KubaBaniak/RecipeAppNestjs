@@ -23,6 +23,10 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
+  async verifyJwt(jwtToken: string): Promise<any> {
+    return this.jwtService.verifyAsync(jwtToken);
+  }
+
   async signIn(signInRequest: SignInRequest): Promise<string> {
     const user = await this.userRepository.getUserByEmailWithPassword(
       signInRequest.email,
