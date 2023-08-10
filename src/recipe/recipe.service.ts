@@ -10,7 +10,7 @@ import { RecipeRepository } from '../recipe/recipe.repository';
 import { UserRepository } from '../user/user.repository';
 import { Role } from '@prisma/client';
 import { S3Service } from './s3-bucket.service';
-import { WebsocketGateway } from '../websocket/websocket.gateway';
+import { NotificationGateway } from '../websocket/notification.gateway';
 
 @Injectable()
 export class RecipeService {
@@ -19,7 +19,7 @@ export class RecipeService {
     private readonly userRepository: UserRepository,
     private readonly recipeCacheService: RecipeCacheService,
     private readonly s3Service: S3Service,
-    private readonly websocketGateway: WebsocketGateway,
+    private readonly websocketGateway: NotificationGateway,
   ) {}
 
   async createRecipe(

@@ -1,15 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { WebsocketGateway } from '../websocket.gateway';
+import { NotificationGateway } from '../notification.gateway';
 
 describe('Websocket', () => {
-  let websocketGateway: WebsocketGateway;
+  let notificationGateway: NotificationGateway;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [WebsocketGateway],
+      providers: [NotificationGateway],
     }).compile();
 
-    websocketGateway = module.get<WebsocketGateway>(WebsocketGateway);
+    notificationGateway = module.get<NotificationGateway>(NotificationGateway);
   });
 
   describe('Notification', () => {
@@ -19,16 +19,16 @@ describe('Websocket', () => {
       //given
       isPublic = true;
       jest
-        .spyOn(WebsocketGateway.prototype, 'sendRecipeNotification')
+        .spyOn(NotificationGateway.prototype, 'sendRecipeNotification')
         .mockImplementation((_message: string) => {
           return true;
         });
 
       //when
-      websocketGateway.newRecipeEvent(title, isPublic);
+      notificationGateway.newRecipeEvent(title, isPublic);
 
       //then
-      expect(websocketGateway.sendRecipeNotification).toHaveBeenCalled();
+      expect(notificationGateway.sendRecipeNotification).toHaveBeenCalled();
       jest.resetAllMocks();
     });
 
@@ -37,10 +37,10 @@ describe('Websocket', () => {
       isPublic = false;
 
       //when
-      websocketGateway.newRecipeEvent(title, isPublic);
+      notificationGateway.newRecipeEvent(title, isPublic);
 
       //then
-      expect(websocketGateway.sendRecipeNotification).not.toHaveBeenCalled();
+      expect(notificationGateway.sendRecipeNotification).not.toHaveBeenCalled();
     });
   });
 });

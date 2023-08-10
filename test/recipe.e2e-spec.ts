@@ -16,7 +16,7 @@ import { RecipeCacheService } from '../src/recipe/recipe.cache.service';
 import { RecipeRepository } from '../src/recipe/recipe.repository';
 import { UserRepository } from '../src/user/user.repository';
 import { S3Service } from '../src/recipe/s3-bucket.service';
-import { WebsocketGateway } from '../src/websocket/websocket.gateway';
+import { NotificationGateway } from '../src/websocket/notification.gateway';
 
 describe('RecipeController (e2e)', () => {
   let app: INestApplication;
@@ -35,7 +35,7 @@ describe('RecipeController (e2e)', () => {
         PrismaService,
         RecipeCacheService,
         S3Service,
-        WebsocketGateway,
+        NotificationGateway,
       ],
     }).compile();
 
