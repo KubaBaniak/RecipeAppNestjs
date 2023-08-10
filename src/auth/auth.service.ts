@@ -23,6 +23,10 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
+  async verifyJwt(jwtToken: string): Promise<any> {
+    return this.jwtService.verifyAsync(jwtToken);
+  }
+
   async signIn(signInRequest: SignInRequest): Promise<string> {
     const user = await this.userRepository.getUserByEmailWithPassword(
       signInRequest.email,
@@ -31,7 +35,24 @@ export class AuthService {
       throw new NotFoundException();
     }
 
-    return await this.jwtService.signAsync({ id: user.id, email: user.email });
+    return await this.jwtService.signAsync(
+      {
+        id: user.id,
+        email: user.email,
+      },
+      { expiresIn: `${process.env.JWT_EXPIRY_TIME}s` },
+    );
+  }
+
+  async createPAT(userId: number): Promise<string> {
+    try {
+      return await this.jwtService.signAsync({
+        id: userId,
+        type: 'PAT',
+      });
+    } catch {
+      throw new UnauthorizedException('Invalid token');
+    }
   }
 
   async signUp(signUpRequest: SignUpRequest): Promise<SignUpResponse> {

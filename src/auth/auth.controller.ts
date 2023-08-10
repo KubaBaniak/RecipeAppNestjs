@@ -1,7 +1,15 @@
-import { Controller, Body, Post, HttpCode, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Body,
+  Post,
+  Get,
+  HttpCode,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import {
+  CreatePatResponse,
   SignInRequest,
   SignInResponse,
   SignUpRequest,
@@ -13,6 +21,8 @@ import {
   ApiOperation,
   ApiForbiddenResponse,
 } from '@nestjs/swagger';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { UserId } from '../common/decorators/req-user-id.decorator';
 
 @Controller('auth')
 @ApiTags('Authentication')
@@ -40,5 +50,12 @@ export class AuthController {
     const createdUser = await this.authService.signUp(signUpRequest);
 
     return SignUpResponse.from(createdUser);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('generate/pat')
+  async generatePAT(@UserId() userId: number): Promise<CreatePatResponse> {
+    const patToken = await this.authService.createPAT(userId);
+    return CreatePatResponse.from(patToken);
   }
 }
