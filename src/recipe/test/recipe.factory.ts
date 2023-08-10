@@ -40,3 +40,17 @@ export const createRecipeResponse = (
   authorId: overrides.authorId ?? faker.number.int(),
   imageKeys: [],
 });
+
+export const createRecipeWithUrlsResponse = (
+  overrides: CreateRecipeResponseOverrides = {},
+) => ({
+  id: overrides.id ?? faker.number.int(),
+  createdAt: overrides.createdAt ?? new Date(),
+  title: overrides.title ?? faker.word.noun(5),
+  description: overrides.description ?? faker.lorem.text(),
+  ingredients: overrides.ingredients ?? faker.lorem.word(8),
+  preparation: overrides.preparation ?? faker.lorem.lines(4),
+  isPublic: overrides.isPublic ?? false,
+  authorId: overrides.authorId ?? faker.number.int(),
+  imageUrls: [],
+});
