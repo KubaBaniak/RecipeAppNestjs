@@ -83,7 +83,7 @@ describe('RecipeService', () => {
         preparation: expect.any(String),
         isPublic: true,
         authorId: userId,
-        imageKeys: [],
+        imageUrls: [],
       });
     });
   });
@@ -108,7 +108,7 @@ describe('RecipeService', () => {
             preparation: expect.any(String),
             isPublic: true,
             authorId: expect.any(Number),
-            imageKeys: [],
+            imageUrls: [],
           },
         ]),
       );

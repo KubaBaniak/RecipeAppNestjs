@@ -186,7 +186,7 @@ describe('RecipeController (e2e)', () => {
                 preparation: expect.any(String),
                 isPublic: expect.any(Boolean),
                 authorId: expect.any(Number),
-                imageKeys: [],
+                imageUrls: [],
               },
             ]),
           );
