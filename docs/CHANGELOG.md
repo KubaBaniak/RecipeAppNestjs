@@ -1,3 +1,16 @@
+# [1.1.0](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.0.4...v1.1.0) (2023-08-10)
+
+
+### Bug Fixes
+
+* fix tests ([b0fb8e1](https://github.com/KubaBaniak/RecipeAppNestjs/commit/b0fb8e1ffe5b896de7de36a8fdb836d27271b566))
+* resolve conflicts ([07241be](https://github.com/KubaBaniak/RecipeAppNestjs/commit/07241be84ed3e2a5362bde172672b8fc878f9ded))
+
+
+### Features
+
+* add notifications using websockets ([a82c7b1](https://github.com/KubaBaniak/RecipeAppNestjs/commit/a82c7b1dfd2f0f8934fa4be893e938af35ccfe98))
+
 ## [1.0.4](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.0.3...v1.0.4) (2023-08-09)
 
 
