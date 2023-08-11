@@ -8,13 +8,13 @@ import { MockRecipeCacheService } from '../__mocks__/recipe.cache.mock';
 import { RecipeRepository } from '../recipe.repository';
 import { UserRepository } from '../../user/user.repository';
 import { S3Service } from '../s3-bucket.service';
-import { NotificationGateway } from '../../websocket/notification.gateway';
+import { WebSocketEventGateway } from '../../websocket/websocket-event.gateway';
 import { AuthService } from 'src/auth/auth.service';
 import { JwtService } from '@nestjs/jwt';
 
 describe('RecipeService', () => {
   let recipeService: RecipeService;
-  let websocketService: NotificationGateway;
+  let webSocketEventGateway: WebSocketEventGateway;
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -22,7 +22,7 @@ describe('RecipeService', () => {
         S3Service,
         RecipeRepository,
         UserRepository,
-        NotificationGateway,
+        WebSocketEventGateway,
         AuthService,
         JwtService,
         {
@@ -36,7 +36,9 @@ describe('RecipeService', () => {
       ],
     }).compile();
 
-    websocketService = module.get<NotificationGateway>(NotificationGateway);
+    webSocketEventGateway = module.get<WebSocketEventGateway>(
+      WebSocketEventGateway,
+    );
     recipeService = module.get<RecipeService>(RecipeService);
   });
 
@@ -57,7 +59,7 @@ describe('RecipeService', () => {
         authorId: userId,
       };
       jest
-        .spyOn(websocketService, 'newRecipeEvent')
+        .spyOn(webSocketEventGateway, 'newRecipeEvent')
         .mockImplementationOnce(() => ({}));
 
       //when

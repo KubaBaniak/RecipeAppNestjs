@@ -6,7 +6,7 @@ import { UserRepository } from '../user/user.repository';
 
 @Injectable()
 @WebSocketGateway()
-export class NotificationGateway {
+export class WebSocketEventGateway {
   constructor(
     private readonly authService: AuthService,
     private readonly userRepository: UserRepository,

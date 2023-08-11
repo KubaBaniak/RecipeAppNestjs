@@ -1,18 +1,16 @@
 import { Module } from '@nestjs/common';
+import { WebSocketEventGateway } from './websocket-event.gateway';
 import { AuthService } from '../auth/auth.service';
 import { UserRepository } from '../user/user.repository';
 import { PrismaService } from '../prisma/prisma.service';
-import { JwtService } from '@nestjs/jwt';
-import { NotificationGateway } from './notification.gateway';
 
 @Module({
   providers: [
-    NotificationGateway,
-    JwtService,
+    WebSocketEventGateway,
     UserRepository,
     AuthService,
     PrismaService,
   ],
-  exports: [NotificationGateway],
+  exports: [WebSocketEventGateway],
 })
-export class WebsocketModule {}
+export class WebSocketEventModule {}

@@ -10,7 +10,7 @@ import { RecipeRepository } from '../recipe/recipe.repository';
 import { UserRepository } from '../user/user.repository';
 import { Role } from '@prisma/client';
 import { S3Service } from './s3-bucket.service';
-import { NotificationGateway } from '../websocket/notification.gateway';
+import { WebSocketEventGateway } from '../websocket/websocket-event.gateway';
 
 @Injectable()
 export class RecipeService {
@@ -19,7 +19,7 @@ export class RecipeService {
     private readonly userRepository: UserRepository,
     private readonly recipeCacheService: RecipeCacheService,
     private readonly s3Service: S3Service,
-    private readonly websocketGateway: NotificationGateway,
+    private readonly webSocketEventGateway: WebSocketEventGateway,
   ) {}
 
   getPresignedUrlsForRecipeImages(recipe: Recipe): Promise<string[]> {
@@ -43,7 +43,7 @@ export class RecipeService {
   ): Promise<Recipe> {
     const recipe = await this.recipeRepository.createRecipe(userId, data);
     this.recipeCacheService.cacheRecipe(recipe);
-    this.websocketGateway.newRecipeEvent(
+    this.webSocketEventGateway.newRecipeEvent(
       recipe.title,
       recipe.isPublic,
       recipe.authorId,

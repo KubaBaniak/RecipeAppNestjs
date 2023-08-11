@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotificationGateway } from '../notification.gateway';
+import { WebSocketEventGateway } from '../websocket-event.gateway';
 import { faker } from '@faker-js/faker';
 import { AuthService } from 'src/auth/auth.service';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -7,12 +7,12 @@ import { UserRepository } from 'src/user/user.repository';
 import { JwtService } from '@nestjs/jwt';
 
 describe('Websocket', () => {
-  let notificationGateway: NotificationGateway;
+  let webSocketEventGateway: WebSocketEventGateway;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        NotificationGateway,
+        WebSocketEventGateway,
         AuthService,
         UserRepository,
         JwtService,
@@ -20,7 +20,9 @@ describe('Websocket', () => {
       ],
     }).compile();
 
-    notificationGateway = module.get<NotificationGateway>(NotificationGateway);
+    webSocketEventGateway = module.get<WebSocketEventGateway>(
+      WebSocketEventGateway,
+    );
   });
 
   describe('Notification', () => {
@@ -31,16 +33,16 @@ describe('Websocket', () => {
       //given
       isPublic = true;
       jest
-        .spyOn(NotificationGateway.prototype, 'sendRecipeNotification')
+        .spyOn(WebSocketEventGateway.prototype, 'sendRecipeNotification')
         .mockImplementation((_message: string) => {
           return true;
         });
 
       //when
-      notificationGateway.newRecipeEvent(title, isPublic, authorId);
+      webSocketEventGateway.newRecipeEvent(title, isPublic, authorId);
 
       //then
-      expect(notificationGateway.sendRecipeNotification).toHaveBeenCalled();
+      expect(webSocketEventGateway.sendRecipeNotification).toHaveBeenCalled();
       jest.resetAllMocks();
     });
 
@@ -49,10 +51,12 @@ describe('Websocket', () => {
       isPublic = false;
 
       //when
-      notificationGateway.newRecipeEvent(title, isPublic, authorId);
+      webSocketEventGateway.newRecipeEvent(title, isPublic, authorId);
 
       //then
-      expect(notificationGateway.sendRecipeNotification).not.toHaveBeenCalled();
+      expect(
+        webSocketEventGateway.sendRecipeNotification,
+      ).not.toHaveBeenCalled();
     });
   });
 });

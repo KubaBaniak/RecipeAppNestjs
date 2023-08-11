@@ -8,10 +8,10 @@ import { RecipeCacheService } from './recipe.cache.service';
 import { S3Service } from './s3-bucket.service';
 import { RecipeRepository } from './recipe.repository';
 import { UserRepository } from '../user/user.repository';
-import { NotificationModule } from '../websocket/notification.module';
+import { WebSocketEventModule } from '../websocket/websocket-event.module';
 
 @Module({
-  imports: [RedisCacheModule, NotificationModule],
+  imports: [RedisCacheModule, WebSocketEventModule],
   providers: [
     RecipeService,
     RecipeRepository,
