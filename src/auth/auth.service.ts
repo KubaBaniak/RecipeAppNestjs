@@ -46,14 +46,18 @@ export class AuthService {
   }
 
   async createPAT(userId: number): Promise<string> {
-    try {
-      return await this.jwtService.signAsync({
-        id: userId,
-        type: 'PAT',
-      });
-    } catch {
-      throw new UnauthorizedException('Invalid token');
+    const validPatToken = await this.userRepository.getUserValidPatWithId(
+      userId,
+    );
+    if (validPatToken) {
+      this.userRepository.invalidateUserPat(userId);
     }
+    const token = await this.jwtService.signAsync({
+      id: userId,
+      type: 'PAT',
+    });
+    const patToken = await this.userRepository.createPat(userId, token);
+    return patToken.token;
   }
 
   async signUp(signUpRequest: SignUpRequest): Promise<SignUpResponse> {

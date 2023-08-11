@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Prisma } from '@prisma/client';
+import { PAT, Prisma } from '@prisma/client';
 import { UserPayloadRequest } from './dto';
 
 @Injectable()
@@ -14,7 +14,6 @@ export class UserRepository {
 
     return user ? UserPayloadRequest.from(user) : null;
   }
-
   async getUserByEmailWithPassword(email: string): Promise<UserPayloadRequest> {
     const user = await this.prisma.user.findUnique({
       where: { email },
@@ -46,6 +45,43 @@ export class UserRepository {
   async removeUserById(id: number): Promise<void> {
     this.prisma.user.delete({
       where: { id },
+    });
+  }
+
+  async createPat(userId: number, token: string) {
+    const test = this.prisma.pAT.create({
+      data: {
+        token,
+        user: {
+          connect: {
+            id: userId,
+          },
+        },
+      },
+    });
+    console.log(await this.prisma.pAT.findMany());
+    return test;
+  }
+
+  async getUserValidPatWithId(userId: number): Promise<PAT> {
+    return this.prisma.pAT.findFirst({
+      where: {
+        userId,
+        invalidatedAt: {
+          equals: null,
+        },
+      },
+    });
+  }
+
+  async invalidateUserPat(userId: number): Promise<void> {
+    await this.prisma.pAT.updateMany({
+      where: {
+        userId,
+      },
+      data: {
+        invalidatedAt: new Date(),
+      },
     });
   }
 }
