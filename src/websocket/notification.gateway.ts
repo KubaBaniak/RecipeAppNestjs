@@ -20,8 +20,7 @@ export class NotificationGateway {
   }
 
   async handleConnection(socket: Socket) {
-    const token: string =
-      socket.handshake.headers['authorization'].split(' ')[1];
+    const token: string = socket.handshake.headers.authorization?.split(' ')[1];
     try {
       const decodedToken = await this.authService.verifyJwt(token);
       const user = await this.userRepository.getUserById(decodedToken.id);
