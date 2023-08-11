@@ -9,6 +9,8 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { PtaJwtStrategy } from './strategies/pta-jwt.strategy';
+import { UserRepository } from '../user/user.repository';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Module({
   imports: [
@@ -25,6 +27,8 @@ import { PtaJwtStrategy } from './strategies/pta-jwt.strategy';
     LocalStrategy,
     JwtStrategy,
     PtaJwtStrategy,
+    UserRepository,
+    PrismaService,
     LocalAuthGuard,
   ],
   exports: [AuthService],

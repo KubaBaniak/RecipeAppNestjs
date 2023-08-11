@@ -6,6 +6,7 @@ import { UserModule } from './user/user.module';
 import { RecipeModule } from './recipe/recipe.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { RedisCacheModule } from './cache/redis-cache.module';
+import { WebSocketEventModule } from './websocket/websocket-event.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { RedisCacheModule } from './cache/redis-cache.module';
     RedisCacheModule,
     RecipeModule,
     PrismaModule,
+    WebSocketEventModule,
   ],
   controllers: [AppController],
   providers: [AppService],

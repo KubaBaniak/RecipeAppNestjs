@@ -8,6 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { bcryptConstants } from './constants';
 import * as bcrypt from 'bcryptjs';
 import {
+  AccessTokenPayload,
   SignInRequest,
   SignUpRequest,
   SignUpResponse,
@@ -23,7 +24,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async verifyJwt(jwtToken: string): Promise<any> {
+  async verifyJwt(jwtToken: string): Promise<AccessTokenPayload> {
     return this.jwtService.verifyAsync(jwtToken);
   }
 
