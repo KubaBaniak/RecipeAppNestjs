@@ -8,6 +8,8 @@ import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { LocalAuthGuard } from './guards/local-auth.guard';
+import { UserRepository } from '../user/user.repository';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Module({
   imports: [
@@ -16,11 +18,18 @@ import { LocalAuthGuard } from './guards/local-auth.guard';
     JwtModule.register({
       global: true,
       secret: jwtConstants.secret,
-      signOptions: { expiresIn: '30000s' },
+      signOptions: { expiresIn: `${process.env.JWT_EXPIRY_TIME}s` },
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy, JwtStrategy, LocalAuthGuard],
+  providers: [
+    AuthService,
+    UserRepository,
+    PrismaService,
+    LocalStrategy,
+    JwtStrategy,
+    LocalAuthGuard,
+  ],
   exports: [AuthService],
 })
 export class AuthModule {}

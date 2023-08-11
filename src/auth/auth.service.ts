@@ -8,6 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { bcryptConstants } from './constants';
 import * as bcrypt from 'bcryptjs';
 import {
+  AccessTokenPayload,
   SignInRequest,
   SignUpRequest,
   SignUpResponse,
@@ -22,6 +23,10 @@ export class AuthService {
     private readonly userRepository: UserRepository,
     private readonly jwtService: JwtService,
   ) {}
+
+  async verifyJwt(jwtToken: string): Promise<AccessTokenPayload> {
+    return this.jwtService.verifyAsync(jwtToken);
+  }
 
   async signIn(signInRequest: SignInRequest): Promise<string> {
     const user = await this.userRepository.getUserByEmailWithPassword(
