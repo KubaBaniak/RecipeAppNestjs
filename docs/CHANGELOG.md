@@ -1,3 +1,11 @@
+## [1.1.1](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.1.0...v1.1.1) (2023-08-11)
+
+
+### Bug Fixes
+
+* add providers to notification module to fix test ([2c3c080](https://github.com/KubaBaniak/RecipeAppNestjs/commit/2c3c080f9f66f054ea1bb13e863ae74946ff6d1e))
+* resolve conflicts ([ff7949d](https://github.com/KubaBaniak/RecipeAppNestjs/commit/ff7949d0d6978f9b7a1bba71440c116f1de6b21f))
+
 # [1.1.0](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.0.4...v1.1.0) (2023-08-10)
 
 
