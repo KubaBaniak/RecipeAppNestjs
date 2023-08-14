@@ -184,6 +184,16 @@ export default async () => {
             },
           },
         ],
+        [
+          import('./webhook/webhook.controller'),
+          {
+            WebhookController: {
+              createWebhook: {},
+              deleteWebhook: {},
+              listWebhooks: { type: [Object] },
+            },
+          },
+        ],
       ],
     },
   };

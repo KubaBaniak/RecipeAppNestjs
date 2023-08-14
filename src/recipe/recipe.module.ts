@@ -9,9 +9,11 @@ import { S3Service } from './s3-bucket.service';
 import { RecipeRepository } from './recipe.repository';
 import { UserRepository } from '../user/user.repository';
 import { WebSocketEventModule } from '../websocket/websocket-event.module';
+import { WebhookService } from '../webhook/webhook.service';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
-  imports: [RedisCacheModule, WebSocketEventModule],
+  imports: [RedisCacheModule, WebSocketEventModule, HttpModule],
   providers: [
     RecipeService,
     RecipeRepository,
@@ -20,6 +22,7 @@ import { WebSocketEventModule } from '../websocket/websocket-event.module';
     JwtAuthGuard,
     S3Service,
     UserRepository,
+    WebhookService,
   ],
   controllers: [RecipeController],
   exports: [RecipeService],

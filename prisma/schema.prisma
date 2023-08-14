@@ -11,11 +11,12 @@ datasource db {
 }
 
 model User {
-  id       Int      @id @default(autoincrement())
-  email    String   @unique
+  id       Int       @id @default(autoincrement())
+  email    String    @unique
   password String
-  role     Role     @default(USER)
+  role     Role      @default(USER)
   recipes  Recipe[]
+  webhooks Webhook[]
 }
 
 model Recipe {
@@ -28,7 +29,16 @@ model Recipe {
   isPublic    Boolean  @default(false)
   author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   authorId    Int
-  imageKeys  String[] @unique
+  imageKeys   String[] @unique
+}
+
+model Webhook {
+  id     Int    @id @default(autoincrement())
+  name   String
+  url    String
+  type   String
+  User   User   @relation(fields: [userId], references: [id])
+  userId Int
 }
 
 enum Role {
