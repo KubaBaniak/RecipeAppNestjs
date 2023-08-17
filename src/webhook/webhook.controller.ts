@@ -13,13 +13,16 @@ import { WebhookService } from './webhook.service';
 import { UserId } from '../common/decorators/req-user-id.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CreateWebhookRequest, ListWebhooksDto } from './dto';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
-@Controller('webhook')
+@Controller('webhooks')
+@ApiTags('Webhooks')
 export class WebhookController {
   constructor(private readonly webhookService: WebhookService) {}
 
   @UseGuards(JwtAuthGuard)
   @HttpCode(201)
+  @ApiOperation({ summary: 'Create webhook' })
   @Post()
   createWebhook(
     @UserId() userId: number,
@@ -30,6 +33,7 @@ export class WebhookController {
 
   @UseGuards(JwtAuthGuard)
   @HttpCode(200)
+  @ApiOperation({ summary: 'Delete webhook with given id' })
   @Delete(':id')
   async deleteWebhook(
     @UserId() userId: number,
@@ -39,6 +43,7 @@ export class WebhookController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'List all webhooks owned by user' })
   @Get()
   async listWebhooks(@UserId() userId: number): Promise<ListWebhooksDto[]> {
     return await this.webhookService.getWebhooksById(userId);

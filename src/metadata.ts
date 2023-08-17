@@ -73,6 +73,17 @@ export default async () => {
           },
         ],
         [
+          import('./webhook/dto/create-webhook-request'),
+          {
+            CreateWebhookRequest: {
+              name: { required: true, type: () => String },
+              type: { required: true, type: () => String },
+              url: { required: true, type: () => String },
+              token: { required: false, type: () => String },
+            },
+          },
+        ],
+        [
           import('./recipe/dto/create-recipe-request'),
           {
             CreateRecipeRequest: {
