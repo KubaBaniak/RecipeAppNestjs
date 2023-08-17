@@ -59,7 +59,6 @@ export class UserRepository {
         },
       },
     });
-    console.log(await this.prisma.pAT.findMany());
     return test;
   }
 

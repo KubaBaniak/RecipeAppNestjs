@@ -34,8 +34,8 @@ model Recipe {
 
 model PAT {
   id            Int       @id @default(autoincrement())
-  user          User     @relation(fields: [userId], references: [id])
-  userId        Int      
+  user          User      @relation(fields: [userId], references: [id])
+  userId        Int
   token         String
   invalidatedAt DateTime?
 }
