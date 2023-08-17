@@ -1,3 +1,11 @@
+## [1.1.2](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.1.1...v1.1.2) (2023-08-17)
+
+
+### Bug Fixes
+
+* change imageKeys property to imageUrls while fetching ([4d7392d](https://github.com/KubaBaniak/RecipeAppNestjs/commit/4d7392de611269be6854d7a8b307951cab097407))
+* tests ([8a22467](https://github.com/KubaBaniak/RecipeAppNestjs/commit/8a224678590f19d7b263795a22a7d29783b361c4))
+
 ## [1.1.1](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.1.0...v1.1.1) (2023-08-11)
 
 
