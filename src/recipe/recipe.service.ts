@@ -4,7 +4,11 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { Recipe } from '@prisma/client';
-import { CreateRecipeRequest, UpdateRecipeRequest } from './dto';
+import {
+  CreateRecipeRequest,
+  RecipeWithUrls,
+  UpdateRecipeRequest,
+} from './dto';
 import { RecipeCacheService } from './recipe.cache.service';
 import { RecipeRepository } from '../recipe/recipe.repository';
 import { UserRepository } from '../user/user.repository';
@@ -28,12 +32,15 @@ export class RecipeService {
     );
   }
 
-  getImageUrlsOfManyRecipes(recipes: Recipe[]): Promise<Recipe[]> {
+  getImageUrlsOfManyRecipes(recipes: Recipe[]): Promise<RecipeWithUrls[]> {
     return Promise.all(
-      recipes.map(async (recipe) => ({
-        ...recipe,
-        imageKeys: await this.getPresignedUrlsForRecipeImages(recipe),
-      })),
+      recipes.map(async (recipe) => {
+        const { imageKeys, ...recipeWithoutImageKeys } = recipe;
+        return {
+          ...recipeWithoutImageKeys,
+          imageUrls: await this.getPresignedUrlsForRecipeImages(recipe),
+        };
+      }),
     );
   }
 
@@ -52,7 +59,7 @@ export class RecipeService {
     return recipe;
   }
 
-  async fetchRecipe(recipeId: number, userId: number): Promise<Recipe> {
+  async fetchRecipe(recipeId: number, userId: number): Promise<RecipeWithUrls> {
     const user = await this.userRepository.getUserById(userId);
     const recipe =
       (await this.recipeCacheService.getCachedRecipe(recipeId)) ??
@@ -76,17 +83,18 @@ export class RecipeService {
     if (user.id != recipe.authorId && !recipe.isPublic) {
       throw new ForbiddenException();
     }
+    const { imageKeys, ...recipeWithoutImageKeys } = recipe;
 
     return {
-      ...recipe,
-      imageKeys: await this.getPresignedUrlsForRecipeImages(recipe),
+      ...recipeWithoutImageKeys,
+      imageUrls: await this.getPresignedUrlsForRecipeImages(recipe),
     };
   }
 
   async fetchRecipesByAuthorId(
     authorId: number,
     principalId: number,
-  ): Promise<Recipe[]> {
+  ): Promise<RecipeWithUrls[]> {
     const author = await this.userRepository.getUserById(authorId);
     if (!author) {
       throw new NotFoundException();
@@ -102,7 +110,7 @@ export class RecipeService {
     return this.getImageUrlsOfManyRecipes(recipes);
   }
 
-  async fetchAllRecipes(userId: number): Promise<Recipe[]> {
+  async fetchAllRecipes(userId: number): Promise<RecipeWithUrls[]> {
     const user = await this.userRepository.getUserById(userId);
     if (user.role === Role.ADMIN) {
       const recipes = await this.recipeRepository.getAllRecipes();

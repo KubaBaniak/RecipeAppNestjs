@@ -1,4 +1,4 @@
-import { Recipe } from '@prisma/client';
+import { RecipeWithUrls } from './recipe-with-urls';
 
 interface FetchedRecipe {
   id: number;
@@ -7,6 +7,9 @@ interface FetchedRecipe {
   description: string;
   ingredients: string;
   preparation: string;
+  isPublic: boolean;
+  authorId: number;
+  imageUrls: string[];
 }
 
 export class FetchRecipeResponse {
@@ -16,7 +19,7 @@ export class FetchRecipeResponse {
     this.fetchedRecipe = fetchedRecipe;
   }
 
-  public static from(fetchedRecipe: Recipe): FetchRecipeResponse {
+  public static from(fetchedRecipe: RecipeWithUrls): FetchRecipeResponse {
     return new FetchRecipeResponse(fetchedRecipe);
   }
 }

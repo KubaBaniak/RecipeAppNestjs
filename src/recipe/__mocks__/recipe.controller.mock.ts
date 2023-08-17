@@ -6,7 +6,10 @@ import {
   UpdatedRecipeResponse,
   UpdateRecipeRequest,
 } from '../dto';
-import { createRecipeResponse } from '../test/recipe.factory';
+import {
+  createRecipeResponse,
+  createRecipeWithUrlsResponse,
+} from '../test/recipe.factory';
 
 export class MockRecipeController {
   createRecipe(
@@ -22,7 +25,7 @@ export class MockRecipeController {
   }
 
   fetchRecipe(userId: number, recipeId: number): Promise<FetchRecipeResponse> {
-    const fetchedRecipe = createRecipeResponse({
+    const fetchedRecipe = createRecipeWithUrlsResponse({
       id: recipeId,
       authorId: userId,
     });
@@ -35,8 +38,8 @@ export class MockRecipeController {
     _email: string,
   ): Promise<FetchRecipesResponse> {
     const fetchedUsersRecipes = [
-      createRecipeResponse({ id: 0 }),
-      createRecipeResponse({ id: 1 }),
+      createRecipeWithUrlsResponse({ id: 0 }),
+      createRecipeWithUrlsResponse({ id: 1 }),
     ];
 
     return Promise.resolve(FetchRecipesResponse.from(fetchedUsersRecipes));
@@ -44,8 +47,8 @@ export class MockRecipeController {
 
   fetchRecipes(userId: number): Promise<FetchRecipesResponse> {
     const fetchedRecipes = [
-      createRecipeResponse({ id: 0, authorId: userId }),
-      createRecipeResponse({ id: 1 }),
+      createRecipeWithUrlsResponse({ id: 0, authorId: userId }),
+      createRecipeWithUrlsResponse({ id: 1 }),
     ];
 
     return Promise.resolve(FetchRecipesResponse.from(fetchedRecipes));
