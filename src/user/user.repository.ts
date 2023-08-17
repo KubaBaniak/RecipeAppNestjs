@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma, User, Webhook } from '@prisma/client';
 import { UserPayloadRequest } from './dto';
+import { CreateWebhookRequest } from 'src/webhook/dto';
 
 @Injectable()
 export class UserRepository {
@@ -51,18 +52,12 @@ export class UserRepository {
 
   async createWebhook(
     userId: number,
-    webhookData: { name: string; type: string; url: string },
-  ): Promise<User> {
-    return this.prisma.user.update({
-      where: {
-        id: userId,
-      },
+    webhookData: CreateWebhookRequest,
+  ): Promise<Webhook> {
+    return this.prisma.webhook.create({
       data: {
-        webhooks: {
-          create: {
-            ...webhookData,
-          },
-        },
+        ...webhookData,
+        userId,
       },
     });
   }
@@ -70,7 +65,7 @@ export class UserRepository {
   async getAllWebhooksByUserId(userId: number): Promise<Webhook[]> {
     return this.prisma.webhook.findMany({
       where: {
-        id: userId,
+        userId,
       },
     });
   }

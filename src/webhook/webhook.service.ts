@@ -1,77 +1,92 @@
 import { HttpService } from '@nestjs/axios';
-import { HttpStatus, Injectable } from '@nestjs/common';
-import { UserRepository } from '../user/user.repository';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { CreateWebhookRequest, ListWebhooksDto } from './dto';
+import { PATRepository } from './webhook.repository';
+import { Recipe } from '@prisma/client';
 
 @Injectable()
 export class WebhookService {
   constructor(
     private readonly httpService: HttpService,
-    private readonly userRepository: UserRepository,
+    private readonly patRepository: PATRepository,
   ) {}
 
-  createWebhook(
+  async createWebhook(
     userId: number,
-    webhookDataTemp: { name: string; type: string },
-  ): void {
-    const webhookData = {
-      ...webhookDataTemp,
-      url: 'https://webhook.site/67acb81c-04cd-48b4-a4bd-dd711262685c',
-    };
-    this.userRepository.createWebhook(userId, webhookData);
+    webhookData: CreateWebhookRequest,
+  ): Promise<void> {
+    const userWebhooks = await this.patRepository.getAllWebhooksByUserId(
+      userId,
+    );
+    if (userWebhooks.length >= 5) {
+      throw new ForbiddenException();
+    }
+
+    this.patRepository.createWebhook(userId, webhookData);
+  }
+
+  async deleteWebhook(userId: number, webhookId: number) {
+    const webhook = await this.patRepository.getWebhookById(webhookId);
+    if (!webhook) {
+      throw new NotFoundException();
+    }
+    if (userId !== webhook.userId) {
+      throw new UnauthorizedException();
+    }
+    this.patRepository.deleteUserWebhookByName(webhookId);
+  }
+
+  async getWebhooksById(userId: number): Promise<ListWebhooksDto[]> {
+    return this.patRepository.getAllWebhooksByUserId(userId);
   }
 
   sendToWebhook(url: string, data: any, token?: string): void {
     const headersRequest = {
-      'Content-Type': 'application/json', // afaik this one is not needed
+      'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     };
-    this.httpService.post(url, data, {
-      headers: headersRequest,
-    });
+    this.httpService
+      .post(url, data, {
+        headers: headersRequest,
+      })
+      .subscribe();
   }
 
-  async recipeCreated(userId: number, data: any) {
-    const userWebhooks = await this.userRepository.getAllWebhooksByUserId(
+  async recipeCreated(userId: number, data: Recipe) {
+    const userWebhooks = await this.patRepository.getAllWebhooksByUserId(
       userId,
     );
     userWebhooks.forEach((webhook) => {
       if (webhook.type === 'CREATE') {
-        this.sendToWebhook(webhook.url, data);
+        this.sendToWebhook(webhook.url, data, webhook.token);
       }
     });
   }
 
-  recipeUpdated(url: string, data: any, token?: string) {
-    const headersRequest = {
-      'Content-Type': 'application/json', // afaik this one is not needed
-      Authorization: `Bearer ${token}`,
-    };
-    this.httpService
-      .post(url, data, {
-        headers: headersRequest,
-      })
-      .subscribe({
-        error: (err) => {
-          console.log(err);
-        },
-      });
-    return HttpStatus.CREATED;
+  async recipeUpdated(userId: number, data: Recipe) {
+    const userWebhooks = await this.patRepository.getAllWebhooksByUserId(
+      userId,
+    );
+    userWebhooks.forEach((webhook) => {
+      if (webhook.type === 'UPDATE') {
+        this.sendToWebhook(webhook.url, data, webhook.token);
+      }
+    });
   }
 
-  recipeDeleted(url: string, data: any, token?: string) {
-    const headersRequest = {
-      'Content-Type': 'application/json', // afaik this one is not needed
-      Authorization: `Bearer ${token}`,
-    };
-    this.httpService
-      .post(url, data, {
-        headers: headersRequest,
-      })
-      .subscribe({
-        error: (err) => {
-          console.log(err);
-        },
-      });
-    return HttpStatus.CREATED;
+  async recipeDeleted(userId: number, data: Recipe) {
+    const userWebhooks = await this.patRepository.getAllWebhooksByUserId(
+      userId,
+    );
+    userWebhooks.forEach((webhook) => {
+      if (webhook.type === 'DELETE') {
+        this.sendToWebhook(webhook.url, data, webhook.token);
+      }
+    });
   }
 }

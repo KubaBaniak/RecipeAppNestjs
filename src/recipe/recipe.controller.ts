@@ -40,15 +40,11 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { UserId } from '../common/decorators/req-user-id.decorator';
 import { UploadImagesResponse } from './dto/upload-images-response';
 import { S3_CONFIG } from './s3-config';
-import { WebhookService } from '../webhook/webhook.service';
 
 @Controller('recipes')
 @ApiTags('Recipes')
 export class RecipeController {
-  constructor(
-    private readonly recipeService: RecipeService,
-    private readonly webhookService: WebhookService,
-  ) {}
+  constructor(private readonly recipeService: RecipeService) {}
 
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Get list of all recipes' })
@@ -90,9 +86,7 @@ export class RecipeController {
       userId,
       createRecipeRequest,
     );
-    const response = CreateRecipeResponse.from(createdRecipe);
-    this.webhookService.recipeCreated(userId, response);
-    return response;
+    return CreateRecipeResponse.from(createdRecipe);
   }
 
   @HttpCode(200)
