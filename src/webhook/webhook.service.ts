@@ -52,11 +52,11 @@ export class WebhookService {
     return this.patRepository.getAllWebhooksByUserId(userId);
   }
 
-  sendToWebhook(url: string, data: Recipe, token?: string): void {
+  sendToWebhook(url: string, data: Recipe, token?: string, attempt = 0): void {
+    let decryptedToken: string;
     if (token) {
-      token = this.cryptr.decrypt(token);
+      decryptedToken = this.cryptr.decrypt(token);
     }
-
     const headersRequest = {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
@@ -65,7 +65,20 @@ export class WebhookService {
       .post(url, data, {
         headers: headersRequest,
       })
-      .subscribe();
+      .subscribe({
+        error: () => {
+          const maxWaitingTime = 86400 * 1000;
+          const nextTryInSec = Math.min(Math.pow(2, attempt + 1) * 1000);
+          if (nextTryInSec > maxWaitingTime) {
+            throw new NotFoundException({
+              message: 'Could not send data to provided URL',
+            });
+          }
+          setTimeout(() => {
+            this.sendToWebhook(url, data, token, attempt + 1);
+          }, nextTryInSec);
+        },
+      });
   }
 
   async recipeCreated(userId: number, data: Recipe) {

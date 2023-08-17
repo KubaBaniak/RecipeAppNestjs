@@ -11,12 +11,17 @@ import { S3Service } from '../s3-bucket.service';
 import { WebSocketEventGateway } from '../../websocket/websocket-event.gateway';
 import { AuthService } from 'src/auth/auth.service';
 import { JwtService } from '@nestjs/jwt';
+import { PATRepository } from '../../webhook/webhook.repository';
+import { WebhookService } from '../../webhook/webhook.service';
+import { HttpModule } from '@nestjs/axios';
 
 describe('RecipeService', () => {
   let recipeService: RecipeService;
   let webSocketEventGateway: WebSocketEventGateway;
+  let webhookService: WebhookService;
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
+      imports: [HttpModule],
       providers: [
         RecipeService,
         S3Service,
@@ -25,6 +30,8 @@ describe('RecipeService', () => {
         WebSocketEventGateway,
         AuthService,
         JwtService,
+        WebhookService,
+        PATRepository,
         {
           provide: PrismaService,
           useClass: MockPrismaService,
@@ -39,6 +46,7 @@ describe('RecipeService', () => {
     webSocketEventGateway = module.get<WebSocketEventGateway>(
       WebSocketEventGateway,
     );
+    webhookService = module.get<WebhookService>(WebhookService);
     recipeService = module.get<RecipeService>(RecipeService);
   });
 
@@ -61,6 +69,9 @@ describe('RecipeService', () => {
       jest
         .spyOn(webSocketEventGateway, 'newRecipeEvent')
         .mockImplementationOnce(() => ({}));
+      jest
+        .spyOn(webhookService, 'recipeCreated')
+        .mockImplementationOnce(() => Promise.resolve());
 
       //when
       const createdRecipe = await recipeService.createRecipe(userId, request);
@@ -139,6 +150,9 @@ describe('RecipeService', () => {
         preparation: faker.lorem.lines(3),
         isPublic: true,
       };
+      jest
+        .spyOn(webhookService, 'recipeUpdated')
+        .mockImplementationOnce(() => Promise.resolve());
 
       //when
       const updatedRecipe = await recipeService.updateRecipe(
@@ -163,6 +177,9 @@ describe('RecipeService', () => {
       //given
       const recipeId = faker.number.int();
       const userId = faker.number.int();
+      jest
+        .spyOn(webhookService, 'recipeDeleted')
+        .mockImplementationOnce(() => Promise.resolve());
 
       //when
       const deletedRecipe = await recipeService.deleteRecipe(userId, recipeId);
