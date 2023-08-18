@@ -5,7 +5,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { CreateWebhookRequest, ListWebhooksDto } from './dto';
+import { CreateWebhookRequest, ListWebhooksDto, WebhookEvent } from './dto';
 import { PATRepository } from './webhook.repository';
 import { Recipe } from '@prisma/client';
 import Cryptr from 'cryptr';
@@ -81,34 +81,12 @@ export class WebhookService {
       });
   }
 
-  async recipeCreated(userId: number, data: Recipe) {
+  async sendWebhookEvent(userId: number, data: Recipe, event: WebhookEvent) {
     const userWebhooks = await this.patRepository.getAllWebhooksByUserId(
       userId,
     );
     userWebhooks.forEach((webhook) => {
-      if (webhook.type === 'CREATE') {
-        this.sendToWebhook(webhook.url, data, webhook.token);
-      }
-    });
-  }
-
-  async recipeUpdated(userId: number, data: Recipe) {
-    const userWebhooks = await this.patRepository.getAllWebhooksByUserId(
-      userId,
-    );
-    userWebhooks.forEach((webhook) => {
-      if (webhook.type === 'UPDATE') {
-        this.sendToWebhook(webhook.url, data, webhook.token);
-      }
-    });
-  }
-
-  async recipeDeleted(userId: number, data: Recipe) {
-    const userWebhooks = await this.patRepository.getAllWebhooksByUserId(
-      userId,
-    );
-    userWebhooks.forEach((webhook) => {
-      if (webhook.type === 'DELETE') {
+      if (webhook.type === event) {
         this.sendToWebhook(webhook.url, data, webhook.token);
       }
     });
