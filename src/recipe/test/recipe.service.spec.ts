@@ -11,7 +11,7 @@ import { S3Service } from '../s3-bucket.service';
 import { WebSocketEventGateway } from '../../websocket/websocket-event.gateway';
 import { AuthService } from 'src/auth/auth.service';
 import { JwtService } from '@nestjs/jwt';
-import { PATRepository } from '../../webhook/webhook.repository';
+import { WebhookRepository } from '../../webhook/webhook.repository';
 import { WebhookService } from '../../webhook/webhook.service';
 import { HttpModule } from '@nestjs/axios';
 
@@ -31,7 +31,7 @@ describe('RecipeService', () => {
         AuthService,
         JwtService,
         WebhookService,
-        PATRepository,
+        WebhookRepository,
         {
           provide: PrismaService,
           useClass: MockPrismaService,
