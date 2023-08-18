@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { WebhookController } from './webhook.controller';
 import { WebhookService } from './webhook.service';
-import { PATRepository } from './webhook.repository';
+import { WebhookRepository } from './webhook.repository';
 import { HttpModule } from '@nestjs/axios';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -12,7 +12,7 @@ describe('WebhookController', () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [HttpModule],
       controllers: [WebhookController],
-      providers: [WebhookService, PATRepository, PrismaService],
+      providers: [WebhookService, WebhookRepository, PrismaService],
     }).compile();
 
     controller = module.get<WebhookController>(WebhookController);
