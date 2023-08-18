@@ -5,10 +5,10 @@ import { UserModule } from '../user/user.module';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from './constants';
 import { LocalStrategy } from './strategies/local.strategy';
-import { JwtStrategy } from './strategies/jwt.strategy';
+import { UserAuthBearerStrategy } from './strategies/jwt.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { LocalAuthGuard } from './guards/local-auth.guard';
-import { PtaJwtStrategy } from './strategies/pta-jwt.strategy';
+import { PersonalAccessTokenStrategy } from './strategies/pat.strategy';
 import { UserRepository } from '../user/user.repository';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -25,8 +25,8 @@ import { PrismaService } from '../prisma/prisma.service';
   providers: [
     AuthService,
     LocalStrategy,
-    JwtStrategy,
-    PtaJwtStrategy,
+    UserAuthBearerStrategy,
+    PersonalAccessTokenStrategy,
     UserRepository,
     PrismaService,
     LocalAuthGuard,

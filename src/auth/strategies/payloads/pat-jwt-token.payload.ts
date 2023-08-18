@@ -1,4 +1,4 @@
-export class PtaJwtPayload {
+export class PatJwtPayload {
   id: number;
   type: string;
 }

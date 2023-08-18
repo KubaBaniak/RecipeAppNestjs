@@ -70,7 +70,7 @@ export default async () => {
           import('./auth/dto/create-pat-response'),
           {
             CreatePatResponse: {
-              patToken: { required: true, type: () => String },
+              personalAccessToken: { required: true, type: () => String },
             },
           },
         ],

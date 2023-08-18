@@ -24,7 +24,7 @@ describe('RecipeController (e2e)', () => {
   let authService: AuthService;
   let user: User;
   let accessToken: string;
-  let patToken: string;
+  let personalAccessToken: string;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -52,7 +52,7 @@ describe('RecipeController (e2e)', () => {
       password: user.password,
     });
 
-    patToken = await authService.createPAT(user.id);
+    personalAccessToken = await authService.createPersonalAccessToken(user.id);
 
     app.useGlobalPipes(
       new ValidationPipe({
@@ -155,7 +155,7 @@ describe('RecipeController (e2e)', () => {
     it('should fetch recipe using PAT', async () => {
       return request(app.getHttpServer())
         .get(`/recipes/${recipe.id}`)
-        .set({ Authorization: `Bearer ${patToken}` })
+        .set({ Authorization: `Bearer ${personalAccessToken}` })
         .expect((response: request.Response) => {
           expect(response.body.fetchedRecipe).toBeDefined();
         })
@@ -230,7 +230,7 @@ describe('RecipeController (e2e)', () => {
     it('should fetch all recipes using PAT', async () => {
       return request(app.getHttpServer())
         .get(`/recipes`)
-        .set({ Authorization: `Bearer ${patToken}` })
+        .set({ Authorization: `Bearer ${personalAccessToken}` })
         .expect((response: request.Response) => {
           expect(response.body.fetchedRecipes).toBeDefined();
         })

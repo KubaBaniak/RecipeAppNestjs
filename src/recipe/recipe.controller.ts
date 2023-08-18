@@ -25,7 +25,7 @@ import {
   UpdateRecipeRequest,
 } from './dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { ApiAuthGuard } from '../auth/guards/pta-auth-api.guard';
+import { ApiAuthGuard } from '../auth/guards/pat-auth-api.guard';
 import {
   ApiTags,
   ApiParam,

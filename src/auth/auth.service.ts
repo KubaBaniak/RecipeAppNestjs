@@ -36,7 +36,7 @@ export class AuthService {
       throw new NotFoundException();
     }
 
-    return await this.jwtService.signAsync(
+    return this.jwtService.signAsync(
       {
         id: user.id,
         email: user.email,
@@ -45,19 +45,22 @@ export class AuthService {
     );
   }
 
-  async createPAT(userId: number): Promise<string> {
-    const validPatToken = await this.userRepository.getUserValidPatWithId(
+  async createPersonalAccessToken(userId: number): Promise<string> {
+    const validPatToken = await this.userRepository.getValidPatForUserId(
       userId,
     );
     if (validPatToken) {
-      this.userRepository.invalidateUserPat(userId);
+      await this.userRepository.invalidateUserPat(userId);
     }
-    const token = await this.jwtService.signAsync({
+    const personalAccessToken = await this.jwtService.signAsync({
       id: userId,
       type: 'PAT',
     });
-    const patToken = await this.userRepository.createPat(userId, token);
-    return patToken.token;
+    const { token } = await this.userRepository.createPat(
+      userId,
+      personalAccessToken,
+    );
+    return token;
   }
 
   async signUp(signUpRequest: SignUpRequest): Promise<SignUpResponse> {

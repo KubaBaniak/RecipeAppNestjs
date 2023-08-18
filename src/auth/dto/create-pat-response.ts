@@ -1,11 +1,11 @@
 export class CreatePatResponse {
-  public patToken: string;
+  public personalAccessToken: string;
 
-  constructor(patToken: string) {
-    this.patToken = patToken;
+  constructor(personalAccessToken: string) {
+    this.personalAccessToken = personalAccessToken;
   }
 
-  public static from(patToken: string): CreatePatResponse {
-    return new CreatePatResponse(patToken);
+  public static from(personalAccessToken: string): CreatePatResponse {
+    return new CreatePatResponse(personalAccessToken);
   }
 }
