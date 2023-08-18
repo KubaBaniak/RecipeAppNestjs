@@ -10,9 +10,9 @@ import { RecipeRepository } from './recipe.repository';
 import { WebSocketEventModule } from '../websocket/websocket-event.module';
 import { WebhookService } from '../webhook/webhook.service';
 import { HttpModule } from '@nestjs/axios';
-import { PATRepository } from '../webhook/webhook.repository';
+import { WebhookRepository } from '../webhook/webhook.repository';
 import { UserRepository } from '../user/user.repository';
-PATRepository;
+WebhookRepository;
 
 @Module({
   imports: [RedisCacheModule, WebSocketEventModule, HttpModule],
@@ -24,7 +24,7 @@ PATRepository;
     JwtAuthGuard,
     S3Service,
     WebhookService,
-    PATRepository,
+    WebhookRepository,
     UserRepository,
   ],
   controllers: [RecipeController],

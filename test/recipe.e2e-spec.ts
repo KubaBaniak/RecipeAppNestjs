@@ -19,7 +19,7 @@ import { S3Service } from '../src/recipe/s3-bucket.service';
 import { WebSocketEventGateway } from '../src/websocket/websocket-event.gateway';
 import { HttpModule } from '@nestjs/axios';
 import { WebhookService } from '../src/webhook/webhook.service';
-import { PATRepository } from '../src/webhook/webhook.repository';
+import { WebhookRepository } from '../src/webhook/webhook.repository';
 
 describe('RecipeController (e2e)', () => {
   let app: INestApplication;
@@ -40,7 +40,7 @@ describe('RecipeController (e2e)', () => {
         S3Service,
         WebSocketEventGateway,
         WebhookService,
-        PATRepository,
+        WebhookRepository,
       ],
     }).compile();
 
