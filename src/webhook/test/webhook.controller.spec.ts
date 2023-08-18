@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { WebhookController } from '../webhook.controller';
 import { WebhookService } from '../webhook.service';
-import { PATRepository } from '../webhook.repository';
+import { WebhookRepository } from '../webhook.repository';
 import { HttpModule } from '@nestjs/axios';
 import { PrismaService } from '../../prisma/prisma.service';
 import { faker } from '@faker-js/faker';
@@ -15,7 +15,7 @@ describe('WebhookController', () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [HttpModule],
       controllers: [WebhookController],
-      providers: [WebhookService, PATRepository, PrismaService],
+      providers: [WebhookService, WebhookRepository, PrismaService],
     }).compile();
 
     controller = module.get<WebhookController>(WebhookController);
@@ -87,26 +87,29 @@ describe('WebhookController', () => {
   });
 
   describe('List webhook', () => {
-    it('should list all webhooks owned by a user', () => {
-      const returnItem = {
-        id: faker.number.int(),
-        name: faker.word.noun(),
-        url: faker.internet.url(),
-        token: faker.string.alphanumeric(),
-        type: 'CREATE',
-      };
+    it('should list all webhooks owned by a user', async () => {
+      const returnItem = [
+        {
+          id: faker.number.int(),
+          name: faker.word.noun(),
+          url: faker.internet.url(),
+          token: faker.string.alphanumeric(),
+          type: 'CREATE',
+          userId: faker.number.int(),
+        },
+      ];
       jest
         .spyOn(WebhookService.prototype, 'getWebhooksById')
-        .mockImplementation((_userId: number) => {
+        .mockImplementation(async (_userId: number) => {
           return returnItem;
         });
 
       const userId = faker.number.int();
-      const webhookId = faker.number.int();
 
-      controller.deleteWebhook(userId, webhookId);
+      const response = await controller.listWebhooks(userId);
 
       expect(webhookService.getWebhooksById).toHaveBeenCalled();
+      expect(response).toHaveLength(1);
 
       jest.clearAllMocks();
     });

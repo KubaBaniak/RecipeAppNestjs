@@ -6,7 +6,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { CreateWebhookRequest } from './dto';
-import { PATRepository } from './webhook.repository';
+import { WebhookRepository } from './webhook.repository';
 import { Recipe, Webhook } from '@prisma/client';
 import Cryptr from 'cryptr';
 
@@ -14,7 +14,7 @@ import Cryptr from 'cryptr';
 export class WebhookService {
   constructor(
     private readonly httpService: HttpService,
-    private readonly patRepository: PATRepository,
+    private readonly patRepository: WebhookRepository,
   ) {}
   cryptr = new Cryptr(process.env.CRYPTR_SECRET_KEY);
 

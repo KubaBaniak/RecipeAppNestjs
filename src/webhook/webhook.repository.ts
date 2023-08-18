@@ -4,7 +4,7 @@ import { Webhook } from '@prisma/client';
 import { CreateWebhookRequest } from 'src/webhook/dto';
 
 @Injectable()
-export class PATRepository {
+export class WebhookRepository {
   constructor(private prisma: PrismaService) {}
 
   async createWebhook(
