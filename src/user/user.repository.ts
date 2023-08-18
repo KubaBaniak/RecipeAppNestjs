@@ -48,7 +48,7 @@ export class UserRepository {
     });
   }
 
-  async createPat(userId: number, token: string): Promise<PersonalAccessToken> {
+  createPat(userId: number, token: string): Promise<PersonalAccessToken> {
     return this.prisma.personalAccessToken.create({
       data: {
         token,
@@ -61,7 +61,7 @@ export class UserRepository {
     });
   }
 
-  async getValidPatForUserId(userId: number): Promise<PersonalAccessToken> {
+  getValidPatForUserId(userId: number): Promise<PersonalAccessToken> {
     return this.prisma.personalAccessToken.findFirst({
       where: {
         userId,
@@ -72,7 +72,7 @@ export class UserRepository {
     });
   }
 
-  async invalidateUserPat(userId: number): Promise<void> {
+  async invalidatePatForUserId(userId: number): Promise<void> {
     await this.prisma.personalAccessToken.updateMany({
       where: {
         userId,

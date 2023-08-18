@@ -46,11 +46,11 @@ export class AuthService {
   }
 
   async createPersonalAccessToken(userId: number): Promise<string> {
-    const validPatToken = await this.userRepository.getValidPatForUserId(
-      userId,
-    );
-    if (validPatToken) {
-      await this.userRepository.invalidateUserPat(userId);
+    const validPersonalAccessToken =
+      await this.userRepository.getValidPatForUserId(userId);
+
+    if (validPersonalAccessToken) {
+      this.userRepository.invalidatePatForUserId(userId);
     }
     const personalAccessToken = await this.jwtService.signAsync({
       id: userId,
