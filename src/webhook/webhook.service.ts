@@ -5,9 +5,9 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { CreateWebhookRequest, ListWebhooksDto } from './dto';
+import { CreateWebhookRequest } from './dto';
 import { PATRepository } from './webhook.repository';
-import { Recipe } from '@prisma/client';
+import { Recipe, Webhook } from '@prisma/client';
 import Cryptr from 'cryptr';
 
 @Injectable()
@@ -48,7 +48,7 @@ export class WebhookService {
     this.patRepository.deleteUserWebhookByName(webhookId);
   }
 
-  async getWebhooksById(userId: number): Promise<ListWebhooksDto[]> {
+  async getWebhooksById(userId: number): Promise<Webhook[]> {
     return this.patRepository.getAllWebhooksByUserId(userId);
   }
 

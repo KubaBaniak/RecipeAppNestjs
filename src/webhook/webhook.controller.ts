@@ -12,8 +12,9 @@ import {
 import { WebhookService } from './webhook.service';
 import { UserId } from '../common/decorators/req-user-id.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { CreateWebhookRequest, ListWebhooksDto } from './dto';
+import { CreateWebhookRequest } from './dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Webhook } from '@prisma/client';
 
 @Controller('webhooks')
 @ApiTags('Webhooks')
@@ -45,7 +46,7 @@ export class WebhookController {
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'List all webhooks owned by user' })
   @Get()
-  async listWebhooks(@UserId() userId: number): Promise<ListWebhooksDto[]> {
+  async listWebhooks(@UserId() userId: number): Promise<Webhook[]> {
     return await this.webhookService.getWebhooksById(userId);
   }
 }
