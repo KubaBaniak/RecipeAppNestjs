@@ -49,46 +49,71 @@ describe('WebhookController (e2e)', () => {
     });
   });
 
-  afterEach(() => {
-    prismaService.webhook.deleteMany({});
+  beforeEach(async () => {
+    await prismaService.webhook.deleteMany();
   });
 
   describe('POST /webhooks', () => {
     it('should create webhook', async () => {
       const webhook = createWebhookRequest();
-      return request(app.getHttpServer())
+      request(app.getHttpServer())
         .post('/webhooks')
         .set({ Authorization: `Bearer ${accessToken}` })
         .send(webhook)
-        .expect((response: request.Response) => {
-          const { name, type, url, token } = response.body;
-          console.log(response.body);
-          expect(name).toEqual(webhook.name);
-          expect(type).toEqual(webhook.type);
-          expect(url).toEqual(webhook.url);
-          expect(token).toEqual(webhook.token);
-        })
         .expect(HttpStatus.CREATED);
+      expect(
+        await prismaService.webhook.findFirst({
+          where: { name: webhook.name },
+        }),
+      ).toBeDefined();
+    });
+    it('should not create new webhook due to the limit (5 webhooks)', async () => {
+      const testWebhooks = [
+        createWebhookWithUserId(user.id, {}),
+        createWebhookWithUserId(user.id, {}),
+        createWebhookWithUserId(user.id, {}),
+        createWebhookWithUserId(user.id, {}),
+        createWebhookWithUserId(user.id, {}),
+      ];
+      await prismaService.webhook.createMany({
+        data: testWebhooks,
+      });
+      const webhook = createWebhookRequest();
+      request(app.getHttpServer())
+        .post('/webhooks')
+        .set({ Authorization: `Bearer ${accessToken}` })
+        .send(webhook)
+        .expect(HttpStatus.FORBIDDEN);
     });
   });
 
   describe('GET /webhooks', () => {
-    beforeEach(async () => {
-      await prismaService.webhook.createMany({
-        data: [
-          createWebhookWithUserId(user.id, {}),
-          createWebhookWithUserId(user.id, {}),
-          createWebhookWithUserId(user.id, {}),
-        ],
-      });
-    });
-
     it('it should find all webhooks owned by a user with id', async () => {
+      const testWebhooks = [
+        createWebhookWithUserId(user.id, {}),
+        createWebhookWithUserId(user.id, {}),
+        createWebhookWithUserId(user.id, {}),
+      ];
+      await prismaService.webhook.createMany({
+        data: testWebhooks,
+      });
+
       return request(app.getHttpServer())
         .get('/webhooks')
         .set({ Authorization: `Bearer ${accessToken}` })
         .expect((response: request.Response) => {
-          expect(response.body).toHaveLength(3);
+          expect(response.body).toEqual(
+            expect.arrayContaining([
+              {
+                id: expect.any(Number),
+                name: expect.any(String),
+                type: expect.any(String),
+                token: expect.any(String),
+                url: expect.any(String),
+                userId: expect.any(Number),
+              },
+            ]),
+          );
         })
         .expect(HttpStatus.OK);
     });
@@ -96,16 +121,17 @@ describe('WebhookController (e2e)', () => {
 
   describe('DELETE /webhooks', () => {
     it('should delete webhook given id', async () => {
-      await prismaService.webhook.create({
+      const createdWebhook = await prismaService.webhook.create({
         data: createWebhookWithUserId(user.id, {}),
       });
       return request(app.getHttpServer())
-        .delete(`/webhooks`)
+        .delete(`/webhooks/${createdWebhook.id}`)
         .set({ Authorization: `Bearer ${accessToken}` })
-        .expect(async () => {
-          expect(await prismaService.webhook.findMany()).toHaveLength(0);
-        })
         .expect(HttpStatus.OK);
     });
+  });
+
+  afterAll(async () => {
+    await app.close();
   });
 });

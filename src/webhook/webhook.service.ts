@@ -14,7 +14,7 @@ import Cryptr from 'cryptr';
 export class WebhookService {
   constructor(
     private readonly httpService: HttpService,
-    private readonly patRepository: WebhookRepository,
+    private readonly webhookRepository: WebhookRepository,
   ) {}
   cryptr = new Cryptr(process.env.CRYPTR_SECRET_KEY);
 
@@ -22,7 +22,7 @@ export class WebhookService {
     userId: number,
     webhookData: CreateWebhookRequest,
   ): Promise<void> {
-    const userWebhooks = await this.patRepository.getAllWebhooksByUserId(
+    const userWebhooks = await this.webhookRepository.getAllWebhooksByUserId(
       userId,
     );
     if (userWebhooks.length >= 5) {
@@ -34,22 +34,22 @@ export class WebhookService {
       webhookData.token = encryptedString;
     }
 
-    this.patRepository.createWebhook(userId, webhookData);
+    this.webhookRepository.createWebhook(userId, webhookData);
   }
 
   async deleteWebhook(userId: number, webhookId: number) {
-    const webhook = await this.patRepository.getWebhookById(webhookId);
+    const webhook = await this.webhookRepository.getWebhookById(webhookId);
     if (!webhook) {
       throw new NotFoundException();
     }
     if (userId !== webhook.userId) {
       throw new UnauthorizedException();
     }
-    this.patRepository.deleteUserWebhookByName(webhookId);
+    this.webhookRepository.deleteUserWebhookById(webhookId);
   }
 
   async getWebhooksById(userId: number): Promise<Webhook[]> {
-    return this.patRepository.getAllWebhooksByUserId(userId);
+    return this.webhookRepository.getAllWebhooksByUserId(userId);
   }
 
   sendToWebhook(url: string, data: Recipe, token?: string, attempt = 0): void {
@@ -82,7 +82,7 @@ export class WebhookService {
   }
 
   async sendWebhookEvent(userId: number, data: Recipe, event: WebhookEvent) {
-    const userWebhooks = await this.patRepository.getAllWebhooksByUserId(
+    const userWebhooks = await this.webhookRepository.getAllWebhooksByUserId(
       userId,
     );
     userWebhooks.forEach((webhook) => {
