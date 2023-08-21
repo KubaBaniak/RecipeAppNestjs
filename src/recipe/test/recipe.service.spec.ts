@@ -70,7 +70,7 @@ describe('RecipeService', () => {
         .spyOn(webSocketEventGateway, 'newRecipeEvent')
         .mockImplementationOnce(() => ({}));
       jest
-        .spyOn(webhookService, 'recipeCreated')
+        .spyOn(webhookService, 'sendWebhookEvent')
         .mockImplementationOnce(() => Promise.resolve());
 
       //when
@@ -151,7 +151,7 @@ describe('RecipeService', () => {
         isPublic: true,
       };
       jest
-        .spyOn(webhookService, 'recipeUpdated')
+        .spyOn(webhookService, 'sendWebhookEvent')
         .mockImplementationOnce(() => Promise.resolve());
 
       //when
@@ -178,7 +178,7 @@ describe('RecipeService', () => {
       const recipeId = faker.number.int();
       const userId = faker.number.int();
       jest
-        .spyOn(webhookService, 'recipeDeleted')
+        .spyOn(webhookService, 'sendWebhookEvent')
         .mockImplementationOnce(() => Promise.resolve());
 
       //when

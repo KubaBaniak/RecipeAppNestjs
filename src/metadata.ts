@@ -1,6 +1,9 @@
 /* eslint-disable */
 export default async () => {
   const t = {
+    ['./webhook/dto/webhook-event']: await import(
+      './webhook/dto/webhook-event'
+    ),
     ['./auth/dto/sign-in-response']: await import(
       './auth/dto/sign-in-response'
     ),
@@ -77,7 +80,10 @@ export default async () => {
           {
             CreateWebhookRequest: {
               name: { required: true, type: () => String },
-              type: { required: true, type: () => String },
+              type: {
+                required: true,
+                enum: t['./webhook/dto/webhook-event'].WebhookEvent,
+              },
               url: { required: true, type: () => String },
               token: { required: false, type: () => String },
             },

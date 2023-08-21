@@ -12,6 +12,7 @@ import { Role } from '@prisma/client';
 import { S3Service } from './s3-bucket.service';
 import { WebSocketEventGateway } from '../websocket/websocket-event.gateway';
 import { WebhookService } from '../webhook/webhook.service';
+import { WebhookEvent } from '../webhook/dto';
 
 @Injectable()
 export class RecipeService {
@@ -51,7 +52,11 @@ export class RecipeService {
       recipe.authorId,
     );
 
-    this.webhookService.recipeCreated(userId, recipe);
+    this.webhookService.sendWebhookEvent(
+      userId,
+      recipe,
+      WebhookEvent.RecipeCreated,
+    );
     return recipe;
   }
 
@@ -136,7 +141,11 @@ export class RecipeService {
     recipe = await this.recipeRepository.updateRecipe(recipeId, payload);
 
     this.recipeCacheService.cacheRecipe(recipe);
-    this.webhookService.recipeUpdated(userId, recipe);
+    this.webhookService.sendWebhookEvent(
+      userId,
+      recipe,
+      WebhookEvent.RecipeUpdated,
+    );
 
     return recipe;
   }
@@ -152,7 +161,11 @@ export class RecipeService {
     }
     await this.recipeRepository.deleteRecipe(recipeId);
     this.recipeCacheService.deleteCachedRecipe(recipeId);
-    this.webhookService.recipeDeleted(userId, recipe);
+    this.webhookService.sendWebhookEvent(
+      userId,
+      recipe,
+      WebhookEvent.RecipeDeleted,
+    );
   }
 
   async uploadImages(

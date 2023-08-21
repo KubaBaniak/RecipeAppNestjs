@@ -5,7 +5,7 @@ import { WebhookRepository } from '../webhook.repository';
 import { HttpModule } from '@nestjs/axios';
 import { PrismaService } from '../../prisma/prisma.service';
 import { faker } from '@faker-js/faker';
-import { CreateWebhookRequest } from '../dto';
+import { CreateWebhookRequest, WebhookEvent } from '../dto';
 
 describe('WebhookController', () => {
   let controller: WebhookController;
@@ -44,7 +44,7 @@ describe('WebhookController', () => {
     it('should create a new webhook with token', () => {
       const data: CreateWebhookRequest = {
         name: faker.word.noun(),
-        type: 'CREATE',
+        type: WebhookEvent.RecipeCreated,
         url: faker.internet.url(),
       };
 
@@ -56,7 +56,7 @@ describe('WebhookController', () => {
     it('should create a new webhook without token', () => {
       const data: CreateWebhookRequest = {
         name: faker.word.noun(),
-        type: 'OTHER',
+        type: WebhookEvent.RecipeDeleted,
         url: faker.internet.url(),
         token: faker.string.alphanumeric(32),
       };

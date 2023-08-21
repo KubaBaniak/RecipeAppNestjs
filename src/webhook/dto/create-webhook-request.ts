@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsIn, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { WebhookEvent } from './webhook-event';
 
 export class CreateWebhookRequest {
   @IsNotEmpty()
@@ -10,10 +11,10 @@ export class CreateWebhookRequest {
   @IsNotEmpty()
   @IsString()
   @ApiProperty({
-    enum: ['CREATE', 'UPDATE', 'DELETE'],
+    enum: ['recipe_created', 'recipe_updated', 'recipe_deleted'],
   })
-  @IsIn(['CREATE', 'UPDATE', 'DELETE'])
-  type: string;
+  @IsIn(['recipe_created', 'recipe_updated', 'recipe_deleted'])
+  type: WebhookEvent;
 
   @IsNotEmpty()
   @IsString()
