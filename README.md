@@ -46,7 +46,7 @@ $ npx run prisma:generate
 
 # Running the app
 
-### Database & Cache
+## Database & Cache
 
 To setup PostgreSQL database using docker compose use:
 
@@ -62,16 +62,17 @@ $ docker compose --profile dependencies --profile tools up
 
 ---
 
-> **Warning:**
-> After successfull database initalization, migrations have to be performed. Use:
->
-> ```bash
-> # for development
-> $ npx prisma migrate dev
->
-> # for production
-> $ npx prisma migrate prod
-> ```
+⚠️ **WARNING** ⚠️ 
+
+After successfull database initalization, migrations have to be performed. Use:
+
+```bash
+# for development
+$ npx prisma migrate dev
+
+# for production
+$ npx prisma migrate prod
+```
 
 ---
 
@@ -80,7 +81,7 @@ If you want to run this in background add `--detach` or `-d` flag at the end.
 **Make sure Docker service is running on your machine!**
 <br>
 
-### Start the app
+## Start the app
 
 ```bash
 # development
