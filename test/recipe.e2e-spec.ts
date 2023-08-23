@@ -17,6 +17,7 @@ import { RecipeRepository } from '../src/recipe/recipe.repository';
 import { UserRepository } from '../src/user/user.repository';
 import { S3Service } from '../src/recipe/s3-bucket.service';
 import { WebSocketEventGateway } from '../src/websocket/websocket-event.gateway';
+import { PersonalAccessTokenRepository } from '../src/auth/personal-access-token.repository';
 
 describe('RecipeController (e2e)', () => {
   let app: INestApplication;
@@ -32,6 +33,7 @@ describe('RecipeController (e2e)', () => {
       providers: [
         RecipeService,
         UserRepository,
+        PersonalAccessTokenRepository,
         RecipeRepository,
         PrismaService,
         RecipeCacheService,

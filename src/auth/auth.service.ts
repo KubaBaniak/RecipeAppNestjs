@@ -1,7 +1,6 @@
 import {
   ForbiddenException,
   Injectable,
-  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -16,11 +15,13 @@ import {
 } from './dto';
 import { UserRepository } from '../user/user.repository';
 import { UserPayloadRequest } from '../user/dto';
+import { PersonalAccessTokenRepository } from './personal-access-token.repository';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly userRepository: UserRepository,
+    private readonly personalAccessTokenRepository: PersonalAccessTokenRepository,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -33,7 +34,7 @@ export class AuthService {
       signInRequest.email,
     );
     if (!user) {
-      throw new NotFoundException();
+      throw new UnauthorizedException();
     }
 
     return this.jwtService.signAsync(
@@ -47,19 +48,20 @@ export class AuthService {
 
   async createPersonalAccessToken(userId: number): Promise<string> {
     const validPersonalAccessToken =
-      await this.userRepository.getValidPatForUserId(userId);
+      await this.personalAccessTokenRepository.getValidPatForUserId(userId);
 
     if (validPersonalAccessToken) {
-      this.userRepository.invalidatePatForUserId(userId);
+      this.personalAccessTokenRepository.invalidatePatForUserId(userId);
     }
     const personalAccessToken = await this.jwtService.signAsync({
       id: userId,
       type: 'PAT',
     });
-    const { token } = await this.userRepository.createPat(
-      userId,
-      personalAccessToken,
-    );
+    const { token } =
+      await this.personalAccessTokenRepository.savePersonalAccessToken(
+        userId,
+        personalAccessToken,
+      );
     return token;
   }
 

@@ -53,8 +53,10 @@ export class AuthController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post('generate/pat')
-  async generatePAT(@UserId() userId: number): Promise<CreatePatResponse> {
+  @Post('create/pat')
+  async createPersonalAccessToken(
+    @UserId() userId: number,
+  ): Promise<CreatePatResponse> {
     const patToken = await this.authService.createPersonalAccessToken(userId);
     return CreatePatResponse.from(patToken);
   }

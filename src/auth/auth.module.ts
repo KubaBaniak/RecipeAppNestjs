@@ -11,6 +11,7 @@ import { LocalAuthGuard } from './guards/local-auth.guard';
 import { PersonalAccessTokenStrategy } from './strategies/pat.strategy';
 import { UserRepository } from '../user/user.repository';
 import { PrismaService } from '../prisma/prisma.service';
+import { PersonalAccessTokenRepository } from './personal-access-token.repository';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { PrismaService } from '../prisma/prisma.service';
     UserAuthBearerStrategy,
     PersonalAccessTokenStrategy,
     UserRepository,
+    PersonalAccessTokenRepository,
     PrismaService,
     LocalAuthGuard,
   ],

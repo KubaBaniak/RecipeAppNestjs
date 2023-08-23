@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { PersonalAccessToken, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { UserPayloadRequest } from './dto';
 
 @Injectable()
@@ -45,41 +45,6 @@ export class UserRepository {
   async removeUserById(id: number): Promise<void> {
     this.prisma.user.delete({
       where: { id },
-    });
-  }
-
-  createPat(userId: number, token: string): Promise<PersonalAccessToken> {
-    return this.prisma.personalAccessToken.create({
-      data: {
-        token,
-        user: {
-          connect: {
-            id: userId,
-          },
-        },
-      },
-    });
-  }
-
-  getValidPatForUserId(userId: number): Promise<PersonalAccessToken> {
-    return this.prisma.personalAccessToken.findFirst({
-      where: {
-        userId,
-        invalidatedAt: {
-          equals: null,
-        },
-      },
-    });
-  }
-
-  async invalidatePatForUserId(userId: number): Promise<void> {
-    await this.prisma.personalAccessToken.updateMany({
-      where: {
-        userId,
-      },
-      data: {
-        invalidatedAt: new Date(),
-      },
     });
   }
 }

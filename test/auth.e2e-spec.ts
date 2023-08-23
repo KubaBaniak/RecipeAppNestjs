@@ -9,6 +9,7 @@ import { Role } from '@prisma/client';
 import { faker } from '@faker-js/faker';
 import { createUser } from '../src/user/test/user.factory';
 import { UserRepository } from '../src/user/user.repository';
+import { PersonalAccessTokenRepository } from '../src/auth/personal-access-token.repository';
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication;
@@ -19,7 +20,13 @@ describe('AuthController (e2e)', () => {
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [AuthModule],
-      providers: [AuthService, UserService, UserRepository, PrismaService],
+      providers: [
+        AuthService,
+        UserService,
+        UserRepository,
+        PersonalAccessTokenRepository,
+        PrismaService,
+      ],
     }).compile();
 
     app = moduleRef.createNestApplication();

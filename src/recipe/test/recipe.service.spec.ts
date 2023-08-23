@@ -9,8 +9,9 @@ import { RecipeRepository } from '../recipe.repository';
 import { UserRepository } from '../../user/user.repository';
 import { S3Service } from '../s3-bucket.service';
 import { WebSocketEventGateway } from '../../websocket/websocket-event.gateway';
-import { AuthService } from 'src/auth/auth.service';
+import { AuthService } from '../../auth/auth.service';
 import { JwtService } from '@nestjs/jwt';
+import { PersonalAccessTokenRepository } from '../../auth/personal-access-token.repository';
 
 describe('RecipeService', () => {
   let recipeService: RecipeService;
@@ -22,6 +23,7 @@ describe('RecipeService', () => {
         S3Service,
         RecipeRepository,
         UserRepository,
+        PersonalAccessTokenRepository,
         WebSocketEventGateway,
         AuthService,
         JwtService,
