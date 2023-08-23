@@ -164,7 +164,7 @@ export default async () => {
             AuthController: {
               signIn: { type: t['./auth/dto/sign-in-response'].SignInResponse },
               signUp: { type: t['./auth/dto/sign-up-response'].SignUpResponse },
-              generatePAT: {
+              createPersonalAccessToken: {
                 type: t['./auth/dto/create-pat-response'].CreatePatResponse,
               },
             },
