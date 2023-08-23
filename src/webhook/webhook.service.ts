@@ -52,7 +52,7 @@ export class WebhookService {
     const webhooks = await this.webhookRepository.getAllWebhooksByUserId(
       userId,
     );
-    return webhooks.map(({ userId, ...rest }) => {
+    return webhooks.map(({ userId, token, ...rest }) => {
       return rest;
     });
   }

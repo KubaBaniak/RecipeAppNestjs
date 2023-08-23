@@ -3,7 +3,6 @@ export interface FetchedWebhook {
   name: string;
   url: string;
   type: string;
-  token: string | null;
 }
 
 export class FetchWebhooksResponse {
@@ -11,7 +10,6 @@ export class FetchWebhooksResponse {
 
   constructor(fetchedWebhooks: FetchedWebhook[]) {
     this.fetchedWebhooks = fetchedWebhooks;
-    console.log(this.fetchedWebhooks);
   }
 
   public static from(fetchedWebhooks: FetchedWebhook[]): FetchWebhooksResponse {
