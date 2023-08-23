@@ -25,6 +25,9 @@ export default async () => {
     ['./recipe/dto/upload-images-response']: await import(
       './recipe/dto/upload-images-response'
     ),
+    ['./webhook/dto/webhook-response']: await import(
+      './webhook/dto/webhook-response'
+    ),
   };
   return {
     '@nestjs/swagger': {
@@ -72,20 +75,6 @@ export default async () => {
             CreateUserRequest: {
               email: { required: true, type: () => String },
               password: { required: true, type: () => String },
-            },
-          },
-        ],
-        [
-          import('./webhook/dto/create-webhook-request'),
-          {
-            CreateWebhookRequest: {
-              name: { required: true, type: () => String },
-              type: {
-                required: true,
-                enum: t['./webhook/dto/webhook-event'].WebhookEvent,
-              },
-              url: { required: true, type: () => String },
-              token: { required: false, type: () => String },
             },
           },
         ],
@@ -155,6 +144,28 @@ export default async () => {
           },
         ],
         [
+          import('./webhook/dto/webhook-response'),
+          {
+            FetchWebhooksResponse: {
+              fetchedWebhooks: { required: true, type: () => [Object] },
+            },
+          },
+        ],
+        [
+          import('./webhook/dto/create-webhook-request'),
+          {
+            CreateWebhookRequest: {
+              name: { required: true, type: () => String },
+              type: {
+                required: true,
+                enum: t['./webhook/dto/webhook-event'].WebhookEvent,
+              },
+              url: { required: true, type: () => String },
+              token: { required: false, type: () => String },
+            },
+          },
+        ],
+        [
           import('./recipe/dto/upload-images-response'),
           {
             UploadImagesResponse: {
@@ -207,7 +218,9 @@ export default async () => {
             WebhookController: {
               createWebhook: {},
               deleteWebhook: {},
-              listWebhooks: { type: [Object] },
+              listWebhooks: {
+                type: t['./webhook/dto/webhook-response'].FetchWebhooksResponse,
+              },
             },
           },
         ],

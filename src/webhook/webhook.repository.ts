@@ -27,15 +27,15 @@ export class WebhookRepository {
     });
   }
 
-  async getWebhookById(userId: number): Promise<Webhook> {
+  async getWebhookById(webhookId: number): Promise<Webhook> {
     return this.prisma.webhook.findUnique({
       where: {
-        id: userId,
+        id: webhookId,
       },
     });
   }
 
-  async deleteUserWebhookByName(webhookId: number): Promise<void> {
+  async deleteUserWebhookById(webhookId: number): Promise<void> {
     await this.prisma.webhook.delete({
       where: {
         id: webhookId,

@@ -5,7 +5,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { CreateWebhookRequest, ListWebhooksDto, WebhookEvent } from './dto';
+import { CreateWebhookRequest, FetchedWebhook, WebhookEvent } from './dto';
 import { WebhookRepository } from './webhook.repository';
 import { Recipe } from '@prisma/client';
 import Cryptr from 'cryptr';
@@ -25,7 +25,7 @@ export class WebhookService {
     const userWebhooks = await this.webhookRepository.getAllWebhooksByUserId(
       userId,
     );
-    if (userWebhooks.length >= 5) {
+    if (userWebhooks.length >= +process.env.WEBHOOK_LIMIT) {
       throw new ForbiddenException();
     }
 
@@ -45,11 +45,16 @@ export class WebhookService {
     if (userId !== webhook.userId) {
       throw new UnauthorizedException();
     }
-    this.webhookRepository.deleteUserWebhookByName(webhookId);
+    this.webhookRepository.deleteUserWebhookById(webhookId);
   }
 
-  async getWebhooksById(userId: number): Promise<ListWebhooksDto[]> {
-    return this.webhookRepository.getAllWebhooksByUserId(userId);
+  async getWebhooksByUserId(userId: number): Promise<FetchedWebhook[]> {
+    const webhooks = await this.webhookRepository.getAllWebhooksByUserId(
+      userId,
+    );
+    return webhooks.map(({ userId, ...rest }) => {
+      return rest;
+    });
   }
 
   sendToWebhook(url: string, data: Recipe, token?: string, attempt = 0): void {
