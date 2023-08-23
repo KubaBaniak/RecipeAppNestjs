@@ -13,3 +13,14 @@ export function initalizeSwagger(): Omit<OpenAPIObject, 'paths'> {
 
   return config;
 }
+
+export const rollbarConfig = {
+  accessToken: process.env.ROLLBAR_ACCESS_TOKEN,
+  captureUncaught: true,
+  captureUnhandledRejections: true,
+  captureIp: 'anonymize' as boolean | 'anonymize',
+  autoInstrument: true,
+  captureDeviceInfo: true,
+  captureUsername: true,
+  maxTelemetryEvents: 15,
+};
