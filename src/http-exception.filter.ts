@@ -15,7 +15,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const request = ctx.getRequest<Request>();
     const status = exception.getStatus();
 
-    if (status >= 500) {
+    if (status >= 300) {
       rollbar.log(exception);
     }
 

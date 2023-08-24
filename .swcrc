@@ -1,3 +1,15 @@
 {
-  "sourceMaps": true
+  "$schema": "https://json.schemastore.org/swcrc",
+  "jsc": {
+    "parser": {
+      "syntax": "typescript",
+      "dynamicImport": true,
+      "decorators": true
+    },
+    "target": "es2021",
+    "baseUrl": "./"
+  },
+  "sourceMaps": true,
+  "emitSourceMapColumns": true,
+  "minify": true
 }

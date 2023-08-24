@@ -15,6 +15,7 @@ commands:
       - run:
           name: Install node dependencies from package-lock
           command: npm ci
+
   setup_prisma:
     steps:
       - run:
@@ -54,6 +55,7 @@ commands:
             S3_URL_EXPIRY_TIME_IN_SEC="$S3_URL_EXPIRY_TIME_IN_SEC"
             ROLLBAR_ACCESS_TOKEN="$ROLLBAR_ACCESS_TOKEN"
             ENVIRONMENT="$ENVIRONMENT"
+            CODE_VERSION="$(git rev-parse --short HEAD)"
             EOF
             cat .env > test.env
 
@@ -125,15 +127,20 @@ jobs:
           fingerprints:
             - '97:69:fe:70:ca:84:59:06:98:ab:9c:ec:d5:26:49:8c'
       - checkout
+      - create_env_files
       - setup_remote_docker:
           version: 20.10.14
       - run:
           name: Build App image
-          command: docker build -t $APP_IMAGE_NAME .
+          command: |
+            echo 'export CODE_VERSION=$(git rev-parse --short HEAD)' >> "$BASH_ENV"
+            source "$BASH_ENV"
+            docker build -t $APP_IMAGE_NAME . \
+            --build-arg CODE_VERSION=$CODE_VERSION \
+            --build-arg ROLLBAR_ACCESS_TOKEN=$ROLLBAR_ACCESS_TOKEN
       - run:
           name: Save built image
           command: docker save $APP_IMAGE_NAME | gzip > appimage.tar.gz
-      - create_env_files
       - run:
           name: Send production env
           command: |

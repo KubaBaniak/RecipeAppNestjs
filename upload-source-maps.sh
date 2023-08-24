@@ -1,15 +1,17 @@
 #!/bin/sh
 
-version=$(git rev-parse --short HEAD)
-
-access_token=${ROLLBAR_ACCESS_TOKEN}
-
+version="${CODE_VERSION}"
+access_token="${ROLLBAR_ACCESS_TOKEN}"
 
 for path in $(find dist -name "*.js"); do
   working_directory=$(pwd);
-  url=file://${working_directory}/${path}
+  url=http://13.49.21.92:3000$/${path}
 
-  source_map="@$path.map"
+  source_map=@$path.map
+
+  echo ${url}
+  echo $source_map
+
 
   curl --silent --show-error https://api.rollbar.com/api/1/sourcemap \
     -F access_token=$access_token \
