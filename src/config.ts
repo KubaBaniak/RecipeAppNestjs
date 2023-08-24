@@ -23,4 +23,7 @@ export const rollbarConfig = {
   captureDeviceInfo: true,
   captureUsername: true,
   maxTelemetryEvents: 15,
+  payload: {
+    environment: process.env.ENVIRONMENT,
+  },
 };
