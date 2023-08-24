@@ -52,6 +52,8 @@ commands:
             AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY"
             AWS_REGION="$AWS_REGION"      
             S3_URL_EXPIRY_TIME_IN_SEC="$S3_URL_EXPIRY_TIME_IN_SEC"
+            ROLLBAR_ACCESS_TOKEN="$ROLLBAR_ACCESS_TOKEN"
+            ENVIRONMENT="$ENVIRONMENT"
             EOF
             cat .env > test.env
 
