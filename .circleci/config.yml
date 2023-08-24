@@ -35,8 +35,27 @@ commands:
       - run:
           name: Create .env file
           command: |
-            env >> .env
-            env >> test.env
+            cat > .env \<< EOF
+            DATABASE_URL="$DATABASE_URL"
+            POSTGRES_USER="$POSTGRES_USER"
+            POSTGRES_PASSWORD="$POSTGRES_PASSWORD"
+            PGADMIN_EMAIL="$PGADMIN_EMAIL"
+            PGADMIN_PASSWORD="$PGADMIN_PASSWORD"
+            JWT_EXPIRY_TIME="$JWT_EXPIRY_TIME"
+            JWT_SECRET="$JWT_SECRET"
+            BCRYPT_SALT="$BCRYPT_SALT"
+            REDIS_PASSWORD="$REDIS_PASSWORD"
+            REDIS_URL="$REDIS_URL"
+            APP_IMAGE_NAME="$APP_IMAGE_NAME"
+            AWS_S3_BUCKET="$AWS_S3_BUCKET"
+            AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID"
+            AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY"
+            AWS_REGION="$AWS_REGION"      
+            S3_URL_EXPIRY_TIME_IN_SEC="$S3_URL_EXPIRY_TIME_IN_SEC"
+            ROLLBAR_ACCESS_TOKEN="$ROLLBAR_ACCESS_TOKEN"
+            ENVIRONMENT="$ENVIRONMENT"
+            EOF
+            cat .env > test.env
 
 jobs:
   build:
