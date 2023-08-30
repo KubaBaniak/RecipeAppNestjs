@@ -1,3 +1,12 @@
+## [1.1.3](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.1.2...v1.1.3) (2023-08-30)
+
+
+### Bug Fixes
+
+* resolve conflicts ([0895829](https://github.com/KubaBaniak/RecipeAppNestjs/commit/0895829d22c56a9906026b8fc1d81637f2c86613))
+* save only one token in db ([f4b197f](https://github.com/KubaBaniak/RecipeAppNestjs/commit/f4b197fea2d56c478963846f508a6ed0394bc5b9))
+* throw 404 instead of 401 on failed signed in ([94cf4c5](https://github.com/KubaBaniak/RecipeAppNestjs/commit/94cf4c594ff6006b70f2da766737f90cc82b7a5a))
+
 ## [1.1.2](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.1.1...v1.1.2) (2023-08-17)
 
 
