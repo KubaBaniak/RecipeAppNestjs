@@ -129,7 +129,16 @@ jobs:
           version: 20.10.14
       - create_env_files
       - run:
-          name: Send rollbar source maps
+          name: Build image to send source maps
+          command: |
+            echo 'export CODE_VERSION=$(git rev-parse --short HEAD)' >> "$BASH_ENV"
+            source "$BASH_ENV"
+            docker build -f Dockerfile.nginx -t nginx . \
+            --build-arg CODE_VERSION=$CODE_VERSION \
+            --build-arg ROLLBAR_ACCESS_TOKEN=$ROLLBAR_ACCESS_TOKEN
+            docker run -t -p 8080:80 nginx
+      - run:
+          name: Build image to send source maps
           command: |
             echo 'export CODE_VERSION=$(git rev-parse --short HEAD)' >> "$BASH_ENV"
             source "$BASH_ENV"
@@ -194,4 +203,5 @@ workflows:
     jobs:
       - deploy:
           context: recipe-app-production
-      - send_sourcemaps_to_rollbar
+      - send_sourcemaps_to_rollbar:
+          context: recipe-app-production
