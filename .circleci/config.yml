@@ -126,6 +126,8 @@ jobs:
     resource_class: medium
     steps:
       - checkout
+      - setup_remote_docker:
+          version: 20.10.14
       - restore_cache:
           key: ${CACHE_VERSION}-deps-{{ checksum "package-lock.json" }}
       - create_env_files
@@ -150,6 +152,9 @@ jobs:
       - create_env_files
       - setup_remote_docker:
           version: 20.10.14
+      - run:
+          name: Build App image
+          command: docker build -t $APP_IMAGE_NAME .
       - run:
           name: Save built image
           command: docker save $APP_IMAGE_NAME | gzip > appimage.tar.gz
