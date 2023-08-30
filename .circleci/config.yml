@@ -119,6 +119,26 @@ jobs:
       - install_dependencies
       - run: HUSKY=0 npx semantic-release
 
+  send_sourcemaps_to_rollbar:
+    working_directory: ~/repo
+    docker:
+      - image: cimg/base:2023.08
+    resource_class: medium
+    steps:
+      - checkout
+      - restore_cache:
+          key: ${CACHE_VERSION}-deps-{{ checksum "package-lock.json" }}
+      - create_env_files
+      - run:
+          name: Send rollbar source maps
+          command: |
+            echo 'export CODE_VERSION=$(git rev-parse --short HEAD)' >> "$BASH_ENV"
+            source "$BASH_ENV"
+            docker build -f Dockerfile.nginx -t nginx . \
+            --build-arg CODE_VERSION=$CODE_VERSION \
+            --build-arg ROLLBAR_ACCESS_TOKEN=$ROLLBAR_ACCESS_TOKEN
+            docker run -t -p 8080:80 nginx
+
   deploy:
     docker:
       - image: cimg/node:18.16.0
@@ -130,14 +150,6 @@ jobs:
       - create_env_files
       - setup_remote_docker:
           version: 20.10.14
-      - run:
-          name: Build App image
-          command: |
-            echo 'export CODE_VERSION=$(git rev-parse --short HEAD)' >> "$BASH_ENV"
-            source "$BASH_ENV"
-            docker build -t $APP_IMAGE_NAME . \
-            --build-arg CODE_VERSION=$CODE_VERSION \
-            --build-arg ROLLBAR_ACCESS_TOKEN=$ROLLBAR_ACCESS_TOKEN
       - run:
           name: Save built image
           command: docker save $APP_IMAGE_NAME | gzip > appimage.tar.gz
@@ -180,3 +192,4 @@ workflows:
     jobs:
       - deploy:
           context: recipe-app-production
+      - send_sourcemaps_to_rollbar
