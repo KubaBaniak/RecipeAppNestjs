@@ -27,6 +27,8 @@ RUN npx prisma generate
 
 COPY --from=builder /app/dist ./dist
 
+RUN rm dist/*.map
+
 EXPOSE 3000
 
 USER node
