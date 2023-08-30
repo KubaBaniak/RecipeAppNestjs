@@ -1,18 +1,22 @@
 #!/bin/sh
 
+nginx
+cd /usr/share/nginx/html
+
 version="${CODE_VERSION}"
 access_token="${ROLLBAR_ACCESS_TOKEN}"
 
-for path in $(find dist -name "*.js"); do
+for path in $(find . -name "*.js"); do
+  filename="${path#./}"
   working_directory=$(pwd);
-  url=http://13.49.21.92:3000$/${path}
+  url=/app/dist/$filename
 
-  source_map=@$path.map
+  source_map=@$filename.map
 
-  echo ${url}
+  echo $url
   echo $source_map
 
-
+  echo sending source map for ${filename}
   curl --silent --show-error https://api.rollbar.com/api/1/sourcemap \
     -F access_token=$access_token \
     -F version=$version \
