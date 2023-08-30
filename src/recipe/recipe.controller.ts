@@ -25,6 +25,7 @@ import {
   UpdateRecipeRequest,
 } from './dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { ApiAuthGuard } from '../auth/guards/pat-auth-api.guard';
 import {
   ApiTags,
   ApiParam,
@@ -46,7 +47,7 @@ import { S3_CONFIG } from './s3-config';
 export class RecipeController {
   constructor(private readonly recipeService: RecipeService) {}
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(ApiAuthGuard)
   @ApiOperation({ summary: 'Get list of all recipes' })
   @ApiBearerAuth()
   @ApiUnauthorizedResponse({ description: 'User is not authenticated' })
@@ -90,7 +91,7 @@ export class RecipeController {
   }
 
   @HttpCode(200)
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(ApiAuthGuard)
   @ApiOperation({ summary: 'Get recipe' })
   @ApiBearerAuth()
   @ApiUnauthorizedResponse({ description: 'User is not authenticated' })
@@ -112,7 +113,7 @@ export class RecipeController {
     return FetchRecipeResponse.from(fetchedRecipe);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(ApiAuthGuard)
   @ApiOperation({ summary: 'Update recipe' })
   @ApiBearerAuth()
   @ApiNotFoundResponse({ description: 'Recipe does not exist' })
@@ -136,7 +137,7 @@ export class RecipeController {
     return UpdatedRecipeResponse.from(updatedRecipe);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(ApiAuthGuard)
   @ApiOperation({ summary: 'Delete recipe' })
   @ApiBearerAuth()
   @ApiNotFoundResponse({ description: 'Recipe does not exist' })

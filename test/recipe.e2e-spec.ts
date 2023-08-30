@@ -17,6 +17,7 @@ import { RecipeRepository } from '../src/recipe/recipe.repository';
 import { UserRepository } from '../src/user/user.repository';
 import { S3Service } from '../src/recipe/s3-bucket.service';
 import { WebSocketEventGateway } from '../src/websocket/websocket-event.gateway';
+import { PersonalAccessTokenRepository } from '../src/auth/personal-access-token.repository';
 
 describe('RecipeController (e2e)', () => {
   let app: INestApplication;
@@ -24,6 +25,7 @@ describe('RecipeController (e2e)', () => {
   let authService: AuthService;
   let user: User;
   let accessToken: string;
+  let personalAccessToken: string;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -31,6 +33,7 @@ describe('RecipeController (e2e)', () => {
       providers: [
         RecipeService,
         UserRepository,
+        PersonalAccessTokenRepository,
         RecipeRepository,
         PrismaService,
         RecipeCacheService,
@@ -50,6 +53,8 @@ describe('RecipeController (e2e)', () => {
       email: user.email,
       password: user.password,
     });
+
+    personalAccessToken = await authService.createPersonalAccessToken(user.id);
 
     app.useGlobalPipes(
       new ValidationPipe({
@@ -149,6 +154,16 @@ describe('RecipeController (e2e)', () => {
         .expect(HttpStatus.OK);
     });
 
+    it('should fetch recipe using PAT', async () => {
+      return request(app.getHttpServer())
+        .get(`/recipes/${recipe.id}`)
+        .set({ Authorization: `Bearer ${personalAccessToken}` })
+        .expect((response: request.Response) => {
+          expect(response.body.fetchedRecipe).toBeDefined();
+        })
+        .expect(HttpStatus.OK);
+    });
+
     it('should not find recipe and return 404 error (NOT FOUND)', async () => {
       return request(app.getHttpServer())
         .get(`/recipes/${recipe.id + 1}`)
@@ -210,6 +225,16 @@ describe('RecipeController (e2e)', () => {
         .set({ user: { id: user.id } })
         .expect((response: request.Response) => {
           expect(response.body.fetchedRecipes).toHaveLength(3);
+        })
+        .expect(HttpStatus.OK);
+    });
+
+    it('should fetch all recipes using PAT', async () => {
+      return request(app.getHttpServer())
+        .get(`/recipes`)
+        .set({ Authorization: `Bearer ${personalAccessToken}` })
+        .expect((response: request.Response) => {
+          expect(response.body.fetchedRecipes).toBeDefined();
         })
         .expect(HttpStatus.OK);
     });

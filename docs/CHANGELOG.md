@@ -8,42 +8,37 @@
 
 ## [1.1.1](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.1.0...v1.1.1) (2023-08-11)
 
-
 ### Bug Fixes
 
-* add providers to notification module to fix test ([2c3c080](https://github.com/KubaBaniak/RecipeAppNestjs/commit/2c3c080f9f66f054ea1bb13e863ae74946ff6d1e))
-* resolve conflicts ([ff7949d](https://github.com/KubaBaniak/RecipeAppNestjs/commit/ff7949d0d6978f9b7a1bba71440c116f1de6b21f))
+- add providers to notification module to fix test ([2c3c080](https://github.com/KubaBaniak/RecipeAppNestjs/commit/2c3c080f9f66f054ea1bb13e863ae74946ff6d1e))
+- resolve conflicts ([ff7949d](https://github.com/KubaBaniak/RecipeAppNestjs/commit/ff7949d0d6978f9b7a1bba71440c116f1de6b21f))
 
 # [1.1.0](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.0.4...v1.1.0) (2023-08-10)
 
-
 ### Bug Fixes
 
-* fix tests ([b0fb8e1](https://github.com/KubaBaniak/RecipeAppNestjs/commit/b0fb8e1ffe5b896de7de36a8fdb836d27271b566))
-* resolve conflicts ([07241be](https://github.com/KubaBaniak/RecipeAppNestjs/commit/07241be84ed3e2a5362bde172672b8fc878f9ded))
-
+- fix tests ([b0fb8e1](https://github.com/KubaBaniak/RecipeAppNestjs/commit/b0fb8e1ffe5b896de7de36a8fdb836d27271b566))
+- resolve conflicts ([07241be](https://github.com/KubaBaniak/RecipeAppNestjs/commit/07241be84ed3e2a5362bde172672b8fc878f9ded))
 
 ### Features
 
-* add notifications using websockets ([a82c7b1](https://github.com/KubaBaniak/RecipeAppNestjs/commit/a82c7b1dfd2f0f8934fa4be893e938af35ccfe98))
+- add notifications using websockets ([a82c7b1](https://github.com/KubaBaniak/RecipeAppNestjs/commit/a82c7b1dfd2f0f8934fa4be893e938af35ccfe98))
 
 ## [1.0.4](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.0.3...v1.0.4) (2023-08-09)
 
-
 ### Bug Fixes
 
-* send presigned urls on fetch instead of keys ([d1ff0eb](https://github.com/KubaBaniak/RecipeAppNestjs/commit/d1ff0eb1d137a456cbeb21f8ea7550e86dff2b4f))
+- send presigned urls on fetch instead of keys ([d1ff0eb](https://github.com/KubaBaniak/RecipeAppNestjs/commit/d1ff0eb1d137a456cbeb21f8ea7550e86dff2b4f))
 
 ## [1.0.3](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.0.2...v1.0.3) (2023-08-09)
 
-
 ### Bug Fixes
 
-* add validation and missing documentation for fields on create recipe ([39e978a](https://github.com/KubaBaniak/RecipeAppNestjs/commit/39e978ac4494a59d7882cde711870f7c40a8c34a))
-* append instead of overwrtie image keys ([291f689](https://github.com/KubaBaniak/RecipeAppNestjs/commit/291f6892fe6cfe8f7aaef4a424774b033280e3de))
-* resolve conflicts ([36798f0](https://github.com/KubaBaniak/RecipeAppNestjs/commit/36798f03cd3af0ed824caaa1e9fed64d4b5d6b03))
-* resolve conflicts ([e677ec7](https://github.com/KubaBaniak/RecipeAppNestjs/commit/e677ec773440b011bc81b52fee010731456d142e))
-* validation and add documentation ([14c0d0b](https://github.com/KubaBaniak/RecipeAppNestjs/commit/14c0d0bfe715d90360dca6795086c810dc74ddde))
+- add validation and missing documentation for fields on create recipe ([39e978a](https://github.com/KubaBaniak/RecipeAppNestjs/commit/39e978ac4494a59d7882cde711870f7c40a8c34a))
+- append instead of overwrtie image keys ([291f689](https://github.com/KubaBaniak/RecipeAppNestjs/commit/291f6892fe6cfe8f7aaef4a424774b033280e3de))
+- resolve conflicts ([36798f0](https://github.com/KubaBaniak/RecipeAppNestjs/commit/36798f03cd3af0ed824caaa1e9fed64d4b5d6b03))
+- resolve conflicts ([e677ec7](https://github.com/KubaBaniak/RecipeAppNestjs/commit/e677ec773440b011bc81b52fee010731456d142e))
+- validation and add documentation ([14c0d0b](https://github.com/KubaBaniak/RecipeAppNestjs/commit/14c0d0bfe715d90360dca6795086c810dc74ddde))
 
 ## [1.0.2](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.0.1...v1.0.2) (2023-08-03)
 

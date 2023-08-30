@@ -14,7 +14,6 @@ export class UserRepository {
 
     return user ? UserPayloadRequest.from(user) : null;
   }
-
   async getUserByEmailWithPassword(email: string): Promise<UserPayloadRequest> {
     const user = await this.prisma.user.findUnique({
       where: { email },

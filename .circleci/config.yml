@@ -168,6 +168,10 @@ workflows:
           requires:
             - unit_test
             - e2e_test
+          filters:
+            branches:
+              only:
+                - main
 
   deploy:
     jobs:
