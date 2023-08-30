@@ -6,7 +6,10 @@ COPY src ./src
 COPY prisma ./prisma/
 COPY nest-cli.json .swcrc package*.json tsconfig*.json ./
 
+
 RUN npm ci
+
+RUN npx prisma generate
 RUN npm run build
 
 FROM node:18-alpine as app
