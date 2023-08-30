@@ -20,3 +20,5 @@ for path in $(find . -name "*.js"); do
     -F source_map=$source_map \
     > /dev/null
 done
+
+docker system prune -f
