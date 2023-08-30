@@ -198,10 +198,22 @@ workflows:
           requires:
             - unit_test
             - e2e_test
+          filters:
+            branches:
+              only:
+                - main
 
   deploy:
     jobs:
       - deploy:
           context: recipe-app-production
+          filters:
+            branches:
+              only:
+                - main
       - send_sourcemaps_to_rollbar:
           context: recipe-app-production
+          filters:
+            branches:
+              only:
+                - main
