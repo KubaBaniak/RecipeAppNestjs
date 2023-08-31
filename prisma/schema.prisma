@@ -33,13 +33,25 @@ model Recipe {
 }
 
 model Webhook {
-  id     Int     @id @default(autoincrement())
-  name   String
-  url    String
-  type   String
-  token  String?
-  User   User    @relation(fields: [userId], references: [id])
-  userId Int
+  id           Int            @id @default(autoincrement())
+  name         String
+  url          String
+  type         String
+  token        String?
+  User         User           @relation(fields: [userId], references: [id])
+  userId       Int
+  webhookEvent WebhookEvent[]
+}
+
+model WebhookEvent {
+  id        Int       @id @default(autoincrement())
+  data      Json
+  attempt   Int       @default(0)
+  type      String
+  status    String    @default("Pending")
+  sentAt    DateTime?
+  Webhook   Webhook   @relation(fields: [webhookId], references: [id])
+  webhookId Int
 }
 
 enum Role {

@@ -28,6 +28,9 @@ export default async () => {
     ['./webhook/dto/webhook-response']: await import(
       './webhook/dto/webhook-response'
     ),
+    ['./webhook/dto/webhooks-response']: await import(
+      './webhook/dto/webhooks-response'
+    ),
   };
   return {
     '@nestjs/swagger': {
@@ -144,12 +147,16 @@ export default async () => {
           },
         ],
         [
-          import('./webhook/dto/webhook-response'),
+          import('./webhook/dto/webhooks-response'),
           {
             FetchWebhooksResponse: {
-              fetchedWebhooks: { required: true, type: () => [Object] },
+              webhooks: { required: true, type: () => [Object] },
             },
           },
+        ],
+        [
+          import('./webhook/dto/webhook-response'),
+          { FetchWebhookResponse: {} },
         ],
         [
           import('./webhook/dto/create-webhook-request'),
@@ -158,7 +165,7 @@ export default async () => {
               name: { required: true, type: () => String },
               type: {
                 required: true,
-                enum: t['./webhook/dto/webhook-event'].WebhookEvent,
+                enum: t['./webhook/dto/webhook-event'].WebhookType,
               },
               url: { required: true, type: () => String },
               token: { required: false, type: () => String },
@@ -216,10 +223,13 @@ export default async () => {
           import('./webhook/webhook.controller'),
           {
             WebhookController: {
-              createWebhook: {},
+              createWebhook: {
+                type: t['./webhook/dto/webhook-response'].FetchWebhookResponse,
+              },
               deleteWebhook: {},
               listWebhooks: {
-                type: t['./webhook/dto/webhook-response'].FetchWebhooksResponse,
+                type: t['./webhook/dto/webhooks-response']
+                  .FetchWebhooksResponse,
               },
             },
           },

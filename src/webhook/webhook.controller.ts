@@ -2,7 +2,6 @@ import {
   Body,
   Controller,
   Delete,
-  ForbiddenException,
   Get,
   HttpCode,
   Param,
@@ -13,7 +12,11 @@ import {
 import { WebhookService } from './webhook.service';
 import { UserId } from '../common/decorators/req-user-id.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { CreateWebhookRequest, FetchWebhooksResponse } from './dto';
+import {
+  CreateWebhookRequest,
+  FetchWebhooksResponse,
+  FetchWebhookResponse,
+} from './dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
 @Controller('webhooks')
@@ -28,14 +31,12 @@ export class WebhookController {
   async createWebhook(
     @UserId() userId: number,
     @Body() webhookData: CreateWebhookRequest,
-  ): Promise<void> {
-    try {
-      await this.webhookService.createWebhook(userId, webhookData);
-    } catch {
-      throw new ForbiddenException(
-        `User reached the limit of owned webhooks (max. ${process.env.WEBHOOK_LIMIT})`,
-      );
-    }
+  ): Promise<FetchWebhookResponse> {
+    const webhook = await this.webhookService.createWebhook(
+      userId,
+      webhookData,
+    );
+    return FetchWebhookResponse.from(webhook);
   }
 
   @UseGuards(JwtAuthGuard)

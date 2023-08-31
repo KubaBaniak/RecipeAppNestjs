@@ -1,18 +1,19 @@
-export interface FetchedWebhook {
-  id: number;
-  name: string;
-  url: string;
-  type: string;
-}
+import { Webhook } from '@prisma/client';
 
-export class FetchWebhooksResponse {
-  public fetchedWebhooks: FetchedWebhook[];
+export class FetchWebhookResponse {
+  constructor(
+    public id: number,
+    public name: string,
+    public url: string,
+    public type: string,
+  ) {}
 
-  constructor(fetchedWebhooks: FetchedWebhook[]) {
-    this.fetchedWebhooks = fetchedWebhooks;
-  }
-
-  public static from(fetchedWebhooks: FetchedWebhook[]): FetchWebhooksResponse {
-    return new FetchWebhooksResponse(fetchedWebhooks);
+  public static from(fetchedWebhook: Webhook): FetchWebhookResponse {
+    return new FetchWebhookResponse(
+      fetchedWebhook.id,
+      fetchedWebhook.name,
+      fetchedWebhook.url,
+      fetchedWebhook.type,
+    );
   }
 }

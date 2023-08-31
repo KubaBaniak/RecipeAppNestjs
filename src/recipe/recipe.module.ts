@@ -12,7 +12,6 @@ import { WebhookService } from '../webhook/webhook.service';
 import { HttpModule } from '@nestjs/axios';
 import { WebhookRepository } from '../webhook/webhook.repository';
 import { UserRepository } from '../user/user.repository';
-WebhookRepository;
 
 @Module({
   imports: [RedisCacheModule, WebSocketEventModule, HttpModule],

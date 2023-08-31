@@ -3,11 +3,10 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
-  UnauthorizedException,
 } from '@nestjs/common';
-import { CreateWebhookRequest, FetchedWebhook, WebhookEvent } from './dto';
+import { CreateWebhookRequest, WebhookType, FetchedWebhook } from './dto';
 import { WebhookRepository } from './webhook.repository';
-import { Recipe } from '@prisma/client';
+import { Prisma, Recipe, Webhook } from '@prisma/client';
 import Cryptr from 'cryptr';
 
 @Injectable()
@@ -21,12 +20,12 @@ export class WebhookService {
   async createWebhook(
     userId: number,
     webhookData: CreateWebhookRequest,
-  ): Promise<void> {
+  ): Promise<Webhook> {
     const userWebhooks = await this.webhookRepository.getAllWebhooksByUserId(
       userId,
     );
     if (userWebhooks.length >= +process.env.WEBHOOK_LIMIT) {
-      throw new ForbiddenException();
+      throw new ForbiddenException('Reached limit of owned webhooks');
     }
 
     if (webhookData.token) {
@@ -34,7 +33,7 @@ export class WebhookService {
       webhookData.token = encryptedString;
     }
 
-    this.webhookRepository.createWebhook(userId, webhookData);
+    return this.webhookRepository.createWebhook(userId, webhookData);
   }
 
   async deleteWebhook(userId: number, webhookId: number) {
@@ -43,9 +42,9 @@ export class WebhookService {
       throw new NotFoundException();
     }
     if (userId !== webhook.userId) {
-      throw new UnauthorizedException();
+      throw new ForbiddenException();
     }
-    this.webhookRepository.deleteUserWebhookById(webhookId);
+    await this.webhookRepository.deleteUserWebhookById(webhookId);
   }
 
   async getWebhooksByUserId(userId: number): Promise<FetchedWebhook[]> {
@@ -57,11 +56,12 @@ export class WebhookService {
     });
   }
 
-  sendToWebhook(url: string, data: Recipe, token?: string, attempt = 0): void {
-    let decryptedToken: string;
-    if (token) {
-      decryptedToken = this.cryptr.decrypt(token);
-    }
+  sendWebhookEvent(
+    url: string,
+    data: Prisma.JsonValue,
+    token?: string,
+  ): boolean {
+    let success = false;
     const headersRequest = {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
@@ -71,29 +71,27 @@ export class WebhookService {
         headers: headersRequest,
       })
       .subscribe({
-        error: () => {
-          const maxWaitingTime = 86400 * 1000;
-          const nextTryInSec = Math.min(Math.pow(2, attempt + 1) * 1000);
-          if (nextTryInSec > maxWaitingTime) {
-            throw new NotFoundException({
-              message: 'Could not send data to provided URL',
-            });
-          }
-          setTimeout(() => {
-            this.sendToWebhook(url, data, token, attempt + 1);
-          }, nextTryInSec);
+        complete: () => {
+          success = true;
+        },
+        error: (err) => {
+          console.error(err);
         },
       });
+    return success;
   }
 
-  async sendWebhookEvent(userId: number, data: Recipe, event: WebhookEvent) {
+  async createWebhookEvent(
+    userId: number,
+    data: Recipe,
+    type: WebhookType,
+  ): Promise<void> {
     const userWebhooks = await this.webhookRepository.getAllWebhooksByUserId(
       userId,
     );
     userWebhooks.forEach((webhook) => {
-      if (webhook.type === event) {
-        this.sendToWebhook(webhook.url, data, webhook.token);
-      }
+      if (webhook.type === type)
+        this.webhookRepository.createWebhookEvent(webhook.id, data, type);
     });
   }
 }
