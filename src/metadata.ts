@@ -25,9 +25,6 @@ export default async () => {
     ['./recipe/dto/upload-images-response']: await import(
       './recipe/dto/upload-images-response'
     ),
-    ['./webhook/dto/webhook-response']: await import(
-      './webhook/dto/webhook-response'
-    ),
     ['./webhook/dto/webhooks-response']: await import(
       './webhook/dto/webhooks-response'
     ),
@@ -223,9 +220,7 @@ export default async () => {
           import('./webhook/webhook.controller'),
           {
             WebhookController: {
-              createWebhook: {
-                type: t['./webhook/dto/webhook-response'].FetchWebhookResponse,
-              },
+              createWebhook: { type: Object },
               deleteWebhook: {},
               listWebhooks: {
                 type: t['./webhook/dto/webhooks-response']

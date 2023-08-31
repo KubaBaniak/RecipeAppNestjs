@@ -18,6 +18,7 @@ import {
   FetchWebhookResponse,
 } from './dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Webhook } from '@prisma/client';
 
 @Controller('webhooks')
 @ApiTags('Webhooks')
@@ -31,12 +32,13 @@ export class WebhookController {
   async createWebhook(
     @UserId() userId: number,
     @Body() webhookData: CreateWebhookRequest,
-  ): Promise<FetchWebhookResponse> {
+  ): Promise<Webhook> {
     const webhook = await this.webhookService.createWebhook(
       userId,
       webhookData,
     );
-    return FetchWebhookResponse.from(webhook);
+    return webhook;
+    //return FetchWebhookResponse.from(webhook);
   }
 
   @UseGuards(JwtAuthGuard)

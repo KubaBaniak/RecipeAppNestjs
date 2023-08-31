@@ -3,14 +3,14 @@ import cron from 'node-cron';
 import { WebhookService } from './webhook.service';
 import { WebhookRepository } from './webhook.repository';
 import { retryPolicy } from './utils/retry-policy';
-import Cryptr from 'cryptr';
+import { TokenCrypt } from './utils/crypt-webhook-token';
 
 @Injectable()
 export class CronWebhook {
-  cryptr = new Cryptr(process.env.CRYPTR_SECRET_KEY);
   constructor(
     private readonly webhookService: WebhookService,
     private readonly webhookRepository: WebhookRepository,
+    private readonly tokenCrypt: TokenCrypt,
   ) {
     const maxAttempt = Math.max(...Object.keys(retryPolicy).map((x) => +x));
     cron.schedule('* * * * *', async () => {
@@ -25,7 +25,7 @@ export class CronWebhook {
 
         let decryptedToken: string;
         if (token) {
-          decryptedToken = this.cryptr.decrypt(token);
+          decryptedToken = this.tokenCrypt.decryptToken(token);
         }
 
         const lastTry = webhookEvent.sentAt ? webhookEvent.sentAt.getTime() : 0;

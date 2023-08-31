@@ -7,15 +7,15 @@ import {
 import { CreateWebhookRequest, WebhookType, FetchedWebhook } from './dto';
 import { WebhookRepository } from './webhook.repository';
 import { Prisma, Recipe, Webhook } from '@prisma/client';
-import Cryptr from 'cryptr';
+import { TokenCrypt } from './utils/crypt-webhook-token';
 
 @Injectable()
 export class WebhookService {
   constructor(
     private readonly httpService: HttpService,
     private readonly webhookRepository: WebhookRepository,
+    private readonly tokenCrypt: TokenCrypt,
   ) {}
-  cryptr = new Cryptr(process.env.CRYPTR_SECRET_KEY);
 
   async createWebhook(
     userId: number,
@@ -29,8 +29,7 @@ export class WebhookService {
     }
 
     if (webhookData.token) {
-      const encryptedString = this.cryptr.encrypt(webhookData.token);
-      webhookData.token = encryptedString;
+      webhookData.token = this.tokenCrypt.encryptToken(webhookData.token);
     }
 
     return this.webhookRepository.createWebhook(userId, webhookData);
