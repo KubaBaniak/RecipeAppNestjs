@@ -98,9 +98,9 @@ export class WebhookService {
     const userWebhooks = await this.webhookRepository.getAllWebhooksByUserId(
       userId,
     );
-    userWebhooks.forEach((webhook) => {
+    userWebhooks.forEach(async (webhook) => {
       if (webhook.type === type)
-        this.webhookRepository.createWebhookEvent(webhook.id, data, type);
+        await this.webhookRepository.createWebhookEvent(webhook.id, data, type);
     });
   }
 }
