@@ -20,6 +20,8 @@ import { WebSocketEventGateway } from '../src/websocket/websocket-event.gateway'
 import { HttpModule } from '@nestjs/axios';
 import { WebhookService } from '../src/webhook/webhook.service';
 import { WebhookRepository } from '../src/webhook/webhook.repository';
+import { TokenCrypt } from '../src/webhook/utils/crypt-webhook-token';
+import { MockTokenCrypt } from '../src/webhook/__mocks__/crypt-webhook-token.mock';
 
 describe('RecipeController (e2e)', () => {
   let app: INestApplication;
@@ -41,6 +43,10 @@ describe('RecipeController (e2e)', () => {
         WebSocketEventGateway,
         WebhookService,
         WebhookRepository,
+        {
+          provide: TokenCrypt,
+          useClass: MockTokenCrypt,
+        },
       ],
     }).compile();
 
@@ -362,11 +368,11 @@ describe('RecipeController (e2e)', () => {
   });
 
   afterAll(async () => {
-    await app.close();
     prismaService.user.delete({
       where: {
         id: user.id,
       },
     });
+    await app.close();
   });
 });

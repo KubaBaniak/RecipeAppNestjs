@@ -29,13 +29,23 @@ export class WebhookService {
     }
 
     if (webhookData.token) {
-      webhookData.token = this.tokenCrypt.encryptToken(webhookData.token);
+      const { encryptedToken, iv, authTag } = this.tokenCrypt.encryptToken(
+        webhookData.token,
+      );
+      webhookData.token = encryptedToken;
+
+      return this.webhookRepository.createWebhook(
+        userId,
+        webhookData,
+        iv,
+        authTag,
+      );
     }
 
     return this.webhookRepository.createWebhook(userId, webhookData);
   }
 
-  async deleteWebhook(userId: number, webhookId: number) {
+  async deleteWebhook(userId: number, webhookId: number): Promise<Webhook> {
     const webhook = await this.webhookRepository.getWebhookById(webhookId);
     if (!webhook) {
       throw new NotFoundException();
@@ -43,7 +53,7 @@ export class WebhookService {
     if (userId !== webhook.userId) {
       throw new ForbiddenException();
     }
-    await this.webhookRepository.deleteUserWebhookById(webhookId);
+    return this.webhookRepository.deleteUserWebhookById(webhookId);
   }
 
   async getWebhooksByUserId(userId: number): Promise<FetchedWebhook[]> {

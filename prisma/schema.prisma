@@ -38,6 +38,8 @@ model Webhook {
   url          String
   type         String
   token        String?
+  initVector   String?
+  authTag      String?
   User         User           @relation(fields: [userId], references: [id])
   userId       Int
   webhookEvent WebhookEvent[]

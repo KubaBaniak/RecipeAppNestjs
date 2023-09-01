@@ -28,6 +28,9 @@ export default async () => {
     ['./webhook/dto/webhooks-response']: await import(
       './webhook/dto/webhooks-response'
     ),
+    ['./webhook/dto/webhook-response']: await import(
+      './webhook/dto/webhook-response'
+    ),
   };
   return {
     '@nestjs/swagger': {
@@ -220,7 +223,9 @@ export default async () => {
           import('./webhook/webhook.controller'),
           {
             WebhookController: {
-              createWebhook: { type: Object },
+              createWebhook: {
+                type: t['./webhook/dto/webhook-response'].FetchWebhookResponse,
+              },
               deleteWebhook: {},
               listWebhooks: {
                 type: t['./webhook/dto/webhooks-response']

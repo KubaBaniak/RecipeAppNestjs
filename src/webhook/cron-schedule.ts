@@ -14,19 +14,20 @@ export class CronWebhook {
   ) {
     const maxAttempt = Math.max(...Object.keys(retryPolicy).map((x) => +x));
     cron.schedule('* * * * *', async () => {
+      const currentTime = new Date().getTime();
       const webhookEvents =
         await this.webhookRepository.getAllValidWebhookEvents();
-      const currentTime = new Date().getTime();
 
       webhookEvents.forEach(async (webhookEvent) => {
         let success: boolean;
-        const { url, token, ...rest } =
-          await this.webhookRepository.getWebhookById(webhookEvent.webhookId);
+        const { url, token, initVector, authTag } =
+          await this.webhookRepository.getDataToSendWebhookEvent(
+            webhookEvent.webhookId,
+          );
 
-        let decryptedToken: string;
-        if (token) {
-          decryptedToken = this.tokenCrypt.decryptToken(token);
-        }
+        const decryptedToken = token
+          ? this.tokenCrypt.decryptToken(token, initVector, authTag)
+          : '';
 
         const lastTry = webhookEvent.sentAt ? webhookEvent.sentAt.getTime() : 0;
         const nextTry = lastTry + retryPolicy[webhookEvent.attempt];
@@ -51,6 +52,7 @@ export class CronWebhook {
         );
 
         if (success) {
+          console.log('success');
           await this.webhookRepository.updateWebhookEventStatus(
             webhookEvent.id,
             'Success',

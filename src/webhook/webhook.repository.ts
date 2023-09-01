@@ -10,11 +10,15 @@ export class WebhookRepository {
   async createWebhook(
     userId: number,
     webhookData: CreateWebhookRequest,
+    iv?: string,
+    authTag?: string,
   ): Promise<Webhook> {
     return this.prisma.webhook.create({
       data: {
         ...webhookData,
         userId,
+        initVector: iv,
+        authTag,
       },
     });
   }
@@ -29,6 +33,20 @@ export class WebhookRepository {
         data,
         type: webhookType,
         webhookId,
+      },
+    });
+  }
+
+  async getDataToSendWebhookEvent(webhookId: number) {
+    return this.prisma.webhook.findUnique({
+      where: {
+        id: webhookId,
+      },
+      select: {
+        url: true,
+        token: true,
+        initVector: true,
+        authTag: true,
       },
     });
   }
