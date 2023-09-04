@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Webhook, WebhookEvent } from '@prisma/client';
-import { CreateWebhookRequest, WebhookType } from 'src/webhook/dto';
+import { CreateWebhookRequest, WebhookEventType } from './dto';
 
 @Injectable()
 export class WebhookRepository {
@@ -26,7 +26,7 @@ export class WebhookRepository {
   async createWebhookEvent(
     webhookId: number,
     data: any,
-    webhookType: WebhookType,
+    webhookType: WebhookEventType,
   ): Promise<WebhookEvent> {
     return this.prisma.webhookEvent.create({
       data: {

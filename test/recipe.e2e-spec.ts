@@ -20,8 +20,7 @@ import { WebSocketEventGateway } from '../src/websocket/websocket-event.gateway'
 import { HttpModule } from '@nestjs/axios';
 import { WebhookService } from '../src/webhook/webhook.service';
 import { WebhookRepository } from '../src/webhook/webhook.repository';
-import { TokenCrypt } from '../src/webhook/utils/crypt-webhook-token';
-import { MockTokenCrypt } from '../src/webhook/__mocks__/crypt-webhook-token.mock';
+import { CryptoUtils } from '../src/webhook/utils/crypt-webhook-token';
 import { PersonalAccessTokenRepository } from '../src/auth/personal-access-token.repository';
 
 describe('RecipeController (e2e)', () => {
@@ -46,10 +45,7 @@ describe('RecipeController (e2e)', () => {
         WebSocketEventGateway,
         WebhookService,
         WebhookRepository,
-        {
-          provide: TokenCrypt,
-          useClass: MockTokenCrypt,
-        },
+        CryptoUtils,
       ],
     }).compile();
 

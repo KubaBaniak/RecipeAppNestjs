@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { WebhookService } from './webhook.service';
 import { WebhookRepository } from './webhook.repository';
 import { retryPolicy } from './utils/retry-policy';
-import { TokenCrypt } from './utils/crypt-webhook-token';
+import { CryptoUtils } from './utils/crypt-webhook-token';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { WebhookEvent } from '@prisma/client';
 
@@ -11,7 +11,7 @@ export class WebhookEventsService {
   constructor(
     private readonly webhookService: WebhookService,
     private readonly webhookRepository: WebhookRepository,
-    private readonly tokenCrypt: TokenCrypt,
+    private readonly cryptoUtils: CryptoUtils,
   ) {}
 
   private maxAttempt = Math.max(...Object.keys(retryPolicy).map((x) => +x));
@@ -33,7 +33,11 @@ export class WebhookEventsService {
         );
 
       const decryptedToken = token
-        ? this.tokenCrypt.decryptToken(token, initVector, authTag)
+        ? this.cryptoUtils.decryptToken({
+            encryptedToken: token,
+            iv: initVector,
+            authTag,
+          })
         : '';
 
       const lastTry = webhookEvent.sentAt ? webhookEvent.sentAt.getTime() : 0;

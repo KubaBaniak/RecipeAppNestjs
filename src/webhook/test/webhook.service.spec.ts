@@ -2,9 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { WebhookService } from '../webhook.service';
 import { HttpModule } from '@nestjs/axios';
 import { WebhookRepository } from '../webhook.repository';
-import { TokenCrypt } from '../utils/crypt-webhook-token';
+import { CryptoUtils } from '../utils/crypt-webhook-token';
 import { PrismaService } from '../../prisma/prisma.service';
-import { MockTokenCrypt } from '../__mocks__/crypt-webhook-token.mock';
 
 describe('WebhookService', () => {
   let service: WebhookService;
@@ -16,10 +15,7 @@ describe('WebhookService', () => {
         WebhookService,
         WebhookRepository,
         PrismaService,
-        {
-          provide: TokenCrypt,
-          useClass: MockTokenCrypt,
-        },
+        CryptoUtils,
       ],
     }).compile();
 

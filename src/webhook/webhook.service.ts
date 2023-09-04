@@ -4,10 +4,10 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateWebhookRequest, WebhookType, FetchedWebhook } from './dto';
+import { CreateWebhookRequest, WebhookEventType, FetchedWebhook } from './dto';
 import { WebhookRepository } from './webhook.repository';
 import { Prisma, Recipe, Webhook } from '@prisma/client';
-import { TokenCrypt } from './utils/crypt-webhook-token';
+import { CryptoUtils } from './utils/crypt-webhook-token';
 import { firstValueFrom } from 'rxjs';
 
 @Injectable()
@@ -15,7 +15,7 @@ export class WebhookService {
   constructor(
     private readonly httpService: HttpService,
     private readonly webhookRepository: WebhookRepository,
-    private readonly tokenCrypt: TokenCrypt,
+    private readonly cryptoUtils: CryptoUtils,
   ) {}
 
   async createWebhook(
@@ -30,7 +30,7 @@ export class WebhookService {
     }
 
     if (webhookData.token) {
-      const { encryptedToken, iv, authTag } = this.tokenCrypt.encryptToken(
+      const { encryptedToken, iv, authTag } = this.cryptoUtils.encryptToken(
         webhookData.token,
       );
       webhookData.token = encryptedToken;
@@ -86,7 +86,7 @@ export class WebhookService {
   async createWebhookEvent(
     userId: number,
     data: Recipe,
-    type: WebhookType,
+    type: WebhookEventType,
   ): Promise<void> {
     const userWebhooks = await this.webhookRepository.getAllWebhooksByUserId(
       userId,

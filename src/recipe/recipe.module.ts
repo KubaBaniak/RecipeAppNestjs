@@ -12,7 +12,7 @@ import { WebhookService } from '../webhook/webhook.service';
 import { HttpModule } from '@nestjs/axios';
 import { WebhookRepository } from '../webhook/webhook.repository';
 import { UserRepository } from '../user/user.repository';
-import { TokenCrypt } from '../webhook/utils/crypt-webhook-token';
+import { CryptoUtils } from '../webhook/utils/crypt-webhook-token';
 
 @Module({
   imports: [RedisCacheModule, WebSocketEventModule, HttpModule],
@@ -25,7 +25,7 @@ import { TokenCrypt } from '../webhook/utils/crypt-webhook-token';
     S3Service,
     WebhookService,
     WebhookRepository,
-    TokenCrypt,
+    CryptoUtils,
     UserRepository,
   ],
   controllers: [RecipeController],

@@ -16,7 +16,7 @@ import { Role } from '@prisma/client';
 import { S3Service } from './s3-bucket.service';
 import { WebSocketEventGateway } from '../websocket/websocket-event.gateway';
 import { WebhookService } from '../webhook/webhook.service';
-import { WebhookType } from '../webhook/dto';
+import { WebhookEventType } from '../webhook/dto';
 
 @Injectable()
 export class RecipeService {
@@ -62,7 +62,7 @@ export class RecipeService {
     this.webhookService.createWebhookEvent(
       userId,
       recipe,
-      WebhookType.RecipeCreated,
+      WebhookEventType.RecipeCreated,
     );
     return recipe;
   }
@@ -152,7 +152,7 @@ export class RecipeService {
     this.webhookService.createWebhookEvent(
       userId,
       recipe,
-      WebhookType.RecipeUpdated,
+      WebhookEventType.RecipeUpdated,
     );
 
     return recipe;
@@ -172,7 +172,7 @@ export class RecipeService {
     this.webhookService.createWebhookEvent(
       userId,
       recipe,
-      WebhookType.RecipeDeleted,
+      WebhookEventType.RecipeDeleted,
     );
   }
 
