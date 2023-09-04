@@ -1,8 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Prisma, User, Webhook } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { UserPayloadRequest } from './dto';
-import { CreateWebhookRequest } from 'src/webhook/dto';
 
 @Injectable()
 export class UserRepository {
@@ -15,7 +14,6 @@ export class UserRepository {
 
     return user ? UserPayloadRequest.from(user) : null;
   }
-
   async getUserByEmailWithPassword(email: string): Promise<UserPayloadRequest> {
     const user = await this.prisma.user.findUnique({
       where: { email },
@@ -47,42 +45,6 @@ export class UserRepository {
   async removeUserById(id: number): Promise<void> {
     this.prisma.user.delete({
       where: { id },
-    });
-  }
-
-  async createWebhook(
-    userId: number,
-    webhookData: CreateWebhookRequest,
-  ): Promise<Webhook> {
-    return this.prisma.webhook.create({
-      data: {
-        ...webhookData,
-        userId,
-      },
-    });
-  }
-
-  async getAllWebhooksByUserId(userId: number): Promise<Webhook[]> {
-    return this.prisma.webhook.findMany({
-      where: {
-        userId,
-      },
-    });
-  }
-
-  async getWebhookById(userId: number): Promise<Webhook> {
-    return this.prisma.webhook.findUnique({
-      where: {
-        id: userId,
-      },
-    });
-  }
-
-  async deleteUserWebhookByName(webhookId: number): Promise<void> {
-    await this.prisma.webhook.delete({
-      where: {
-        id: webhookId,
-      },
     });
   }
 }

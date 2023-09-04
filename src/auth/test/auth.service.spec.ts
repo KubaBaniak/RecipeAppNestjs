@@ -9,10 +9,12 @@ import { Role } from '@prisma/client';
 import { MockJwtService } from '../__mocks__/jwt.service.mock';
 import { bcryptConstants } from '../constants';
 import { UserRepository } from '../../user/user.repository';
+import { PersonalAccessTokenRepository } from '../personal-access-token.repository';
 
 describe('AuthService', () => {
   let authService: AuthService;
   let userRepository: UserRepository;
+  let personalAccessTokenRepository: PersonalAccessTokenRepository;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -20,6 +22,7 @@ describe('AuthService', () => {
         AuthService,
         UserService,
         UserRepository,
+        PersonalAccessTokenRepository,
         PrismaService,
         {
           provide: JwtService,
@@ -31,6 +34,9 @@ describe('AuthService', () => {
     jest.clearAllMocks();
     authService = module.get<AuthService>(AuthService);
     userRepository = module.get<UserRepository>(UserRepository);
+    personalAccessTokenRepository = module.get<PersonalAccessTokenRepository>(
+      PersonalAccessTokenRepository,
+    );
   });
 
   it('should be defined', () => {

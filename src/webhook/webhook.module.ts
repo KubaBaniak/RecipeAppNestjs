@@ -4,10 +4,18 @@ import { HttpModule } from '@nestjs/axios';
 import { WebhookController } from './webhook.controller';
 import { WebhookRepository } from './webhook.repository';
 import { PrismaService } from '../prisma/prisma.service';
+import { TokenCrypt } from './utils/crypt-webhook-token';
+import { WebhookEventsService } from './webhook-events.service';
 
 @Module({
   imports: [HttpModule],
-  providers: [WebhookService, WebhookRepository, PrismaService],
+  providers: [
+    WebhookService,
+    WebhookRepository,
+    PrismaService,
+    TokenCrypt,
+    WebhookEventsService,
+  ],
   controllers: [WebhookController],
 })
 export class WebhookModule {}

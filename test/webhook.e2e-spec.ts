@@ -15,6 +15,7 @@ import {
 } from '../src/webhook/test/webhook.factory';
 import { AuthModule } from '../src/auth/auth.module';
 import { WebhookModule } from '../src/webhook/webhook.module';
+import { TokenCrypt } from '../src/webhook/utils/crypt-webhook-token';
 
 describe('WebhookController (e2e)', () => {
   let app: INestApplication;
@@ -26,7 +27,7 @@ describe('WebhookController (e2e)', () => {
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [WebhookModule, HttpModule, AuthModule],
-      providers: [PrismaService, WebhookService, WebhookRepository],
+      providers: [PrismaService, WebhookService, WebhookRepository, TokenCrypt],
     }).compile();
 
     app = moduleRef.createNestApplication();
@@ -102,15 +103,13 @@ describe('WebhookController (e2e)', () => {
         .get('/webhooks')
         .set({ Authorization: `Bearer ${accessToken}` })
         .expect((response: request.Response) => {
-          expect(response.body).toEqual(
+          expect(response.body.webhooks).toEqual(
             expect.arrayContaining([
               {
                 id: expect.any(Number),
                 name: expect.any(String),
                 type: expect.any(String),
-                token: expect.any(String),
                 url: expect.any(String),
-                userId: expect.any(Number),
               },
             ]),
           );

@@ -12,9 +12,12 @@ import {
 import { WebhookService } from './webhook.service';
 import { UserId } from '../common/decorators/req-user-id.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { CreateWebhookRequest } from './dto';
+import {
+  CreateWebhookRequest,
+  FetchWebhooksResponse,
+  FetchWebhookResponse,
+} from './dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Webhook } from '@prisma/client';
 
 @Controller('webhooks')
 @ApiTags('Webhooks')
@@ -25,11 +28,15 @@ export class WebhookController {
   @HttpCode(201)
   @ApiOperation({ summary: 'Create webhook' })
   @Post()
-  createWebhook(
+  async createWebhook(
     @UserId() userId: number,
     @Body() webhookData: CreateWebhookRequest,
-  ): void {
-    this.webhookService.createWebhook(userId, webhookData);
+  ): Promise<FetchWebhookResponse> {
+    const webhook = await this.webhookService.createWebhook(
+      userId,
+      webhookData,
+    );
+    return FetchWebhookResponse.from(webhook);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -40,13 +47,17 @@ export class WebhookController {
     @UserId() userId: number,
     @Param('id', ParseIntPipe) webhookId: number,
   ): Promise<void> {
-    this.webhookService.deleteWebhook(userId, webhookId);
+    await this.webhookService.deleteWebhook(userId, webhookId);
   }
 
   @UseGuards(JwtAuthGuard)
+  @HttpCode(200)
   @ApiOperation({ summary: 'List all webhooks owned by user' })
   @Get()
-  async listWebhooks(@UserId() userId: number): Promise<Webhook[]> {
-    return await this.webhookService.getWebhooksById(userId);
+  async listWebhooks(@UserId() userId: number): Promise<FetchWebhooksResponse> {
+    const fetchedWebhooks = await this.webhookService.getWebhooksByUserId(
+      userId,
+    );
+    return FetchWebhooksResponse.from(fetchedWebhooks);
   }
 }

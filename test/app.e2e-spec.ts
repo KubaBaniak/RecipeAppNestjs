@@ -17,4 +17,8 @@ describe('AppController (e2e)', () => {
   it('GET /', () => {
     expect(app).toBeDefined();
   });
+
+  afterAll(async () => {
+    await app.close();
+  });
 });

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Webhook } from '@prisma/client';
-import { CreateWebhookRequest } from 'src/webhook/dto';
+import { Webhook, WebhookEvent } from '@prisma/client';
+import { CreateWebhookRequest, WebhookType } from 'src/webhook/dto';
 
 @Injectable()
 export class WebhookRepository {
@@ -10,11 +10,43 @@ export class WebhookRepository {
   async createWebhook(
     userId: number,
     webhookData: CreateWebhookRequest,
+    iv?: string,
+    authTag?: string,
   ): Promise<Webhook> {
     return this.prisma.webhook.create({
       data: {
         ...webhookData,
         userId,
+        initVector: iv,
+        authTag,
+      },
+    });
+  }
+
+  async createWebhookEvent(
+    webhookId: number,
+    data: any,
+    webhookType: WebhookType,
+  ): Promise<WebhookEvent> {
+    return this.prisma.webhookEvent.create({
+      data: {
+        data,
+        type: webhookType,
+        webhookId,
+      },
+    });
+  }
+
+  async getDataToSendWebhookEvent(webhookId: number) {
+    return this.prisma.webhook.findUnique({
+      where: {
+        id: webhookId,
+      },
+      select: {
+        url: true,
+        token: true,
+        initVector: true,
+        authTag: true,
       },
     });
   }
@@ -27,18 +59,55 @@ export class WebhookRepository {
     });
   }
 
-  async getWebhookById(userId: number): Promise<Webhook> {
+  async getWebhookById(webhookId: number): Promise<Webhook> {
     return this.prisma.webhook.findUnique({
       where: {
-        id: userId,
+        id: webhookId,
       },
     });
   }
 
-  async deleteUserWebhookById(webhookId: number): Promise<void> {
-    await this.prisma.webhook.delete({
+  deleteUserWebhookById(webhookId: number): Promise<Webhook> {
+    return this.prisma.webhook.delete({
       where: {
         id: webhookId,
+      },
+    });
+  }
+
+  getAllValidWebhookEvents(): Promise<WebhookEvent[]> {
+    return this.prisma.webhookEvent.findMany({
+      where: {
+        status: 'Pending',
+      },
+    });
+  }
+
+  updateWebhookEventStatus(
+    webhookEventId: number,
+    status: string,
+  ): Promise<WebhookEvent> {
+    return this.prisma.webhookEvent.update({
+      where: {
+        id: webhookEventId,
+      },
+      data: {
+        status,
+      },
+    });
+  }
+
+  updateAttemptAndSentAt(
+    webhookEventId: number,
+    currentAttempt: number,
+  ): Promise<WebhookEvent> {
+    return this.prisma.webhookEvent.update({
+      where: {
+        id: webhookEventId,
+      },
+      data: {
+        attempt: currentAttempt + 1,
+        sentAt: new Date(),
       },
     });
   }

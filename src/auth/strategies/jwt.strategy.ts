@@ -5,11 +5,13 @@ import { jwtConstants } from '../constants';
 import { JwtPayload } from './payloads/jwt-token.payload';
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy) {
+export class UserAuthBearerStrategy extends PassportStrategy(
+  Strategy,
+  'jwt.bearer',
+) {
   constructor() {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      ignoreExpiration: false,
       secretOrKey: jwtConstants.secret,
     });
   }

@@ -4,7 +4,11 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { Recipe } from '@prisma/client';
-import { CreateRecipeRequest, UpdateRecipeRequest } from './dto';
+import {
+  CreateRecipeRequest,
+  RecipeWithUrls,
+  UpdateRecipeRequest,
+} from './dto';
 import { RecipeCacheService } from './recipe.cache.service';
 import { RecipeRepository } from '../recipe/recipe.repository';
 import { UserRepository } from '../user/user.repository';
@@ -12,7 +16,7 @@ import { Role } from '@prisma/client';
 import { S3Service } from './s3-bucket.service';
 import { WebSocketEventGateway } from '../websocket/websocket-event.gateway';
 import { WebhookService } from '../webhook/webhook.service';
-import { WebhookEvent } from '../webhook/dto';
+import { WebhookType } from '../webhook/dto';
 
 @Injectable()
 export class RecipeService {
@@ -31,12 +35,15 @@ export class RecipeService {
     );
   }
 
-  getImageUrlsOfManyRecipes(recipes: Recipe[]): Promise<Recipe[]> {
+  getImageUrlsOfManyRecipes(recipes: Recipe[]): Promise<RecipeWithUrls[]> {
     return Promise.all(
-      recipes.map(async (recipe) => ({
-        ...recipe,
-        imageKeys: await this.getPresignedUrlsForRecipeImages(recipe),
-      })),
+      recipes.map(async (recipe) => {
+        const { imageKeys, ...recipeWithoutImageKeys } = recipe;
+        return {
+          ...recipeWithoutImageKeys,
+          imageUrls: await this.getPresignedUrlsForRecipeImages(recipe),
+        };
+      }),
     );
   }
 
@@ -52,15 +59,15 @@ export class RecipeService {
       recipe.authorId,
     );
 
-    this.webhookService.sendWebhookEvent(
+    this.webhookService.createWebhookEvent(
       userId,
       recipe,
-      WebhookEvent.RecipeCreated,
+      WebhookType.RecipeCreated,
     );
     return recipe;
   }
 
-  async fetchRecipe(recipeId: number, userId: number): Promise<Recipe> {
+  async fetchRecipe(recipeId: number, userId: number): Promise<RecipeWithUrls> {
     const user = await this.userRepository.getUserById(userId);
     const recipe =
       (await this.recipeCacheService.getCachedRecipe(recipeId)) ??
@@ -84,17 +91,18 @@ export class RecipeService {
     if (user.id != recipe.authorId && !recipe.isPublic) {
       throw new ForbiddenException();
     }
+    const { imageKeys, ...recipeWithoutImageKeys } = recipe;
 
     return {
-      ...recipe,
-      imageKeys: await this.getPresignedUrlsForRecipeImages(recipe),
+      ...recipeWithoutImageKeys,
+      imageUrls: await this.getPresignedUrlsForRecipeImages(recipe),
     };
   }
 
   async fetchRecipesByAuthorId(
     authorId: number,
     principalId: number,
-  ): Promise<Recipe[]> {
+  ): Promise<RecipeWithUrls[]> {
     const author = await this.userRepository.getUserById(authorId);
     if (!author) {
       throw new NotFoundException();
@@ -110,7 +118,7 @@ export class RecipeService {
     return this.getImageUrlsOfManyRecipes(recipes);
   }
 
-  async fetchAllRecipes(userId: number): Promise<Recipe[]> {
+  async fetchAllRecipes(userId: number): Promise<RecipeWithUrls[]> {
     const user = await this.userRepository.getUserById(userId);
     if (user.role === Role.ADMIN) {
       const recipes = await this.recipeRepository.getAllRecipes();
@@ -141,10 +149,10 @@ export class RecipeService {
     recipe = await this.recipeRepository.updateRecipe(recipeId, payload);
 
     this.recipeCacheService.cacheRecipe(recipe);
-    this.webhookService.sendWebhookEvent(
+    this.webhookService.createWebhookEvent(
       userId,
       recipe,
-      WebhookEvent.RecipeUpdated,
+      WebhookType.RecipeUpdated,
     );
 
     return recipe;
@@ -161,10 +169,10 @@ export class RecipeService {
     }
     await this.recipeRepository.deleteRecipe(recipeId);
     this.recipeCacheService.deleteCachedRecipe(recipeId);
-    this.webhookService.sendWebhookEvent(
+    this.webhookService.createWebhookEvent(
       userId,
       recipe,
-      WebhookEvent.RecipeDeleted,
+      WebhookType.RecipeDeleted,
     );
   }
 

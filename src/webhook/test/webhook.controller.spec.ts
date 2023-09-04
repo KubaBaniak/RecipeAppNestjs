@@ -5,7 +5,10 @@ import { WebhookRepository } from '../webhook.repository';
 import { HttpModule } from '@nestjs/axios';
 import { PrismaService } from '../../prisma/prisma.service';
 import { faker } from '@faker-js/faker';
-import { CreateWebhookRequest, WebhookEvent } from '../dto';
+import { CreateWebhookRequest, WebhookType } from '../dto';
+import { TokenCrypt } from '../utils/crypt-webhook-token';
+import { MockTokenCrypt } from '../__mocks__/crypt-webhook-token.mock';
+import { createWebhookResponse } from './webhook.factory';
 
 describe('WebhookController', () => {
   let controller: WebhookController;
@@ -15,11 +18,20 @@ describe('WebhookController', () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [HttpModule],
       controllers: [WebhookController],
-      providers: [WebhookService, WebhookRepository, PrismaService],
+      providers: [
+        WebhookService,
+        WebhookRepository,
+        PrismaService,
+        {
+          provide: TokenCrypt,
+          useClass: MockTokenCrypt,
+        },
+      ],
     }).compile();
 
     controller = module.get<WebhookController>(WebhookController);
     webhookService = module.get<WebhookService>(WebhookService);
+    controller = module.get<WebhookController>(WebhookController);
   });
 
   it('should be defined', () => {
@@ -31,9 +43,9 @@ describe('WebhookController', () => {
 
     beforeEach(() => {
       jest
-        .spyOn(WebhookService.prototype, 'createWebhook')
+        .spyOn(webhookService, 'createWebhook')
         .mockImplementation((_userId: number, _data: CreateWebhookRequest) =>
-          Promise.resolve(),
+          Promise.resolve(createWebhookResponse()),
         );
     });
 
@@ -44,7 +56,7 @@ describe('WebhookController', () => {
     it('should create a new webhook with token', () => {
       const data: CreateWebhookRequest = {
         name: faker.word.noun(),
-        type: WebhookEvent.RecipeCreated,
+        type: WebhookType.RecipeCreated,
         url: faker.internet.url(),
       };
 
@@ -56,7 +68,7 @@ describe('WebhookController', () => {
     it('should create a new webhook without token', () => {
       const data: CreateWebhookRequest = {
         name: faker.word.noun(),
-        type: WebhookEvent.RecipeDeleted,
+        type: WebhookType.RecipeDeleted,
         url: faker.internet.url(),
         token: faker.string.alphanumeric(32),
       };
@@ -93,13 +105,11 @@ describe('WebhookController', () => {
           id: faker.number.int(),
           name: faker.word.noun(),
           url: faker.internet.url(),
-          token: faker.string.alphanumeric(),
-          type: 'CREATE',
-          userId: faker.number.int(),
+          type: WebhookType.RecipeCreated,
         },
       ];
       jest
-        .spyOn(WebhookService.prototype, 'getWebhooksById')
+        .spyOn(webhookService, 'getWebhooksByUserId')
         .mockImplementation(async (_userId: number) => {
           return returnItem;
         });
@@ -108,8 +118,8 @@ describe('WebhookController', () => {
 
       const response = await controller.listWebhooks(userId);
 
-      expect(webhookService.getWebhooksById).toHaveBeenCalled();
-      expect(response).toHaveLength(1);
+      expect(webhookService.getWebhooksByUserId).toHaveBeenCalled();
+      expect(response.webhooks).toHaveLength(1);
 
       jest.clearAllMocks();
     });

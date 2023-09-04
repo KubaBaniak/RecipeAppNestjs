@@ -10,6 +10,9 @@ export default async () => {
     ['./auth/dto/sign-up-response']: await import(
       './auth/dto/sign-up-response'
     ),
+    ['./auth/dto/create-pat-response']: await import(
+      './auth/dto/create-pat-response'
+    ),
     ['./recipe/dto/fetch-recipes-response']: await import(
       './recipe/dto/fetch-recipes-response'
     ),
@@ -24,6 +27,12 @@ export default async () => {
     ),
     ['./recipe/dto/upload-images-response']: await import(
       './recipe/dto/upload-images-response'
+    ),
+    ['./webhook/dto/webhook-response']: await import(
+      './webhook/dto/webhook-response'
+    ),
+    ['./webhook/dto/webhooks-response']: await import(
+      './webhook/dto/webhooks-response'
     ),
   };
   return {
@@ -67,25 +76,19 @@ export default async () => {
           },
         ],
         [
+          import('./auth/dto/create-pat-response'),
+          {
+            CreatePatResponse: {
+              personalAccessToken: { required: true, type: () => String },
+            },
+          },
+        ],
+        [
           import('./user/dto/create-user-request'),
           {
             CreateUserRequest: {
               email: { required: true, type: () => String },
               password: { required: true, type: () => String },
-            },
-          },
-        ],
-        [
-          import('./webhook/dto/create-webhook-request'),
-          {
-            CreateWebhookRequest: {
-              name: { required: true, type: () => String },
-              type: {
-                required: true,
-                enum: t['./webhook/dto/webhook-event'].WebhookEvent,
-              },
-              url: { required: true, type: () => String },
-              token: { required: false, type: () => String },
             },
           },
         ],
@@ -155,6 +158,32 @@ export default async () => {
           },
         ],
         [
+          import('./webhook/dto/webhooks-response'),
+          {
+            FetchWebhooksResponse: {
+              webhooks: { required: true, type: () => [Object] },
+            },
+          },
+        ],
+        [
+          import('./webhook/dto/webhook-response'),
+          { FetchWebhookResponse: {} },
+        ],
+        [
+          import('./webhook/dto/create-webhook-request'),
+          {
+            CreateWebhookRequest: {
+              name: { required: true, type: () => String },
+              type: {
+                required: true,
+                enum: t['./webhook/dto/webhook-event'].WebhookType,
+              },
+              url: { required: true, type: () => String },
+              token: { required: false, type: () => String },
+            },
+          },
+        ],
+        [
           import('./recipe/dto/upload-images-response'),
           {
             UploadImagesResponse: {
@@ -170,6 +199,9 @@ export default async () => {
             AuthController: {
               signIn: { type: t['./auth/dto/sign-in-response'].SignInResponse },
               signUp: { type: t['./auth/dto/sign-up-response'].SignUpResponse },
+              createPersonalAccessToken: {
+                type: t['./auth/dto/create-pat-response'].CreatePatResponse,
+              },
             },
           },
         ],
@@ -205,9 +237,14 @@ export default async () => {
           import('./webhook/webhook.controller'),
           {
             WebhookController: {
-              createWebhook: {},
+              createWebhook: {
+                type: t['./webhook/dto/webhook-response'].FetchWebhookResponse,
+              },
               deleteWebhook: {},
-              listWebhooks: { type: [Object] },
+              listWebhooks: {
+                type: t['./webhook/dto/webhooks-response']
+                  .FetchWebhooksResponse,
+              },
             },
           },
         ],

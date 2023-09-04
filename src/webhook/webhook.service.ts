@@ -3,91 +3,97 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
-  UnauthorizedException,
 } from '@nestjs/common';
+import { CreateWebhookRequest, WebhookType, FetchedWebhook } from './dto';
 import { WebhookRepository } from './webhook.repository';
-import { Recipe, Webhook } from '@prisma/client';
-import { CreateWebhookRequest, WebhookEvent } from './dto';
-import Cryptr from 'cryptr';
+import { Prisma, Recipe, Webhook } from '@prisma/client';
+import { TokenCrypt } from './utils/crypt-webhook-token';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class WebhookService {
   constructor(
     private readonly httpService: HttpService,
     private readonly webhookRepository: WebhookRepository,
+    private readonly tokenCrypt: TokenCrypt,
   ) {}
-  cryptr = new Cryptr(process.env.CRYPTR_SECRET_KEY);
 
   async createWebhook(
     userId: number,
     webhookData: CreateWebhookRequest,
-  ): Promise<void> {
+  ): Promise<Webhook> {
     const userWebhooks = await this.webhookRepository.getAllWebhooksByUserId(
       userId,
     );
-    if (userWebhooks.length >= 5) {
-      throw new ForbiddenException();
+    if (userWebhooks.length >= +process.env.WEBHOOK_LIMIT) {
+      throw new ForbiddenException('Reached limit of owned webhooks');
     }
 
     if (webhookData.token) {
-      const encryptedString = this.cryptr.encrypt(webhookData.token);
-      webhookData.token = encryptedString;
+      const { encryptedToken, iv, authTag } = this.tokenCrypt.encryptToken(
+        webhookData.token,
+      );
+      webhookData.token = encryptedToken;
+
+      return this.webhookRepository.createWebhook(
+        userId,
+        webhookData,
+        iv,
+        authTag,
+      );
     }
 
     this.webhookRepository.createWebhook(userId, webhookData);
   }
 
-  async deleteWebhook(userId: number, webhookId: number) {
+  async deleteWebhook(userId: number, webhookId: number): Promise<void> {
     const webhook = await this.webhookRepository.getWebhookById(webhookId);
     if (!webhook) {
       throw new NotFoundException();
     }
     if (userId !== webhook.userId) {
-      throw new UnauthorizedException();
+      throw new ForbiddenException();
     }
-    this.webhookRepository.deleteUserWebhookById(webhookId);
+    await this.webhookRepository.deleteUserWebhookById(webhookId);
   }
 
-  async getWebhooksById(userId: number): Promise<Webhook[]> {
-    return this.webhookRepository.getAllWebhooksByUserId(userId);
+  async getWebhooksByUserId(userId: number): Promise<FetchedWebhook[]> {
+    const webhooks = await this.webhookRepository.getAllWebhooksByUserId(
+      userId,
+    );
+    return webhooks.map(({ userId, token, initVector, authTag, ...rest }) => {
+      return rest;
+    });
   }
 
-  sendToWebhook(url: string, data: Recipe, token?: string, attempt = 0): void {
-    let decryptedToken: string;
-    if (token) {
-      decryptedToken = this.cryptr.decrypt(token);
-    }
+  async sendWebhookEvent(
+    url: string,
+    data: Prisma.JsonValue,
+    token?: string,
+  ): Promise<boolean> {
     const headersRequest = {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     };
-    this.httpService
-      .post(url, data, {
+    const test = await firstValueFrom(
+      this.httpService.post(url, data, {
         headers: headersRequest,
-      })
-      .subscribe({
-        error: () => {
-          const maxWaitingTime = 86400 * 1000;
-          const nextTryInSec = Math.min(Math.pow(2, attempt + 1) * 1000);
-          if (nextTryInSec > maxWaitingTime) {
-            throw new NotFoundException({
-              message: 'Could not send data to provided URL',
-            });
-          }
-          setTimeout(() => {
-            this.sendToWebhook(url, data, token, attempt + 1);
-          }, nextTryInSec);
-        },
-      });
+      }),
+    );
+    return test.status === 200 ? true : false;
   }
 
-  async sendWebhookEvent(userId: number, data: Recipe, event: WebhookEvent) {
+  async createWebhookEvent(
+    userId: number,
+    data: Recipe,
+    type: WebhookType,
+  ): Promise<void> {
     const userWebhooks = await this.webhookRepository.getAllWebhooksByUserId(
       userId,
     );
-    userWebhooks.forEach((webhook) => {
-      if (webhook.type === event) {
-        this.sendToWebhook(webhook.url, data, webhook.token);
+    userWebhooks.forEach(async (webhook) => {
+      if (webhook.type === type) {
+        await this.webhookRepository.createWebhookEvent(webhook.id, data, type);
       }
     });
   }
