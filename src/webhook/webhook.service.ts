@@ -8,6 +8,7 @@ import { CreateWebhookRequest, WebhookType, FetchedWebhook } from './dto';
 import { WebhookRepository } from './webhook.repository';
 import { Prisma, Recipe, Webhook } from '@prisma/client';
 import { TokenCrypt } from './utils/crypt-webhook-token';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class WebhookService {
@@ -60,34 +61,26 @@ export class WebhookService {
     const webhooks = await this.webhookRepository.getAllWebhooksByUserId(
       userId,
     );
-    return webhooks.map(({ userId, token, ...rest }) => {
+    return webhooks.map(({ userId, token, initVector, authTag, ...rest }) => {
       return rest;
     });
   }
 
-  sendWebhookEvent(
+  async sendWebhookEvent(
     url: string,
     data: Prisma.JsonValue,
     token?: string,
-  ): boolean {
-    let success = false;
+  ): Promise<boolean> {
     const headersRequest = {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     };
-    this.httpService
-      .post(url, data, {
+    const test = await firstValueFrom(
+      this.httpService.post(url, data, {
         headers: headersRequest,
-      })
-      .subscribe({
-        complete: () => {
-          success = true;
-        },
-        error: (err) => {
-          console.error(err);
-        },
-      });
-    return success;
+      }),
+    );
+    return test.status === 200 ? true : false;
   }
 
   async createWebhookEvent(

@@ -25,11 +25,11 @@ export default async () => {
     ['./recipe/dto/upload-images-response']: await import(
       './recipe/dto/upload-images-response'
     ),
-    ['./webhook/dto/webhooks-response']: await import(
-      './webhook/dto/webhooks-response'
-    ),
     ['./webhook/dto/webhook-response']: await import(
       './webhook/dto/webhook-response'
+    ),
+    ['./webhook/dto/webhooks-response']: await import(
+      './webhook/dto/webhooks-response'
     ),
   };
   return {

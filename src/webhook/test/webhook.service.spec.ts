@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { WebhookService } from '../webhook.service';
 import { HttpModule } from '@nestjs/axios';
 import { WebhookRepository } from '../webhook.repository';
-import { CronWebhook } from '../cron-schedule';
 import { TokenCrypt } from '../utils/crypt-webhook-token';
 import { PrismaService } from '../../prisma/prisma.service';
 import { MockTokenCrypt } from '../__mocks__/crypt-webhook-token.mock';
@@ -20,10 +19,6 @@ describe('WebhookService', () => {
         {
           provide: TokenCrypt,
           useClass: MockTokenCrypt,
-        },
-        {
-          provide: CronWebhook,
-          useValue: {},
         },
       ],
     }).compile();

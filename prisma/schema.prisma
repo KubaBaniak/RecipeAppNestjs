@@ -52,7 +52,7 @@ model WebhookEvent {
   type      String
   status    String    @default("Pending")
   sentAt    DateTime?
-  Webhook   Webhook   @relation(fields: [webhookId], references: [id])
+  Webhook   Webhook   @relation(fields: [webhookId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   webhookId Int
 }
 

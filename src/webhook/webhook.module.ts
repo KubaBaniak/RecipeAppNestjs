@@ -4,8 +4,8 @@ import { HttpModule } from '@nestjs/axios';
 import { WebhookController } from './webhook.controller';
 import { WebhookRepository } from './webhook.repository';
 import { PrismaService } from '../prisma/prisma.service';
-import { CronWebhook } from './cron-schedule';
 import { TokenCrypt } from './utils/crypt-webhook-token';
+import { WebhookEventsService } from './webhook-events.service';
 
 @Module({
   imports: [HttpModule],
@@ -13,8 +13,8 @@ import { TokenCrypt } from './utils/crypt-webhook-token';
     WebhookService,
     WebhookRepository,
     PrismaService,
-    CronWebhook,
     TokenCrypt,
+    WebhookEventsService,
   ],
   controllers: [WebhookController],
 })
