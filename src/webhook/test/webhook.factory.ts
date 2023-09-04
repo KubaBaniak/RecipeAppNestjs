@@ -2,6 +2,7 @@ import { faker } from '@faker-js/faker';
 import { WebhookType } from '../dto';
 
 type CreateWebhookRequestOverrides = {
+  id?: number;
   name?: string;
   type?: WebhookType;
   url?: string;
@@ -21,7 +22,7 @@ export const createWebhookWithUserId = (
   userId: number,
   overrides: CreateWebhookRequestOverrides = {},
 ) => ({
-  id: faker.number.int({ max: 128 }),
+  id: overrides.id ?? faker.number.int({ max: 65535 }),
   name: overrides.name ?? faker.word.noun(),
   type: overrides.type ?? WebhookType.RecipeCreated,
   url: overrides.url ?? faker.internet.url(),
