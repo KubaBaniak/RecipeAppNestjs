@@ -50,10 +50,6 @@ describe('WebhookController (e2e)', () => {
     });
   });
 
-  beforeEach(async () => {
-    await prismaService.webhook.deleteMany();
-  });
-
   describe('POST /webhooks', () => {
     it('should create webhook', async () => {
       const webhook = createWebhookRequest();
@@ -131,6 +127,7 @@ describe('WebhookController (e2e)', () => {
   });
 
   afterAll(async () => {
+    prismaService.webhook.deleteMany();
     await app.close();
   });
 });
