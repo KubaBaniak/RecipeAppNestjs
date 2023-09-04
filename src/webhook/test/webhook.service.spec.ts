@@ -105,7 +105,19 @@ describe('WebhookService', () => {
         .spyOn(webhookRepository, 'getAllWebhooksByUserId')
         .mockImplementationOnce(() => Promise.all([createWebhookResponse()]));
 
-      const spy = jest.spyOn(webhookRepository, 'createWebhookEvent');
+      const spy = jest
+        .spyOn(webhookRepository, 'createWebhookEvent')
+        .mockImplementationOnce(() =>
+          Promise.resolve({
+            id: faker.number.int(),
+            data: faker.word.noun(),
+            attempt: 0,
+            type: WebhookType.RecipeCreated,
+            status: 'Pending',
+            sentAt: new Date(),
+            webhookId,
+          }),
+        );
 
       await service.createWebhookEvent(webhookId, recipe, type);
 
