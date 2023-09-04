@@ -9,13 +9,14 @@ import { RecipeRepository } from '../recipe.repository';
 import { UserRepository } from '../../user/user.repository';
 import { S3Service } from '../s3-bucket.service';
 import { WebSocketEventGateway } from '../../websocket/websocket-event.gateway';
-import { AuthService } from 'src/auth/auth.service';
+import { AuthService } from '../../auth/auth.service';
 import { JwtService } from '@nestjs/jwt';
 import { WebhookRepository } from '../../webhook/webhook.repository';
 import { WebhookService } from '../../webhook/webhook.service';
 import { HttpModule } from '@nestjs/axios';
 import { TokenCrypt } from '../../webhook/utils/crypt-webhook-token';
 import { MockTokenCrypt } from '../../webhook/__mocks__/crypt-webhook-token.mock';
+import { PersonalAccessTokenRepository } from '../../auth/personal-access-token.repository';
 
 describe('RecipeService', () => {
   let recipeService: RecipeService;
@@ -29,6 +30,7 @@ describe('RecipeService', () => {
         S3Service,
         RecipeRepository,
         UserRepository,
+        PersonalAccessTokenRepository,
         WebSocketEventGateway,
         AuthService,
         JwtService,
@@ -112,7 +114,7 @@ describe('RecipeService', () => {
         preparation: expect.any(String),
         isPublic: true,
         authorId: userId,
-        imageKeys: [],
+        imageUrls: [],
       });
     });
   });
@@ -137,7 +139,7 @@ describe('RecipeService', () => {
             preparation: expect.any(String),
             isPublic: true,
             authorId: expect.any(Number),
-            imageKeys: [],
+            imageUrls: [],
           },
         ]),
       );

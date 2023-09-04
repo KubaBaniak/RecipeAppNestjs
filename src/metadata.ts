@@ -10,6 +10,9 @@ export default async () => {
     ['./auth/dto/sign-up-response']: await import(
       './auth/dto/sign-up-response'
     ),
+    ['./auth/dto/create-pat-response']: await import(
+      './auth/dto/create-pat-response'
+    ),
     ['./recipe/dto/fetch-recipes-response']: await import(
       './recipe/dto/fetch-recipes-response'
     ),
@@ -69,6 +72,14 @@ export default async () => {
             UserRequest: {
               email: { required: true, type: () => String },
               password: { required: true, type: () => String, minLength: 12 },
+            },
+          },
+        ],
+        [
+          import('./auth/dto/create-pat-response'),
+          {
+            CreatePatResponse: {
+              personalAccessToken: { required: true, type: () => String },
             },
           },
         ],
@@ -188,6 +199,9 @@ export default async () => {
             AuthController: {
               signIn: { type: t['./auth/dto/sign-in-response'].SignInResponse },
               signUp: { type: t['./auth/dto/sign-up-response'].SignUpResponse },
+              createPersonalAccessToken: {
+                type: t['./auth/dto/create-pat-response'].CreatePatResponse,
+              },
             },
           },
         ],

@@ -1,10 +1,10 @@
 # RECIPE APP
 
-## Description
+# Description
 
 Recipe App for people to share their **beloved** recipes with the others.
 
-## Installation
+# Installation
 
 1. Clone this repository with:
 
@@ -44,29 +44,44 @@ $ npx run prisma:generate
 
 <br>
 
-## Running the app
+# Running the app
 
-### Database
+## Database & Cache
 
 To setup PostgreSQL database using docker compose use:
 
 ```bash
-$ docker compose up
+$ docker compose --profile dependencies up
 ```
 
 You can also enable [pgAdmin](https://www.pgadmin.org) - management tool for PostgreSQL by using:
 
 ```bash
-$ docker compose --profile tools
+$ docker compose --profile dependencies --profile tools up
 ```
+
+---
+
+⚠️ **WARNING** ⚠️
+
+After successfull database initalization, migrations have to be performed. Use:
+
+```bash
+# for development
+$ npx prisma migrate dev
+
+# for production
+$ npx prisma migrate prod
+```
+
+---
 
 If you want to run this in background add `--detach` or `-d` flag at the end.
 
 **Make sure Docker service is running on your machine!**
-
 <br>
 
-### Start the app
+## Start the app
 
 ```bash
 # development
@@ -77,8 +92,22 @@ $ npm run start:dev
 
 # production mode
 $ npm run start:prod
+# OR
+$ docker build . && docker compose --profile app --profile dependencies up -d
 ```
 
-## Test
+# Tests
 
-### !TODO
+In order to trigger tests run one of the following commands:
+
+```bash
+# run unit tests
+$ npm run test
+
+# run end-to-end tests
+$ npm run test:e2e
+
+# run tests in watch-mode
+$ npm run test:watch
+$ npm run test:e2e:watch
+```
