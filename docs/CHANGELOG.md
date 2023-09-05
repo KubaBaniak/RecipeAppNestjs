@@ -1,3 +1,13 @@
+## [1.1.4](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.1.3...v1.1.4) (2023-09-05)
+
+
+### Bug Fixes
+
+* change repository name ([5be9f4d](https://github.com/KubaBaniak/RecipeAppNestjs/commit/5be9f4deb951b0ba072af72abf182264d6a913ec))
+* fix imports in tests ([c2ffc24](https://github.com/KubaBaniak/RecipeAppNestjs/commit/c2ffc249071d4ef6eea5546e954d3cb258374b3f))
+* fix tests on CI + remove webhook events when webhook is deleted ([4259946](https://github.com/KubaBaniak/RecipeAppNestjs/commit/4259946ff59636954a137c7345fe319def68ed02))
+* resolve conflicts ([e96b179](https://github.com/KubaBaniak/RecipeAppNestjs/commit/e96b1792a8b252c31cbb553b027f05c2d1b381d5))
+
 ## [1.1.3](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.1.2...v1.1.3) (2023-08-30)
 
 ### Bug Fixes
