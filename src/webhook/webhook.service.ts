@@ -80,7 +80,7 @@ export class WebhookService {
         headers: headersRequest,
       }),
     );
-    return test.status === 200 ? true : false;
+    return test.status === 200;
   }
 
   async createWebhookEvent(
@@ -92,8 +92,9 @@ export class WebhookService {
       userId,
     );
     userWebhooks.forEach(async (webhook) => {
-      if (webhook.type === type)
+      if (webhook.type === type) {
         await this.webhookRepository.createWebhookEvent(webhook.id, data, type);
+      }
     });
   }
 }
