@@ -15,6 +15,8 @@ import { UserRepository } from '../user/user.repository';
 import { Role } from '@prisma/client';
 import { S3Service } from './s3-bucket.service';
 import { WebSocketEventGateway } from '../websocket/websocket-event.gateway';
+import { WebhookService } from '../webhook/webhook.service';
+import { WebhookEventType } from '../webhook/dto';
 
 @Injectable()
 export class RecipeService {
@@ -24,6 +26,7 @@ export class RecipeService {
     private readonly recipeCacheService: RecipeCacheService,
     private readonly s3Service: S3Service,
     private readonly webSocketEventGateway: WebSocketEventGateway,
+    private readonly webhookService: WebhookService,
   ) {}
 
   getPresignedUrlsForRecipeImages(recipe: Recipe): Promise<string[]> {
@@ -56,6 +59,11 @@ export class RecipeService {
       recipe.authorId,
     );
 
+    this.webhookService.createWebhookEvent(
+      userId,
+      recipe,
+      WebhookEventType.RecipeCreated,
+    );
     return recipe;
   }
 
@@ -139,7 +147,13 @@ export class RecipeService {
     }
 
     recipe = await this.recipeRepository.updateRecipe(recipeId, payload);
+
     this.recipeCacheService.cacheRecipe(recipe);
+    this.webhookService.createWebhookEvent(
+      userId,
+      recipe,
+      WebhookEventType.RecipeUpdated,
+    );
 
     return recipe;
   }
@@ -155,6 +169,11 @@ export class RecipeService {
     }
     await this.recipeRepository.deleteRecipe(recipeId);
     this.recipeCacheService.deleteCachedRecipe(recipeId);
+    this.webhookService.createWebhookEvent(
+      userId,
+      recipe,
+      WebhookEventType.RecipeDeleted,
+    );
   }
 
   async uploadImages(

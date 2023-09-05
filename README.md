@@ -62,7 +62,7 @@ $ docker compose --profile dependencies --profile tools up
 
 ---
 
-⚠️ **WARNING** ⚠️ 
+⚠️ **WARNING** ⚠️
 
 After successfull database initalization, migrations have to be performed. Use:
 

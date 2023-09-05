@@ -1,6 +1,9 @@
 /* eslint-disable */
 export default async () => {
   const t = {
+    ['./webhook/dto/webhook-event']: await import(
+      './webhook/dto/webhook-event'
+    ),
     ['./auth/dto/sign-in-response']: await import(
       './auth/dto/sign-in-response'
     ),
@@ -24,6 +27,12 @@ export default async () => {
     ),
     ['./recipe/dto/upload-images-response']: await import(
       './recipe/dto/upload-images-response'
+    ),
+    ['./webhook/dto/webhook-response']: await import(
+      './webhook/dto/webhook-response'
+    ),
+    ['./webhook/dto/webhooks-response']: await import(
+      './webhook/dto/webhooks-response'
     ),
   };
   return {
@@ -149,6 +158,32 @@ export default async () => {
           },
         ],
         [
+          import('./webhook/dto/webhooks-response'),
+          {
+            FetchWebhooksResponse: {
+              webhooks: { required: true, type: () => [Object] },
+            },
+          },
+        ],
+        [
+          import('./webhook/dto/webhook-response'),
+          { FetchWebhookResponse: {} },
+        ],
+        [
+          import('./webhook/dto/create-webhook-request'),
+          {
+            CreateWebhookRequest: {
+              name: { required: true, type: () => String },
+              type: {
+                required: true,
+                enum: t['./webhook/dto/webhook-event'].WebhookType,
+              },
+              url: { required: true, type: () => String },
+              token: { required: false, type: () => String },
+            },
+          },
+        ],
+        [
           import('./recipe/dto/upload-images-response'),
           {
             UploadImagesResponse: {
@@ -194,6 +229,21 @@ export default async () => {
               uploadFile: {
                 type: t['./recipe/dto/upload-images-response']
                   .UploadImagesResponse,
+              },
+            },
+          },
+        ],
+        [
+          import('./webhook/webhook.controller'),
+          {
+            WebhookController: {
+              createWebhook: {
+                type: t['./webhook/dto/webhook-response'].FetchWebhookResponse,
+              },
+              deleteWebhook: {},
+              listWebhooks: {
+                type: t['./webhook/dto/webhooks-response']
+                  .FetchWebhooksResponse,
               },
             },
           },

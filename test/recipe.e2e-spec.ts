@@ -1,4 +1,4 @@
-import * as request from 'supertest';
+import request from 'supertest';
 import { Test } from '@nestjs/testing';
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { PrismaService } from '../src/prisma/prisma.service';
@@ -17,6 +17,10 @@ import { RecipeRepository } from '../src/recipe/recipe.repository';
 import { UserRepository } from '../src/user/user.repository';
 import { S3Service } from '../src/recipe/s3-bucket.service';
 import { WebSocketEventGateway } from '../src/websocket/websocket-event.gateway';
+import { HttpModule } from '@nestjs/axios';
+import { WebhookService } from '../src/webhook/webhook.service';
+import { WebhookRepository } from '../src/webhook/webhook.repository';
+import { CryptoUtils } from '../src/webhook/utils/crypt-webhook-token';
 import { PersonalAccessTokenRepository } from '../src/auth/personal-access-token.repository';
 
 describe('RecipeController (e2e)', () => {
@@ -29,7 +33,7 @@ describe('RecipeController (e2e)', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [RecipeModule, AuthModule, RedisCacheModule],
+      imports: [RecipeModule, AuthModule, RedisCacheModule, HttpModule],
       providers: [
         RecipeService,
         UserRepository,
@@ -39,6 +43,9 @@ describe('RecipeController (e2e)', () => {
         RecipeCacheService,
         S3Service,
         WebSocketEventGateway,
+        WebhookService,
+        WebhookRepository,
+        CryptoUtils,
       ],
     }).compile();
 
@@ -382,11 +389,11 @@ describe('RecipeController (e2e)', () => {
   });
 
   afterAll(async () => {
-    await app.close();
     prismaService.user.delete({
       where: {
         id: user.id,
       },
     });
+    await app.close();
   });
 });

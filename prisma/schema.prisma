@@ -16,7 +16,8 @@ model User {
   password            String
   role                Role                  @default(USER)
   recipes             Recipe[]
-  PersonalAccessToken PersonalAccessToken[]
+  webhooks            Webhook[]
+  personalAccessToken PersonalAccessToken[]
 }
 
 model Recipe {
@@ -30,6 +31,30 @@ model Recipe {
   author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   authorId    Int
   imageKeys   String[] @unique
+}
+
+model Webhook {
+  id           Int            @id @default(autoincrement())
+  name         String
+  url          String
+  type         String
+  token        String?
+  initVector   String?
+  authTag      String?
+  User         User           @relation(fields: [userId], references: [id])
+  userId       Int
+  webhookEvent WebhookEvent[]
+}
+
+model WebhookEvent {
+  id        Int       @id @default(autoincrement())
+  data      Json
+  attempt   Int       @default(0)
+  type      String
+  status    String    @default("Pending")
+  sentAt    DateTime?
+  Webhook   Webhook   @relation(fields: [webhookId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  webhookId Int
 }
 
 model PersonalAccessToken {

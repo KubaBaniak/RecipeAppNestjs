@@ -9,18 +9,25 @@ import { MockRecipeCacheService } from '../__mocks__/recipe.cache.mock';
 import { RecipeCacheService } from '../recipe.cache.service';
 import { S3Service } from '../s3-bucket.service';
 import { RecipeRepository } from '../recipe.repository';
+import { WebhookRepository } from '../../webhook/webhook.repository';
+import { WebhookService } from '../../webhook/webhook.service';
+import { HttpModule } from '@nestjs/axios';
+import { CryptoUtils } from '../../webhook/utils/crypt-webhook-token';
 
 describe('RecipeController', () => {
   let recipeController: RecipeController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [RedisCacheModule],
+      imports: [RedisCacheModule, HttpModule],
       controllers: [RecipeController],
       providers: [
         PrismaService,
         S3Service,
         RecipeRepository,
+        WebhookService,
+        WebhookRepository,
+        CryptoUtils,
         {
           provide: RecipeCacheService,
           useClass: MockRecipeCacheService,

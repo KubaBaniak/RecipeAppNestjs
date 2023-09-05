@@ -7,11 +7,15 @@ import { RedisCacheModule } from '../cache/redis-cache.module';
 import { RecipeCacheService } from './recipe.cache.service';
 import { S3Service } from './s3-bucket.service';
 import { RecipeRepository } from './recipe.repository';
-import { UserRepository } from '../user/user.repository';
 import { WebSocketEventModule } from '../websocket/websocket-event.module';
+import { WebhookService } from '../webhook/webhook.service';
+import { HttpModule } from '@nestjs/axios';
+import { WebhookRepository } from '../webhook/webhook.repository';
+import { UserRepository } from '../user/user.repository';
+import { CryptoUtils } from '../webhook/utils/crypt-webhook-token';
 
 @Module({
-  imports: [RedisCacheModule, WebSocketEventModule],
+  imports: [RedisCacheModule, WebSocketEventModule, HttpModule],
   providers: [
     RecipeService,
     RecipeRepository,
@@ -19,6 +23,9 @@ import { WebSocketEventModule } from '../websocket/websocket-event.module';
     PrismaService,
     JwtAuthGuard,
     S3Service,
+    WebhookService,
+    WebhookRepository,
+    CryptoUtils,
     UserRepository,
   ],
   controllers: [RecipeController],

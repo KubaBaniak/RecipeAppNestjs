@@ -68,6 +68,7 @@ export class RecipeController {
       return FetchRecipesResponse.from(fetchedRecipes);
     }
     const fetchedRecipes = await this.recipeService.fetchAllRecipes(userId);
+
     return FetchRecipesResponse.from(fetchedRecipes);
   }
 
@@ -86,7 +87,6 @@ export class RecipeController {
       userId,
       createRecipeRequest,
     );
-
     return CreateRecipeResponse.from(createdRecipe);
   }
 
