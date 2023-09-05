@@ -25,7 +25,7 @@ export class WebhookRepository {
 
   async createWebhookEvent(
     webhookId: number,
-    data: unknown,
+    data: any,
     webhookType: WebhookEventType,
   ): Promise<WebhookEvent> {
     return this.prisma.webhookEvent.create({
