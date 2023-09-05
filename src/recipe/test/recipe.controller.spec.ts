@@ -12,8 +12,7 @@ import { RecipeRepository } from '../recipe.repository';
 import { WebhookRepository } from '../../webhook/webhook.repository';
 import { WebhookService } from '../../webhook/webhook.service';
 import { HttpModule } from '@nestjs/axios';
-import { TokenCrypt } from '../../webhook/utils/crypt-webhook-token';
-import { MockTokenCrypt } from '../../webhook/__mocks__/crypt-webhook-token.mock';
+import { CryptoUtils } from '../../webhook/utils/crypt-webhook-token';
 
 describe('RecipeController', () => {
   let recipeController: RecipeController;
@@ -28,10 +27,7 @@ describe('RecipeController', () => {
         RecipeRepository,
         WebhookService,
         WebhookRepository,
-        {
-          provide: TokenCrypt,
-          useClass: MockTokenCrypt,
-        },
+        CryptoUtils,
         {
           provide: RecipeCacheService,
           useClass: MockRecipeCacheService,

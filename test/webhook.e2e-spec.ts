@@ -15,7 +15,7 @@ import {
 } from '../src/webhook/test/webhook.factory';
 import { AuthModule } from '../src/auth/auth.module';
 import { WebhookModule } from '../src/webhook/webhook.module';
-import { TokenCrypt } from '../src/webhook/utils/crypt-webhook-token';
+import { CryptoUtils } from '../src/webhook/utils/crypt-webhook-token';
 
 describe('WebhookController (e2e)', () => {
   let app: INestApplication;
@@ -27,7 +27,12 @@ describe('WebhookController (e2e)', () => {
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [WebhookModule, HttpModule, AuthModule],
-      providers: [PrismaService, WebhookService, WebhookRepository, TokenCrypt],
+      providers: [
+        PrismaService,
+        WebhookService,
+        WebhookRepository,
+        CryptoUtils,
+      ],
     }).compile();
 
     app = moduleRef.createNestApplication();

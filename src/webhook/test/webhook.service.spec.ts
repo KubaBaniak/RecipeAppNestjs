@@ -10,14 +10,14 @@ import {
   createWebhookWithUserId,
 } from './webhook.factory';
 import { createRecipeResponse } from 'src/recipe/test/recipe.factory';
-import { TokenCrypt } from '../utils/crypt-webhook-token';
-import { WebhookType } from '../dto';
+import { WebhookEventType } from '../dto';
 import { of } from 'rxjs';
+import { CryptoUtils } from '../utils/crypt-webhook-token';
 
 describe('WebhookService', () => {
   let service: WebhookService;
   let webhookRepository: WebhookRepository;
-  let tokenCrypt: TokenCrypt;
+  let cryptoUtils: CryptoUtils;
   let httpService: HttpService;
 
   beforeEach(async () => {
@@ -27,7 +27,7 @@ describe('WebhookService', () => {
         WebhookService,
         WebhookRepository,
         PrismaService,
-        TokenCrypt,
+        CryptoUtils,
         {
           provide: HttpService,
           useValue: {
@@ -47,7 +47,7 @@ describe('WebhookService', () => {
 
     service = module.get<WebhookService>(WebhookService);
     webhookRepository = module.get<WebhookRepository>(WebhookRepository);
-    tokenCrypt = module.get<TokenCrypt>(TokenCrypt);
+    cryptoUtils = module.get<CryptoUtils>(CryptoUtils);
     httpService = module.get<HttpService>(HttpService);
   });
 
@@ -100,7 +100,7 @@ describe('WebhookService', () => {
     it('should create webhook event', async () => {
       const webhookId = faker.number.int({ max: 128 });
       const recipe = createRecipeResponse();
-      const type = WebhookType.RecipeCreated;
+      const type = WebhookEventType.RecipeCreated;
       jest
         .spyOn(webhookRepository, 'getAllWebhooksByUserId')
         .mockImplementationOnce(() => Promise.all([createWebhookResponse()]));
@@ -112,7 +112,7 @@ describe('WebhookService', () => {
             id: faker.number.int(),
             data: faker.word.noun(),
             attempt: 0,
-            type: WebhookType.RecipeCreated,
+            type: WebhookEventType.RecipeCreated,
             status: 'Pending',
             sentAt: new Date(),
             webhookId,
@@ -138,13 +138,13 @@ describe('WebhookService', () => {
   describe('Token encryption and decryption', () => {
     it('should encrypt and decrypt token', async () => {
       const token = 'my_secret_token';
-      const { encryptedToken, iv, authTag } = tokenCrypt.encryptToken(token);
+      const { encryptedToken, iv, authTag } = cryptoUtils.encryptToken(token);
 
-      const decryptedToken = tokenCrypt.decryptToken(
+      const decryptedToken = cryptoUtils.decryptToken({
         encryptedToken,
         iv,
         authTag,
-      );
+      });
 
       expect(decryptedToken).toEqual(token);
     });

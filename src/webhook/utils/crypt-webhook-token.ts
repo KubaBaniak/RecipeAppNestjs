@@ -1,15 +1,12 @@
 import crypto from 'crypto';
 import { Injectable } from '@nestjs/common';
+import { TokenEncryption } from '../dto';
 
 @Injectable()
-export class TokenCrypt {
+export class CryptoUtils {
   private algorithm: crypto.CipherGCMTypes = 'aes-256-gcm';
 
-  encryptToken(token: string): {
-    encryptedToken: string;
-    iv: string;
-    authTag: string;
-  } {
+  encryptToken(token: string): TokenEncryption {
     const iv = crypto.randomBytes(16).toString('hex');
     const secretKey = Buffer.from(process.env.WEBHOOK_TOKEN_SECRET_KEY, 'hex');
 
@@ -23,13 +20,20 @@ export class TokenCrypt {
     return { encryptedToken, iv, authTag };
   }
 
-  decryptToken(encryptedToken: string, iv: string, authTag: string): string {
+  decryptToken(tokenEncryptionData: TokenEncryption): string {
     const secretKey = Buffer.from(process.env.WEBHOOK_TOKEN_SECRET_KEY, 'hex');
+    const decipher = crypto.createDecipheriv(
+      this.algorithm,
+      secretKey,
+      tokenEncryptionData.iv,
+    );
+    decipher.setAuthTag(Buffer.from(tokenEncryptionData.authTag, 'hex'));
 
-    const decipher = crypto.createDecipheriv(this.algorithm, secretKey, iv);
-    decipher.setAuthTag(Buffer.from(authTag, 'hex'));
-
-    let decryptedText = decipher.update(encryptedToken, 'hex', 'utf-8');
+    let decryptedText = decipher.update(
+      tokenEncryptionData.encryptedToken,
+      'hex',
+      'utf-8',
+    );
 
     return (decryptedText += decipher.final('utf-8'));
   }
