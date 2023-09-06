@@ -76,11 +76,11 @@ describe('WebhookController', () => {
   });
 
   describe('Delete webhook', () => {
-    it('should delete a token given id', () => {
+    it('should delete a webhook given id', () => {
       jest
         .spyOn(WebhookService.prototype, 'deleteWebhook')
         .mockImplementation((_userId: number, _webhookId: number) =>
-          Promise.resolve(),
+          Promise.resolve(createWebhookResponse()),
         );
 
       const userId = faker.number.int();
@@ -89,8 +89,6 @@ describe('WebhookController', () => {
       controller.deleteWebhook(userId, webhookId);
 
       expect(webhookService.deleteWebhook).toHaveBeenCalled();
-
-      jest.clearAllMocks();
     });
   });
 
@@ -116,8 +114,6 @@ describe('WebhookController', () => {
 
       expect(webhookService.getWebhooksByUserId).toHaveBeenCalled();
       expect(response.webhooks).toHaveLength(1);
-
-      jest.clearAllMocks();
     });
   });
 });

@@ -75,11 +75,11 @@ describe('WebhookController (e2e)', () => {
     });
     it('should not create new webhook due to the limit (5 webhooks)', async () => {
       const testWebhooks = [
-        createWebhookWithUserId(user.id, {}),
-        createWebhookWithUserId(user.id, {}),
-        createWebhookWithUserId(user.id, {}),
-        createWebhookWithUserId(user.id, {}),
-        createWebhookWithUserId(user.id, {}),
+        createWebhookWithUserId(user.id),
+        createWebhookWithUserId(user.id),
+        createWebhookWithUserId(user.id),
+        createWebhookWithUserId(user.id),
+        createWebhookWithUserId(user.id),
       ];
       await prismaService.webhook.createMany({
         data: testWebhooks,

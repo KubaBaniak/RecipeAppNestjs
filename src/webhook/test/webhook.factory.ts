@@ -1,6 +1,8 @@
 import { faker } from '@faker-js/faker';
 import { WebhookEventType } from '../dto';
 
+const MAX_I32 = 2147483647;
+
 type CreateWebhookRequestOverrides = {
   id?: number;
   name?: string;
@@ -22,7 +24,7 @@ export const createWebhookWithUserId = (
   userId: number,
   overrides: CreateWebhookRequestOverrides = {},
 ) => ({
-  id: overrides.id ?? faker.number.int({ max: 65535 }),
+  id: overrides.id ?? faker.number.int({ max: MAX_I32 }),
   name: overrides.name ?? faker.word.noun(),
   type: overrides.type ?? WebhookEventType.RecipeCreated,
   url: overrides.url ?? faker.internet.url(),
@@ -34,7 +36,7 @@ export const createWebhookWithUserId = (
 
 export function createWebhookResponse() {
   return {
-    id: faker.number.int({ max: 128 }),
+    id: faker.number.int({ max: MAX_I32 }),
     name: faker.word.noun(),
     url: faker.internet.url(),
     type: WebhookEventType.RecipeCreated,
