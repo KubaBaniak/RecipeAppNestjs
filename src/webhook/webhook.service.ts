@@ -43,7 +43,7 @@ export class WebhookService {
       );
     }
 
-    return this.webhookRepository.createWebhook(userId, webhookData);
+    this.webhookRepository.createWebhook(userId, webhookData);
   }
 
   async deleteWebhook(userId: number, webhookId: number): Promise<Webhook> {
