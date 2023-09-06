@@ -4,6 +4,7 @@ import { AuthService } from '../auth/auth.service';
 import { UserRepository } from '../user/user.repository';
 import { PrismaService } from '../prisma/prisma.service';
 import { PersonalAccessTokenRepository } from '../auth/personal-access-token.repository';
+import { AccountActivationTimeouts } from '../auth/utils/timeout-functions';
 
 @Module({
   providers: [
@@ -12,6 +13,7 @@ import { PersonalAccessTokenRepository } from '../auth/personal-access-token.rep
     PersonalAccessTokenRepository,
     AuthService,
     PrismaService,
+    AccountActivationTimeouts,
   ],
   exports: [WebSocketEventGateway],
 })

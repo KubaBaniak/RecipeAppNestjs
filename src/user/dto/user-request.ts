@@ -6,6 +6,7 @@ export class UserPayloadRequest {
     public email: string,
     public role: string,
     public password?: string,
+    public activated?: boolean,
   ) {}
 
   public static from(user: User): UserPayloadRequest {
@@ -18,6 +19,7 @@ export class UserPayloadRequest {
       user.email,
       user.role,
       user.password,
+      user.activated,
     );
   }
 }

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Prisma } from '@prisma/client';
+import { Prisma, User } from '@prisma/client';
 import { UserPayloadRequest } from './dto';
 
 @Injectable()
@@ -45,6 +45,41 @@ export class UserRepository {
   async removeUserById(id: number): Promise<void> {
     this.prisma.user.delete({
       where: { id },
+    });
+  }
+
+  async activateAccount(userId: number): Promise<User> {
+    return this.prisma.user.update({
+      data: {
+        activated: true,
+      },
+      where: {
+        id: userId,
+      },
+    });
+  }
+
+  async saveAccountActivationToken(userId: number, token: string) {
+    return this.prisma.user.update({
+      data: {
+        accountActivationToken: token,
+      },
+      where: {
+        id: userId,
+      },
+    });
+  }
+
+  async getAccountActivationToken(
+    userId: number,
+  ): Promise<{ accountActivationToken: string }> {
+    return this.prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+      select: {
+        accountActivationToken: true,
+      },
     });
   }
 }

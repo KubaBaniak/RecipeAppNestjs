@@ -9,6 +9,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { RedisCacheModule } from './cache/redis-cache.module';
 import { WebSocketEventModule } from './websocket/websocket-event.module';
 import { WebhookModule } from './webhook/webhook.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { WebhookModule } from './webhook/webhook.module';
     PrismaModule,
     WebSocketEventModule,
     WebhookModule,
+    MailModule,
   ],
   controllers: [AppController],
   providers: [AppService],

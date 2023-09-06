@@ -14,6 +14,8 @@ export class MockPrismaService {
         email: request.data.email,
         password: request.data.password,
         role: Role.USER,
+        activated: false,
+        accountActivationToken: null,
       });
     },
 
@@ -27,6 +29,8 @@ export class MockPrismaService {
         email,
         password,
         role: Role.USER,
+        activated: false,
+        accountActivationToken: null,
       });
     },
 
@@ -41,6 +45,8 @@ export class MockPrismaService {
         email: faker.internet.email(),
         password: faker.internet.password(),
         role: Role.USER,
+        activated: false,
+        accountActivationToken: null,
       });
     },
   };

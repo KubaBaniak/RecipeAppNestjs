@@ -13,6 +13,8 @@ export class MockAuthService {
       email: signUpRequest.email,
       password: signUpRequest.password,
       role: Role.USER,
+      activated: false,
+      accountActivationToken: null,
     });
   }
 
@@ -22,6 +24,8 @@ export class MockAuthService {
       email: userRequest.email,
       password: userRequest.password,
       role: Role.USER,
+      activated: false,
+      accountActivationToken: null,
     });
   }
 }

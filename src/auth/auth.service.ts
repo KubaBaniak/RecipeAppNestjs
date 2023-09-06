@@ -16,6 +16,8 @@ import {
 import { UserRepository } from '../user/user.repository';
 import { UserPayloadRequest } from '../user/dto';
 import { PersonalAccessTokenRepository } from './personal-access-token.repository';
+import { User } from '@prisma/client';
+import { AccountActivationTimeouts } from './utils/timeout-functions';
 
 @Injectable()
 export class AuthService {
@@ -23,6 +25,7 @@ export class AuthService {
     private readonly userRepository: UserRepository,
     private readonly personalAccessTokenRepository: PersonalAccessTokenRepository,
     private readonly jwtService: JwtService,
+    private readonly accountActivationTimeouts: AccountActivationTimeouts,
   ) {}
 
   async verifyJwt(jwtToken: string): Promise<AccessTokenPayload> {
@@ -100,5 +103,43 @@ export class AuthService {
     }
 
     return user;
+  }
+
+  async generateAccountActivationToken(userId: number): Promise<string> {
+    const token = await this.jwtService.signAsync(
+      {
+        id: userId,
+      },
+      { expiresIn: `${+process.env.ACCOUNT_ACTIVATION_TIME}s` },
+    );
+
+    await this.userRepository.saveAccountActivationToken(userId, token);
+
+    const milliseconds = +process.env.ACCOUNT_ACTIVATION_TIME * 1000;
+    const timeoutName = this.accountActivationTimeouts.getName(userId);
+
+    this.accountActivationTimeouts.setTimeout(
+      userId,
+      milliseconds,
+      timeoutName,
+    );
+
+    return token;
+  }
+
+  async verifyAccountActivationToken(
+    jwtToken: string,
+  ): Promise<{ id: number }> {
+    try {
+      return await this.jwtService.verifyAsync(jwtToken);
+    } catch {
+      throw new ForbiddenException('Token expired');
+    }
+  }
+
+  async activateAccount(userId: number): Promise<User> {
+    const timeoutName = this.accountActivationTimeouts.getName(userId);
+    this.accountActivationTimeouts.deleteTimeout(timeoutName);
+    return this.userRepository.activateAccount(userId);
   }
 }
