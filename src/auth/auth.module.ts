@@ -3,15 +3,15 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { UserModule } from '../user/user.module';
 import { JwtModule } from '@nestjs/jwt';
-import { jwtConstants } from './constants';
 import { LocalStrategy } from './strategies/local.strategy';
-import { UserAuthBearerStrategy } from './strategies/jwt.strategy';
+import { UserAuthBearerStrategy } from './strategies/auth-user.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { PersonalAccessTokenStrategy } from './strategies/pat.strategy';
 import { UserRepository } from '../user/user.repository';
 import { PrismaService } from '../prisma/prisma.service';
 import { PersonalAccessTokenRepository } from './personal-access-token.repository';
+import { MailModule } from '../mail/mail.module';
 
 @Module({
   imports: [
@@ -19,8 +19,8 @@ import { PersonalAccessTokenRepository } from './personal-access-token.repositor
     PassportModule,
     JwtModule.register({
       global: true,
-      secret: jwtConstants.secret,
     }),
+    MailModule,
   ],
   controllers: [AuthController],
   providers: [

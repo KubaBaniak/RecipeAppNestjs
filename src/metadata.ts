@@ -223,6 +223,7 @@ export default async () => {
                 type: t['./auth/dto/create-pat-response'].CreatePatResponse,
               },
               changePassword: {},
+              activateAccount: {},
             },
           },
         ],

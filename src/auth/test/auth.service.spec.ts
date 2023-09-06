@@ -5,17 +5,16 @@ import { AuthService } from '../auth.service';
 import { faker } from '@faker-js/faker';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../../prisma/prisma.service';
+import { MockPrismaService } from '../../prisma/__mocks__/prisma.service.mock';
 import { Role } from '@prisma/client';
 import { MockJwtService } from '../__mocks__/jwt.service.mock';
 import { bcryptConstants } from '../constants';
 import { UserRepository } from '../../user/user.repository';
 import { PersonalAccessTokenRepository } from '../personal-access-token.repository';
-import { MockPrismaService } from '../../prisma/__mocks__/prisma.service.mock';
 
 describe('AuthService', () => {
   let authService: AuthService;
   let userRepository: UserRepository;
-  let personalAccessTokenRepository: PersonalAccessTokenRepository;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -37,9 +36,6 @@ describe('AuthService', () => {
 
     authService = module.get<AuthService>(AuthService);
     userRepository = module.get<UserRepository>(UserRepository);
-    personalAccessTokenRepository = module.get<PersonalAccessTokenRepository>(
-      PersonalAccessTokenRepository,
-    );
   });
 
   afterAll(() => {
@@ -58,18 +54,21 @@ describe('AuthService', () => {
         password: faker.internet.password(),
       };
 
-      jest
-        .spyOn(userRepository, 'getUserByEmailWithPassword')
-        .mockImplementation((email) => {
-          return Promise.resolve({
-            id: faker.number.int(),
-            email,
-            password: request.password,
-            role: Role.USER,
-          });
+      const hashed_password = await bcrypt.hash(
+        request.password,
+        bcryptConstants.salt,
+      );
+
+      jest.spyOn(userRepository, 'getUserByEmail').mockImplementation(() => {
+        return Promise.resolve({
+          id: faker.number.int(),
+          email: request.email,
+          password: hashed_password,
+          role: Role.USER,
         });
+      });
       //when
-      const accessToken = authService.signIn(request);
+      const accessToken = await authService.signIn(request);
 
       //then
       expect(accessToken).toBeDefined();
@@ -91,7 +90,9 @@ describe('AuthService', () => {
       expect(signedUpUser).toEqual({
         id: expect.any(Number),
         email: request.email,
-        role: Role.USER,
+        password: expect.any(String),
+        accountActivationToken: expect.any(String),
+        createdAt: expect.any(Date),
       });
     });
   });
@@ -108,16 +109,14 @@ describe('AuthService', () => {
         request.password,
         bcryptConstants.salt,
       );
-      jest
-        .spyOn(userRepository, 'getUserByEmailWithPassword')
-        .mockImplementation(() => {
-          return Promise.resolve({
-            id: faker.number.int(),
-            email: faker.internet.email(),
-            password: hashed_password,
-            role: Role.USER,
-          });
+      jest.spyOn(userRepository, 'getUserByEmail').mockImplementation(() => {
+        return Promise.resolve({
+          id: faker.number.int(),
+          email: faker.internet.email(),
+          password: hashed_password,
+          role: Role.USER,
         });
+      });
 
       //when
       const validatedUser = await authService.validateUser(request);
@@ -129,6 +128,34 @@ describe('AuthService', () => {
         password: expect.any(String),
         role: expect.any(String),
       });
+    });
+  });
+
+  describe('Change password', () => {
+    it('should change password', async () => {
+      //given
+      const userId = faker.number.int({ max: 2 ** 31 - 1 });
+      const newPassword = faker.internet.password();
+      jest.spyOn(userRepository, 'updateUserById');
+
+      //when
+      await authService.changePassword(userId, newPassword);
+
+      //then
+      expect(userRepository.updateUserById).toHaveBeenCalled();
+    });
+  });
+
+  describe('Account activation ', () => {
+    it('should delete non-activated account and create activated one with same data', async () => {
+      //given
+      const userId = faker.number.int({ max: 2147483647 });
+
+      //when
+      const user = await authService.activateAccount(userId);
+
+      //then
+      expect(user).toBeDefined();
     });
   });
 

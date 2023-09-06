@@ -3,7 +3,7 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import { bcryptConstants } from './constants';
 import * as bcrypt from 'bcryptjs';
 import {
@@ -25,52 +25,33 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async verifyJwt(jwtToken: string): Promise<AccessTokenPayload> {
+  verifyJwt(jwtToken: string): Promise<AccessTokenPayload> {
     return this.jwtService.verifyAsync(jwtToken);
   }
 
-  async signIn(signInRequest: SignInRequest): Promise<string> {
-    const user = await this.userRepository.getUserByEmailWithPassword(
-      signInRequest.email,
-    );
-    if (!user) {
-      throw new UnauthorizedException();
+  async generateBearerToken(
+    id: number,
+    secret: string,
+    timeInSeconds?: number,
+  ): Promise<string> {
+    const payload = { id };
+    const options: JwtSignOptions = { secret };
+
+    if (timeInSeconds) {
+      options.expiresIn = `${timeInSeconds}s`;
     }
 
-    return this.jwtService.signAsync(
-      {
-        id: user.id,
-        email: user.email,
-      },
-      { expiresIn: `${process.env.JWT_EXPIRY_TIME}s` },
-    );
-  }
-
-  async createPersonalAccessToken(userId: number): Promise<string> {
-    const validPersonalAccessToken =
-      await this.personalAccessTokenRepository.getValidPatForUserId(userId);
-
-    if (validPersonalAccessToken) {
-      this.personalAccessTokenRepository.invalidatePatForUserId(userId);
-    }
-    const personalAccessToken = await this.jwtService.signAsync({
-      id: userId,
-      type: 'PAT',
-    });
-    const { token } =
-      await this.personalAccessTokenRepository.savePersonalAccessToken(
-        userId,
-        personalAccessToken,
-      );
-    return token;
+    return this.jwtService.signAsync(payload, options);
   }
 
   async signUp(signUpRequest: SignUpRequest): Promise<SignUpResponse> {
-    const user = await this.userRepository.getUserByEmailWithPassword(
+    const pendingUser = await this.userRepository.getPendingUserByEmail(
       signUpRequest.email,
     );
 
-    if (user) {
+    const user = await this.userRepository.getUserByEmail(signUpRequest.email);
+
+    if (pendingUser || user) {
       throw new ForbiddenException();
     }
 
@@ -81,13 +62,44 @@ export class AuthService {
 
     const data = { email: signUpRequest.email, password: hash };
 
-    return this.userRepository.createUser(data);
+    return this.userRepository.createPendingUser(data);
+  }
+
+  async signIn(signInRequest: SignInRequest): Promise<string> {
+    const user = await this.userRepository.getUserByEmail(signInRequest.email);
+
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
+    return this.generateBearerToken(
+      user.id,
+      process.env.JWT_SECRET,
+      +process.env.JWT_EXPIRY_TIME,
+    );
+  }
+
+  async createPersonalAccessToken(userId: number): Promise<string> {
+    const validPersonalAccessToken =
+      await this.personalAccessTokenRepository.getValidPatForUserId(userId);
+
+    if (validPersonalAccessToken) {
+      this.personalAccessTokenRepository.invalidatePatForUserId(userId);
+    }
+    const personalAccessToken = await this.generateBearerToken(
+      userId,
+      process.env.JWT_PAT_SECRET,
+    );
+    const { token } =
+      await this.personalAccessTokenRepository.savePersonalAccessToken(
+        userId,
+        personalAccessToken,
+      );
+    return token;
   }
 
   async validateUser(userRequest: UserRequest): Promise<UserPayloadRequest> {
-    const user = await this.userRepository.getUserByEmailWithPassword(
-      userRequest.email,
-    );
+    const user = await this.userRepository.getUserByEmail(userRequest.email);
 
     if (!user) {
       throw new UnauthorizedException();
@@ -111,5 +123,36 @@ export class AuthService {
     return this.userRepository.updateUserById(userId, {
       password: hashedPassword,
     });
+  }
+
+  async generateAccountActivationToken(userId: number): Promise<string> {
+    const token = await this.generateBearerToken(
+      userId,
+      process.env.JWT_ACCOUNT_ACTIVATION_SECRET,
+      +process.env.ACCOUNT_ACTIVATION_TIME_IN_SECONDS,
+    );
+    await this.userRepository.saveAccountActivationToken(userId, token);
+
+    return token;
+  }
+
+  async verifyAccountActivationToken(
+    jwtToken: string,
+  ): Promise<{ id: number }> {
+    try {
+      return this.jwtService.verifyAsync(jwtToken, {
+        secret: process.env.JWT_ACCOUNT_ACTIVATION_SECRET,
+      });
+    } catch {
+      throw new ForbiddenException('Token expired');
+    }
+  }
+
+  async activateAccount(userId: number): Promise<UserPayloadRequest> {
+    const userData = await this.userRepository.getPendingUserById(userId);
+
+    await this.userRepository.removePendingUserById(userId);
+
+    return this.userRepository.createUser(userData);
   }
 }

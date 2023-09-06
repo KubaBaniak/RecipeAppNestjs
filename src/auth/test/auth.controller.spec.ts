@@ -6,7 +6,12 @@ import { MockAuthService } from '../__mocks__/auth.service.mock';
 import { Role } from '@prisma/client';
 import { ChangePasswordRequest } from '../dto';
 import { validate } from 'class-validator';
-import { plainToClassFromExist, plainToInstance } from 'class-transformer';
+import { plainToInstance } from 'class-transformer';
+import { MailModule } from '../../mail/mail.module';
+import { UserRepository } from '../../user/user.repository';
+import { PrismaService } from '../../prisma/prisma.service';
+import { MailService } from '../../mail/mail.service';
+import { MAILER_OPTIONS, MailerService } from '@nestjs-modules/mailer';
 
 describe('AuthController', () => {
   let authController: AuthController;
@@ -14,8 +19,17 @@ describe('AuthController', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [AuthController],
+      controllers: [AuthController, MailModule],
       providers: [
+        UserRepository,
+        PrismaService,
+        MailService,
+        {
+          provide: MailerService,
+          useValue: {
+            sendMail: jest.fn(),
+          },
+        },
         {
           provide: AuthService,
           useClass: MockAuthService,
@@ -23,6 +37,7 @@ describe('AuthController', () => {
       ],
     }).compile();
 
+    authService = module.get<AuthService>(AuthService);
     authController = module.get<AuthController>(AuthController);
     authService = module.get<AuthService>(AuthService);
   });
@@ -62,7 +77,6 @@ describe('AuthController', () => {
       expect(signedUpUser).toEqual({
         id: expect.any(Number),
         email: request.email,
-        role: Role.USER,
       });
     });
   });
@@ -87,6 +101,20 @@ describe('AuthController', () => {
       //then
       expect(errors).toHaveLength(0);
       expect(authService.changePassword).toBeCalled();
+    });
+  });
+
+  describe('Activate account', () => {
+    it('should activate user account', async () => {
+      //given
+      const token = faker.string.sample(64);
+      jest.spyOn(authService, 'activateAccount');
+
+      //when
+      await authController.activateAccount(token);
+
+      //then
+      expect(authService.activateAccount).toHaveBeenCalled();
     });
   });
 });

@@ -5,6 +5,7 @@ import {
   Get,
   HttpCode,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './guards/local-auth.guard';
@@ -24,11 +25,15 @@ import {
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { UserId } from '../common/decorators/req-user-id.decorator';
+import { MailService } from '../mail/mail.service';
 
 @Controller('auth')
 @ApiTags('Authentication')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly mailService: MailService,
+  ) {}
 
   @HttpCode(200)
   @UseGuards(LocalAuthGuard)
@@ -49,6 +54,14 @@ export class AuthController {
   @Post('signup')
   async signUp(@Body() signUpRequest: SignUpRequest): Promise<SignUpResponse> {
     const createdUser = await this.authService.signUp(signUpRequest);
+
+    const accountActivationToken =
+      await this.authService.generateAccountActivationToken(createdUser.id);
+
+    await this.mailService.sendAccountActivationEmail(
+      createdUser.email,
+      accountActivationToken,
+    );
 
     return SignUpResponse.from(createdUser);
   }
@@ -74,5 +87,14 @@ export class AuthController {
       userId,
       changePasswordRequest.newPassword,
     );
+  }
+
+  @HttpCode(200)
+  @Get('activate-account')
+  async activateAccount(@Query('token') token: string): Promise<void> {
+    const tokenData = await this.authService.verifyAccountActivationToken(
+      token,
+    );
+    await this.authService.activateAccount(tokenData.id);
   }
 }
