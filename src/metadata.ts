@@ -84,6 +84,18 @@ export default async () => {
           },
         ],
         [
+          import('./auth/dto/change-password-request'),
+          {
+            ChangePasswordRequest: {
+              newPassword: {
+                required: true,
+                type: () => String,
+                minLength: 12,
+              },
+            },
+          },
+        ],
+        [
           import('./user/dto/create-user-request'),
           {
             CreateUserRequest: {
@@ -202,6 +214,7 @@ export default async () => {
               createPersonalAccessToken: {
                 type: t['./auth/dto/create-pat-response'].CreatePatResponse,
               },
+              changePassword: {},
             },
           },
         ],
