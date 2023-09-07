@@ -57,7 +57,7 @@ export class AuthService {
           message:
             'Go to http://localhost:3000/auth/verify-2fa to continue authentication',
         },
-        { expiresIn: `30000s` },
+        { expiresIn: `${process.env.JWT_2FA_EXPIRY_TIME}s` },
       );
     }
 
