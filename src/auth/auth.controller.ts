@@ -8,6 +8,7 @@ import {
   SignInResponse,
   SignUpRequest,
   SignUpResponse,
+  Verify2FARequest,
 } from './dto';
 import {
   ApiTags,
@@ -90,7 +91,7 @@ export class AuthController {
   @Post('verify-2fa')
   async verify2FA(
     @UserId() userId: number,
-    @Body() tokenData: { token: string },
+    @Body() tokenData: Verify2FARequest,
   ): Promise<SignInResponse> {
     const accessToken = await this.authService.verify2FA(
       userId,

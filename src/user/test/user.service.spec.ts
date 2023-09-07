@@ -38,7 +38,9 @@ describe('UserService', () => {
       expect(createdUser).toEqual({
         id: expect.any(Number),
         email: request.email,
+        enabled2FA: false,
         role: Role.USER,
+        password: undefined,
       });
     });
   });
@@ -56,7 +58,9 @@ describe('UserService', () => {
       expect(createdUser).toEqual({
         id,
         email: data.email,
+        enabled2FA: false,
         role: Role.USER,
+        password: undefined,
       });
     });
   });

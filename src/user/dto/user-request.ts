@@ -5,7 +5,7 @@ export class UserPayloadRequest {
     public id: number,
     public email: string,
     public role: string,
-    public enabled2FA?: boolean,
+    public enabled2FA: boolean,
     public password?: string,
   ) {}
 
