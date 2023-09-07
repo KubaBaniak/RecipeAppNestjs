@@ -65,6 +65,7 @@ describe('AuthService', () => {
             id: faker.number.int(),
             email,
             password: request.password,
+            enabled2FA: false,
             role: Role.USER,
           });
         });
@@ -91,6 +92,7 @@ describe('AuthService', () => {
       expect(signedUpUser).toEqual({
         id: expect.any(Number),
         email: request.email,
+        enabled2FA: false,
         role: Role.USER,
       });
     });
@@ -115,6 +117,7 @@ describe('AuthService', () => {
             id: faker.number.int(),
             email: faker.internet.email(),
             password: hashed_password,
+            enabled2FA: false,
             role: Role.USER,
           });
         });
@@ -127,6 +130,7 @@ describe('AuthService', () => {
         id: expect.any(Number),
         email: expect.any(String),
         password: expect.any(String),
+        enabled2FA: false,
         role: expect.any(String),
       });
     });
