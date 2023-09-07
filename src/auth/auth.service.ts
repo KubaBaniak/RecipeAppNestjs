@@ -16,7 +16,6 @@ import {
 import { UserRepository } from '../user/user.repository';
 import { UserPayloadRequest } from '../user/dto';
 import { PersonalAccessTokenRepository } from './personal-access-token.repository';
-import { User } from '@prisma/client';
 
 @Injectable()
 export class AuthService {

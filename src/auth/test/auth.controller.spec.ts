@@ -7,6 +7,7 @@ import { Role } from '@prisma/client';
 
 describe('AuthController', () => {
   let authController: AuthController;
+  let authService: AuthService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -20,6 +21,7 @@ describe('AuthController', () => {
     }).compile();
 
     authController = module.get<AuthController>(AuthController);
+    authService = module.get<AuthService>(AuthService);
   });
 
   it('should be defined', () => {
@@ -59,6 +61,23 @@ describe('AuthController', () => {
         email: request.email,
         role: Role.USER,
       });
+    });
+  });
+
+  describe('Change password', () => {
+    it('should change password', async () => {
+      //given
+      const request = {
+        newPassword: faker.internet.password(),
+      };
+      const userId = faker.number.int();
+      const spy = jest.spyOn(authService, 'changePassword');
+
+      //when
+      await authController.changePassword(userId, request);
+
+      //then
+      expect(authService.changePassword).toBeCalled();
     });
   });
 });
