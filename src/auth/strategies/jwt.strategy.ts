@@ -1,6 +1,6 @@
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { jwtConstants } from '../constants';
 import { JwtPayload } from './payloads/jwt-token.payload';
 
@@ -15,7 +15,10 @@ export class UserAuthBearerStrategy extends PassportStrategy(
       secretOrKey: jwtConstants.secret,
     });
   }
-  validate(payload: JwtPayload): JwtPayload {
+  validate(payload: any): JwtPayload {
+    if (payload.status === 'FAILED') {
+      throw new ForbiddenException(payload.message);
+    }
     return payload;
   }
 }

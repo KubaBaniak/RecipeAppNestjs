@@ -18,6 +18,8 @@ model User {
   recipes             Recipe[]
   webhooks            Webhook[]
   personalAccessToken PersonalAccessToken[]
+  enabled2FA          Boolean               @default(false)
+  recoveryKeys        String[]
 }
 
 model Recipe {

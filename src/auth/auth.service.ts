@@ -16,6 +16,8 @@ import {
 import { UserRepository } from '../user/user.repository';
 import { UserPayloadRequest } from '../user/dto';
 import { PersonalAccessTokenRepository } from './personal-access-token.repository';
+import { authenticator } from 'otplib';
+import qrcode from 'qrcode';
 
 @Injectable()
 export class AuthService {
@@ -23,10 +25,20 @@ export class AuthService {
     private readonly userRepository: UserRepository,
     private readonly personalAccessTokenRepository: PersonalAccessTokenRepository,
     private readonly jwtService: JwtService,
-  ) {}
+  ) { }
 
   async verifyJwt(jwtToken: string): Promise<AccessTokenPayload> {
     return this.jwtService.verifyAsync(jwtToken);
+  }
+
+  async successfullLoginToken(id: number, email: string): Promise<string> {
+    return this.jwtService.signAsync(
+      {
+        id,
+        email,
+      },
+      { expiresIn: `${process.env.JWT_EXPIRY_TIME}s` },
+    );
   }
 
   async signIn(signInRequest: SignInRequest): Promise<string> {
@@ -37,13 +49,19 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
-    return this.jwtService.signAsync(
-      {
-        id: user.id,
-        email: user.email,
-      },
-      { expiresIn: `${process.env.JWT_EXPIRY_TIME}s` },
-    );
+    if (user.enabled2FA) {
+      return this.jwtService.signAsync(
+        {
+          id: user.id,
+          status: 'FAILED',
+          message:
+            'Go to http://localhost:3000/auth/verify-2fa to continue authentication',
+        },
+        { expiresIn: `30000s` },
+      );
+    }
+
+    return this.successfullLoginToken(user.id, user.email);
   }
 
   async createPersonalAccessToken(userId: number): Promise<string> {
@@ -111,5 +129,34 @@ export class AuthService {
     return this.userRepository.updateUserById(userId, {
       password: hashedPassword,
     });
+  }
+
+  async enable2FA(
+    userId: number,
+  ): Promise<{ recoveryKeys: string[]; qrcodeUrl: string }> {
+    const secret = process.env.SECRET_KEY_2FA;
+    const recoveryKeys: string[] = Array.from({ length: 3 }, () =>
+      authenticator.generateSecret(),
+    );
+
+    const user = (await this.userRepository.getUserById(userId)).email;
+    const service = 'Recipe App';
+
+    const otpauth = authenticator.keyuri(user, service, secret);
+
+    const qrcodeUrl = await qrcode.toDataURL(otpauth);
+    this.userRepository.enable2FAForUserWithId(userId, recoveryKeys);
+    return { recoveryKeys, qrcodeUrl };
+  }
+
+  async verify2FA(userId: number, token: string): Promise<string> {
+    const user = await this.userRepository.getUserById(userId);
+    const secret = process.env.SECRET_KEY_2FA;
+
+    if (authenticator.check(token, secret)) {
+      return this.successfullLoginToken(user.id, user.email);
+    } else {
+      throw new UnauthorizedException('Incorrect 2FA token');
+    }
   }
 }

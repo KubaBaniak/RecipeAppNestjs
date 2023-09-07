@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Prisma } from '@prisma/client';
+import { Prisma, User } from '@prisma/client';
 import { UserPayloadRequest } from './dto';
 
 @Injectable()
@@ -46,5 +46,22 @@ export class UserRepository {
     this.prisma.user.delete({
       where: { id },
     });
+  }
+
+  async enable2FAForUserWithId(
+    id: number,
+    recoveryKeys: string[],
+  ): Promise<string[]> {
+    const keys = await this.prisma.user.update({
+      where: { id },
+      data: {
+        enabled2FA: true,
+        recoveryKeys,
+      },
+      select: {
+        recoveryKeys: true,
+      },
+    });
+    return keys.recoveryKeys;
   }
 }

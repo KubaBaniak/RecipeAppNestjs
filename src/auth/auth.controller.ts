@@ -1,11 +1,4 @@
-import {
-  Controller,
-  Body,
-  Post,
-  Get,
-  HttpCode,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Body, Post, HttpCode, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import {
@@ -24,11 +17,13 @@ import {
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { UserId } from '../common/decorators/req-user-id.decorator';
+import { Enable2FAResponse } from './dto/enable-2fa-response';
+import { TwoFactorAuthGuard } from './guards/two-factor-auth.guard';
 
 @Controller('auth')
 @ApiTags('Authentication')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @HttpCode(200)
   @UseGuards(LocalAuthGuard)
@@ -74,5 +69,28 @@ export class AuthController {
       userId,
       changePasswordRequest.newPassword,
     );
+  }
+
+  @Post('enable-2fa')
+  async enable2FA(@UserId() userId: number): Promise<Enable2FAResponse> {
+    const twoFactorAuthenticationResponse = await this.authService.enable2FA(
+      userId,
+    );
+
+    return Enable2FAResponse.from(twoFactorAuthenticationResponse);
+  }
+
+  @UseGuards(TwoFactorAuthGuard)
+  @Post('verify-2fa')
+  async verify2FA(
+    @UserId() userId: number,
+    @Body() tokenData: { token: string },
+  ): Promise<SignInResponse> {
+    const accessToken = await this.authService.verify2FA(
+      userId,
+      tokenData.token,
+    );
+
+    return SignInResponse.from(accessToken);
   }
 }

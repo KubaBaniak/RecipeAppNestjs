@@ -14,6 +14,8 @@ export class MockPrismaService {
         email: request.data.email,
         password: request.data.password,
         role: Role.USER,
+        enabled2FA: false,
+        recoveryKeys: [],
       });
     },
 
@@ -27,6 +29,8 @@ export class MockPrismaService {
         email: email ?? faker.internet.email(),
         password: password ?? faker.internet.password(),
         role: Role.USER,
+        enabled2FA: false,
+        recoveryKeys: [],
       });
     },
 
@@ -48,6 +52,8 @@ export class MockPrismaService {
         email: faker.internet.email(),
         password: faker.internet.password(),
         role: Role.USER,
+        enabled2FA: false,
+        recoveryKeys: [],
       });
     },
   };
