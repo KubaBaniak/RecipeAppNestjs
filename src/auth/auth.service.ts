@@ -106,7 +106,6 @@ export class AuthService {
     const user = await this.userRepository.getUserByEmailWithPassword(
       userRequest.email,
     );
-    console.log(user);
 
     if (!user) {
       throw new UnauthorizedException();
