@@ -106,6 +106,7 @@ export class AuthService {
     const user = await this.userRepository.getUserByEmailWithPassword(
       userRequest.email,
     );
+    console.log(user);
 
     if (!user) {
       throw new UnauthorizedException();
@@ -147,6 +148,10 @@ export class AuthService {
     const qrcodeUrl = await qrcode.toDataURL(otpauth);
     this.userRepository.enable2FAForUserWithId(userId, recoveryKeys);
     return { recoveryKeys, qrcodeUrl };
+  }
+
+  async disable2FA(userId: number): Promise<UserPayloadRequest> {
+    return this.userRepository.disable2FAForUserWithId(userId);
   }
 
   async verify2FA(userId: number, token: string): Promise<string> {

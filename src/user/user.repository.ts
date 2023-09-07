@@ -64,4 +64,15 @@ export class UserRepository {
     });
     return keys.recoveryKeys;
   }
+
+  async disable2FAForUserWithId(id: number): Promise<UserPayloadRequest> {
+    const user = await this.prisma.user.update({
+      where: { id },
+      data: {
+        enabled2FA: false,
+        recoveryKeys: [],
+      },
+    });
+    return user ? UserPayloadRequest.from(user) : null;
+  }
 }

@@ -80,6 +80,12 @@ export class AuthController {
     return Enable2FAResponse.from(twoFactorAuthenticationResponse);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Post('disable-2fa')
+  disable2FA(@UserId() userId: number): void {
+    this.authService.disable2FA(userId);
+  }
+
   @UseGuards(TwoFactorAuthGuard)
   @Post('verify-2fa')
   async verify2FA(
