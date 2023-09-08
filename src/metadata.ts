@@ -62,7 +62,13 @@ export default async () => {
           {
             SignUpRequest: {
               email: { required: true, type: () => String },
-              password: { required: true, type: () => String, minLength: 12 },
+              password: {
+                required: true,
+                type: () => String,
+                minLength: 12,
+                pattern:
+                  '/((?=.*\\d)|(?=.*\\W+))(?![.\\n])(?=.*[A-Z])(?=.*[a-z]).*$/',
+              },
             },
           },
         ],
@@ -91,6 +97,8 @@ export default async () => {
                 required: true,
                 type: () => String,
                 minLength: 12,
+                pattern:
+                  '/((?=.*\\d)|(?=.*\\W+))(?![.\\n])(?=.*[A-Z])(?=.*[a-z]).*$/',
               },
             },
           },
