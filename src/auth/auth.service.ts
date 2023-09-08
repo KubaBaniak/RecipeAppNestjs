@@ -25,7 +25,7 @@ export class AuthService {
     private readonly userRepository: UserRepository,
     private readonly personalAccessTokenRepository: PersonalAccessTokenRepository,
     private readonly jwtService: JwtService,
-  ) { }
+  ) {}
 
   async verifyJwt(jwtToken: string): Promise<AccessTokenPayload> {
     return this.jwtService.verifyAsync(jwtToken);
@@ -144,7 +144,7 @@ export class AuthService {
     return qrcode.toDataURL(otpauth);
   }
 
-  async enable2FA(userId: number, providedToken: string) {
+  async enable2FA(userId: number, providedToken: string): Promise<string[]> {
     const user = await this.userRepository.getUserById(userId);
 
     if (authenticator.check(providedToken, process.env.SECRET_KEY_2FA)) {
@@ -152,7 +152,7 @@ export class AuthService {
         authenticator.generateSecret(),
       );
       this.userRepository.enable2FAForUserWithId(user.id, recoveryKeys);
-      return this.successfullLoginToken(user.id, user.email);
+      return recoveryKeys;
     } else {
       throw new UnauthorizedException('Incorrect 2FA token');
     }

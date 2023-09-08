@@ -9,3 +9,4 @@ export * from './change-password-request';
 export * from './create-qrcode-2fa-response';
 export * from './verify-2fa-request';
 export * from './recovery-2fa-request';
+export * from './enable-2fa-response';

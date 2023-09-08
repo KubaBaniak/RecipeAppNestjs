@@ -5,6 +5,7 @@ import {
   ChangePasswordRequest,
   CreatePatResponse,
   CreateQrcodeFor2FA,
+  Enable2FARespnse,
   Recovery2FARequest,
   SignInRequest,
   SignInResponse,
@@ -25,7 +26,7 @@ import { TwoFactorAuthGuard } from './guards/two-factor-auth.guard';
 @Controller('auth')
 @ApiTags('Authentication')
 export class AuthController {
-  constructor(private readonly authService: AuthService) { }
+  constructor(private readonly authService: AuthService) {}
 
   @HttpCode(200)
   @UseGuards(LocalAuthGuard)
@@ -85,10 +86,9 @@ export class AuthController {
   async createQrcodeFor2FA(
     @UserId() userId: number,
   ): Promise<CreateQrcodeFor2FA> {
-    const twoFactorAuthenticationResponse =
-      await this.authService.createQrcodeFor2FA(userId);
+    const qrcode = await this.authService.createQrcodeFor2FA(userId);
 
-    return CreateQrcodeFor2FA.from(twoFactorAuthenticationResponse);
+    return CreateQrcodeFor2FA.from(qrcode);
   }
 
   @HttpCode(200)
@@ -100,13 +100,13 @@ export class AuthController {
   async enable2FA(
     @UserId() userId: number,
     @Body() twoFactorAuthTokenData: Verify2FARequest,
-  ): Promise<SignInResponse> {
-    const twoFactorAuthenticationResponse = await this.authService.enable2FA(
+  ): Promise<Enable2FARespnse> {
+    const recoveryKeys = await this.authService.enable2FA(
       userId,
       twoFactorAuthTokenData.token,
     );
 
-    return SignInResponse.from(twoFactorAuthenticationResponse);
+    return Enable2FARespnse.from(recoveryKeys);
   }
 
   @HttpCode(200)
