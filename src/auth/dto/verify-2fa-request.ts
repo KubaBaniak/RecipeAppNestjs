@@ -1,10 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsNotEmpty, IsPositive } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class Verify2FARequest {
   @IsNotEmpty()
-  @IsInt()
-  @IsPositive()
+  @IsString()
   @ApiProperty()
   token: string;
 }

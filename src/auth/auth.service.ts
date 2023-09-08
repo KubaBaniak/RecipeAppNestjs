@@ -131,22 +131,31 @@ export class AuthService {
     });
   }
 
-  async enable2FA(
-    userId: number,
-  ): Promise<{ recoveryKeys: string[]; qrcodeUrl: string }> {
-    const secret = process.env.SECRET_KEY_2FA;
-    const recoveryKeys: string[] = Array.from({ length: 3 }, () =>
-      authenticator.generateSecret(),
-    );
-
-    const user = (await this.userRepository.getUserById(userId)).email;
+  async createQrcodeFor2FA(userId: number): Promise<string> {
+    const email = (await this.userRepository.getUserById(userId)).email;
     const service = 'Recipe App';
 
-    const otpauth = authenticator.keyuri(user, service, secret);
+    const otpauth = authenticator.keyuri(
+      email,
+      service,
+      process.env.SECRET_KEY_2FA,
+    );
 
-    const qrcodeUrl = await qrcode.toDataURL(otpauth);
-    this.userRepository.enable2FAForUserWithId(userId, recoveryKeys);
-    return { recoveryKeys, qrcodeUrl };
+    return qrcode.toDataURL(otpauth);
+  }
+
+  async enable2FA(userId: number, providedToken: string) {
+    const user = await this.userRepository.getUserById(userId);
+
+    if (authenticator.check(providedToken, process.env.SECRET_KEY_2FA)) {
+      const recoveryKeys: string[] = Array.from({ length: 3 }, () =>
+        authenticator.generateSecret(),
+      );
+      this.userRepository.enable2FAForUserWithId(user.id, recoveryKeys);
+      return this.successfullLoginToken(user.id, user.email);
+    } else {
+      throw new UnauthorizedException('Incorrect 2FA token');
+    }
   }
 
   async disable2FA(userId: number): Promise<UserPayloadRequest> {
@@ -162,5 +171,19 @@ export class AuthService {
     } else {
       throw new UnauthorizedException('Incorrect 2FA token');
     }
+  }
+
+  async recoverAccountWith2FA(
+    userId: number,
+    providedRecoveryKey: string,
+  ): Promise<string> {
+    const { recoveryKeys, email } =
+      await this.userRepository.get2FARecoveryKeysAndEmailByUserId(userId);
+
+    if (!recoveryKeys.includes(providedRecoveryKey)) {
+      throw new ForbiddenException();
+    }
+
+    return this.successfullLoginToken(userId, email);
   }
 }

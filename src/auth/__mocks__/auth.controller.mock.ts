@@ -19,6 +19,7 @@ export class MockAuthController {
       id: faker.number.int(),
       email: signUpRequest.email,
       password: signUpRequest.password,
+      enabled2FA: false,
       role: Role.USER,
     };
 

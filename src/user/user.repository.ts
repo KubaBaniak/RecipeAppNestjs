@@ -75,4 +75,16 @@ export class UserRepository {
     });
     return user ? UserPayloadRequest.from(user) : null;
   }
+
+  async get2FARecoveryKeysAndEmailByUserId(
+    userId: number,
+  ): Promise<{ recoveryKeys: string[]; email: string }> {
+    return this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        recoveryKeys: true,
+        email: true,
+      },
+    });
+  }
 }

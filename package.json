@@ -21,6 +21,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "test:e2e:watch": "jest --config ./test/jest-e2e.json --watch --detectOpenHandles --forceExit",
     "prisma:generate": "prisma generate",
+    "reset:db": "npx prisma migrate reset -f && npx prisma generate",
     "prepare": "husky install"
   },
   "lint-staged": {
