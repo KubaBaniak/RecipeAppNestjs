@@ -11,6 +11,8 @@ import { bcryptConstants } from '../constants';
 import { UserRepository } from '../../user/user.repository';
 import { PersonalAccessTokenRepository } from '../personal-access-token.repository';
 import { MockPrismaService } from '../../prisma/__mocks__/prisma.service.mock';
+import { authenticator } from 'otplib';
+import { createUserResponse } from 'src/user/test/user.factory';
 
 describe('AuthService', () => {
   let authService: AuthService;
@@ -148,6 +150,85 @@ describe('AuthService', () => {
 
       //then
       expect(spy).toHaveBeenCalled();
+    });
+  });
+
+  describe('Create qrcode', () => {
+    it('should change password', async () => {
+      //given
+      const userId = faker.number.int();
+
+      //when
+      const qrcode = await authService.createQrcodeFor2FA(userId);
+
+      //then
+      expect(typeof qrcode).toBe('string');
+    });
+  });
+
+  describe('Enable 2fa', () => {
+    it('should enable 2fa', async () => {
+      const userId = faker.number.int();
+      const token = faker.string.numeric(6);
+      jest.spyOn(authenticator, 'check').mockImplementationOnce(() => true);
+
+      const recoveryKeys = await authService.enable2FA(userId, token);
+
+      expect(recoveryKeys).toHaveLength(3);
+      recoveryKeys.forEach((key) => {
+        expect(typeof key).toBe('string');
+      });
+    });
+  });
+
+  describe('Disable 2fa', () => {
+    it('should disable 2fa', async () => {
+      const userId = faker.number.int();
+
+      const user = await authService.disable2FA(userId);
+
+      expect(user.enabled2FA).toBe(false);
+    });
+  });
+
+  describe('Verify 2fa', () => {
+    it('should verify 2fa', async () => {
+      const userId = faker.number.int();
+      const token = faker.string.numeric(6);
+      jest.spyOn(authenticator, 'check').mockImplementationOnce(() => true);
+
+      const loginToken = await authService.verify2FA(userId, token);
+
+      expect(typeof loginToken).toBe('string');
+    });
+  });
+
+  describe('Recover an account with recovery tokens from 2fa', () => {
+    it('should log in with recovery keys', async () => {
+      const userId = faker.number.int();
+      const recoveryKey = faker.string.numeric(6);
+      const recoveryKeysOfUser = Array.from({ length: 3 }, () =>
+        faker.string.alphanumeric(16),
+      );
+      recoveryKeysOfUser[0] = recoveryKey;
+
+      jest
+        .spyOn(userRepository, 'get2FARecoveryKeysAndEmailByUserId')
+        .mockImplementationOnce(async () =>
+          Promise.resolve(
+            createUserResponse({
+              enabled2FA: true,
+              recoveryKeys: recoveryKeysOfUser,
+            }),
+          ),
+        );
+
+      const loginToken = await authService.recoverAccountWith2FA(
+        userId,
+        recoveryKey,
+      );
+
+      expect(typeof loginToken).toBe('string');
     });
   });
 });
