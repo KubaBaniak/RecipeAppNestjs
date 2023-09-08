@@ -53,7 +53,7 @@ export class AuthService {
       return this.jwtService.signAsync(
         {
           id: user.id,
-          status: 'FAILED',
+          status: 'FURTHER_ACTION_IS_REQUIRED',
           message:
             'Go to http://localhost:3000/auth/verify-2fa to continue authentication',
         },

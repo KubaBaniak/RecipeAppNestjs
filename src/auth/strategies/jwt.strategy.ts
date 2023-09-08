@@ -16,7 +16,7 @@ export class UserAuthBearerStrategy extends PassportStrategy(
     });
   }
   validate(payload: any): JwtPayload {
-    if (payload.status === 'FAILED') {
+    if (payload.status === 'FURTHER_ACTION_IS_REQUIRED') {
       throw new ForbiddenException(payload.message);
     }
     return payload;
