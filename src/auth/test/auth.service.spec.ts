@@ -10,6 +10,7 @@ import { MockJwtService } from '../__mocks__/jwt.service.mock';
 import { bcryptConstants } from '../constants';
 import { UserRepository } from '../../user/user.repository';
 import { PersonalAccessTokenRepository } from '../personal-access-token.repository';
+import { MockPrismaService } from '../../prisma/__mocks__/prisma.service.mock';
 
 describe('AuthService', () => {
   let authService: AuthService;
@@ -23,7 +24,10 @@ describe('AuthService', () => {
         UserService,
         UserRepository,
         PersonalAccessTokenRepository,
-        PrismaService,
+        {
+          provide: PrismaService,
+          useClass: MockPrismaService,
+        },
         {
           provide: JwtService,
           useClass: MockJwtService,
@@ -31,12 +35,15 @@ describe('AuthService', () => {
       ],
     }).compile();
 
-    jest.clearAllMocks();
     authService = module.get<AuthService>(AuthService);
     userRepository = module.get<UserRepository>(UserRepository);
     personalAccessTokenRepository = module.get<PersonalAccessTokenRepository>(
       PersonalAccessTokenRepository,
     );
+  });
+
+  afterAll(() => {
+    jest.clearAllMocks();
   });
 
   it('should be defined', () => {
@@ -76,14 +83,6 @@ describe('AuthService', () => {
         email: faker.internet.email(),
         password: faker.internet.password(),
       };
-
-      jest.spyOn(userRepository, 'createUser').mockImplementation((request) => {
-        return Promise.resolve({
-          id: faker.number.int(),
-          email: request.email,
-          role: Role.USER,
-        });
-      });
 
       //when
       const signedUpUser = await authService.signUp(request);
@@ -130,6 +129,21 @@ describe('AuthService', () => {
         password: expect.any(String),
         role: expect.any(String),
       });
+    });
+  });
+
+  describe('Change password', () => {
+    it('should change password', async () => {
+      //given
+      const userId = faker.number.int({ max: 2 ** 31 - 1 });
+      const newPassword = faker.internet.password();
+      const spy = jest.spyOn(userRepository, 'updateUserById');
+
+      //when
+      await authService.changePassword(userId, newPassword);
+
+      //then
+      expect(spy).toHaveBeenCalled();
     });
   });
 });

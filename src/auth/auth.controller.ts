@@ -9,6 +9,7 @@ import {
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import {
+  ChangePasswordRequest,
   CreatePatResponse,
   SignInRequest,
   SignInResponse,
@@ -59,5 +60,19 @@ export class AuthController {
   ): Promise<CreatePatResponse> {
     const patToken = await this.authService.createPersonalAccessToken(userId);
     return CreatePatResponse.from(patToken);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Changes password of the user' })
+  @Post('change-password')
+  async changePassword(
+    @UserId() userId: number,
+    @Body() changePasswordRequest: ChangePasswordRequest,
+  ) {
+    await this.authService.changePassword(
+      userId,
+      changePasswordRequest.newPassword,
+    );
   }
 }

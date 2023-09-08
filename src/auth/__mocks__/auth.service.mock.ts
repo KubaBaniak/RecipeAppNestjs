@@ -24,4 +24,8 @@ export class MockAuthService {
       role: Role.USER,
     });
   }
+
+  changePassword(_userId: number, _newPassword: string): Promise<void> {
+    return Promise.resolve();
+  }
 }

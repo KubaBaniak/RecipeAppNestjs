@@ -2,7 +2,7 @@ import { faker } from '@faker-js/faker';
 import { Prisma, Recipe, User, Role } from '@prisma/client';
 import { UpdateRecipeRequest } from 'src/recipe/dto';
 
-let userId: number;
+let lastSearchedByIdUser: number;
 
 export class MockPrismaService {
   user = {
@@ -18,14 +18,14 @@ export class MockPrismaService {
     },
 
     update: function (request: {
+      data: { email?: string; password?: string };
       where: { id: number };
-      data: { email: string; password: string };
     }): Promise<User> {
       const { email, password } = request.data;
       return Promise.resolve({
         id: request.where.id,
-        email,
-        password,
+        email: email ?? faker.internet.email(),
+        password: password ?? faker.internet.password(),
         role: Role.USER,
       });
     },
@@ -34,10 +34,17 @@ export class MockPrismaService {
       return Promise.resolve();
     },
 
-    findUnique: function (request: { where: { id: number } }): Promise<User> {
-      userId = request.where.id;
+    findUnique: function (request: {
+      where: { id?: number; email?: string; password?: string };
+    }): Promise<User> | Promise<void> {
+      const { id, email } = request.where;
+      // for signUp test
+      if (email) {
+        return Promise.resolve();
+      }
+      lastSearchedByIdUser = id;
       return Promise.resolve({
-        id: userId,
+        id,
         email: faker.internet.email(),
         password: faker.internet.password(),
         role: Role.USER,
@@ -64,7 +71,7 @@ export class MockPrismaService {
         ingredients: faker.lorem.words(4),
         preparation: faker.lorem.lines(5),
         isPublic: true,
-        authorId: userId,
+        authorId: lastSearchedByIdUser,
         imageKeys: [],
       });
     },
@@ -110,7 +117,7 @@ export class MockPrismaService {
         ingredients: ingredients ?? 'base_ingredients',
         preparation: preparation ?? 'base_preparation',
         isPublic: isPublic ?? true,
-        authorId: userId,
+        authorId: lastSearchedByIdUser,
         imageKeys: [],
       });
     },
