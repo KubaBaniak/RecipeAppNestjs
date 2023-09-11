@@ -10,6 +10,8 @@ import { MockJwtService } from '../__mocks__/jwt.service.mock';
 import { bcryptConstants } from '../constants';
 import { UserRepository } from '../../user/user.repository';
 import { PersonalAccessTokenRepository } from '../personal-access-token.repository';
+import { AccountActivationTimeouts } from '../utils/timeout-functions';
+import { SchedulerRegistry } from '@nestjs/schedule';
 
 describe('AuthService', () => {
   let authService: AuthService;
@@ -24,6 +26,8 @@ describe('AuthService', () => {
         UserRepository,
         PersonalAccessTokenRepository,
         PrismaService,
+        AccountActivationTimeouts,
+        SchedulerRegistry,
         {
           provide: JwtService,
           useClass: MockJwtService,

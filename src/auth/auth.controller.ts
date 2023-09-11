@@ -74,6 +74,7 @@ export class AuthController {
     return CreatePatResponse.from(patToken);
   }
 
+  @HttpCode(200)
   @Get('activate-account')
   async activateAccount(@Query('token') token: string): Promise<void> {
     const tokenData = await this.authService.verifyAccountActivationToken(

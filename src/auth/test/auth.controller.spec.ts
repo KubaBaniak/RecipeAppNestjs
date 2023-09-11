@@ -4,14 +4,33 @@ import { AuthController } from '../auth.controller';
 import { AuthService } from '../auth.service';
 import { MockAuthService } from '../__mocks__/auth.service.mock';
 import { Role } from '@prisma/client';
+import { AccountActivationTimeouts } from '../utils/timeout-functions';
+import { MailModule } from '../../mail/mail.module';
+import { SchedulerRegistry } from '@nestjs/schedule';
+import { UserRepository } from '../../user/user.repository';
+import { PrismaService } from '../../prisma/prisma.service';
+import { MailService } from 'src/mail/mail.service';
+import { MAILER_OPTIONS, MailerService } from '@nestjs-modules/mailer';
 
 describe('AuthController', () => {
   let authController: AuthController;
+  let authService: AuthService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [AuthController],
+      controllers: [AuthController, MailModule],
       providers: [
+        AccountActivationTimeouts,
+        SchedulerRegistry,
+        UserRepository,
+        PrismaService,
+        MailService,
+        {
+          provide: MailerService,
+          useValue: {
+            sendMail: jest.fn(),
+          },
+        },
         {
           provide: AuthService,
           useClass: MockAuthService,
@@ -19,6 +38,7 @@ describe('AuthController', () => {
       ],
     }).compile();
 
+    authService = module.get<AuthService>(AuthService);
     authController = module.get<AuthController>(AuthController);
   });
 
@@ -59,6 +79,20 @@ describe('AuthController', () => {
         email: request.email,
         role: Role.USER,
       });
+    });
+  });
+
+  describe('Activate account', () => {
+    it('should activate user account', async () => {
+      //given
+      const token = faker.string.sample(64);
+      jest.spyOn(authService, 'activateAccount');
+
+      //when
+      await authController.activateAccount(token);
+
+      //then
+      expect(authService.activateAccount).toHaveBeenCalled();
     });
   });
 });

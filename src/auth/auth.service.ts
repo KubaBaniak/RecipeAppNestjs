@@ -1,6 +1,7 @@
 import {
   ForbiddenException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -139,7 +140,13 @@ export class AuthService {
 
   async activateAccount(userId: number): Promise<User> {
     const timeoutName = this.accountActivationTimeouts.getName(userId);
-    this.accountActivationTimeouts.deleteTimeout(timeoutName);
+    try {
+      this.accountActivationTimeouts.deleteTimeout(timeoutName);
+    } catch {
+      throw new NotFoundException(
+        `Account deletion timeout has been already deleted, therefore your accound is already activated.`,
+      );
+    }
     return this.userRepository.activateAccount(userId);
   }
 }
