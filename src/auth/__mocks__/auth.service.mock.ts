@@ -26,7 +26,7 @@ export class MockAuthService {
     );
   }
 
-  generateAccountActivationToken(id: number): string {
+  generateAccountActivationToken(_id: number): string {
     return faker.string.sample(64);
   }
 

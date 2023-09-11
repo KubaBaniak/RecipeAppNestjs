@@ -21,16 +21,22 @@ export class MockPrismaService {
 
     update: function (request: {
       where: { id: number };
-      data: { email: string; password: string };
+      data: {
+        email?: string;
+        password?: string;
+        activated?: boolean;
+        accountActivationToken?: string;
+      };
     }): Promise<User> {
-      const { email, password } = request.data;
+      const { email, password, activated, accountActivationToken } =
+        request.data;
       return Promise.resolve({
         id: request.where.id,
-        email,
-        password,
+        email: email ?? faker.internet.email(),
+        password: password ?? faker.internet.password(),
         role: Role.USER,
-        activated: false,
-        accountActivationToken: null,
+        activated: activated ?? false,
+        accountActivationToken: accountActivationToken ?? null,
       });
     },
 

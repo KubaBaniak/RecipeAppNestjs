@@ -5,6 +5,7 @@ import { AuthService } from '../auth.service';
 import { faker } from '@faker-js/faker';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../../prisma/prisma.service';
+import { MockPrismaService } from '../../prisma/__mocks__/prisma.service.mock';
 import { Role } from '@prisma/client';
 import { MockJwtService } from '../__mocks__/jwt.service.mock';
 import { bcryptConstants } from '../constants';
@@ -16,6 +17,7 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 describe('AuthService', () => {
   let authService: AuthService;
   let userRepository: UserRepository;
+  let accountActivationTimeouts: AccountActivationTimeouts;
   let personalAccessTokenRepository: PersonalAccessTokenRepository;
 
   beforeEach(async () => {
@@ -25,9 +27,20 @@ describe('AuthService', () => {
         UserService,
         UserRepository,
         PersonalAccessTokenRepository,
-        PrismaService,
         AccountActivationTimeouts,
         SchedulerRegistry,
+        {
+          provide: AccountActivationTimeouts,
+          useValue: {
+            setTimeout: jest.fn(),
+            getName: jest.fn(),
+            deleteTimeout: jest.fn(),
+          },
+        },
+        {
+          provide: PrismaService,
+          useClass: MockPrismaService,
+        },
         {
           provide: JwtService,
           useClass: MockJwtService,
@@ -38,6 +51,9 @@ describe('AuthService', () => {
     jest.clearAllMocks();
     authService = module.get<AuthService>(AuthService);
     userRepository = module.get<UserRepository>(UserRepository);
+    accountActivationTimeouts = module.get<AccountActivationTimeouts>(
+      AccountActivationTimeouts,
+    );
     personalAccessTokenRepository = module.get<PersonalAccessTokenRepository>(
       PersonalAccessTokenRepository,
     );
@@ -81,13 +97,11 @@ describe('AuthService', () => {
         password: faker.internet.password(),
       };
 
-      jest.spyOn(userRepository, 'createUser').mockImplementation((request) => {
-        return Promise.resolve({
-          id: faker.number.int(),
-          email: request.email,
-          role: Role.USER,
+      jest
+        .spyOn(userRepository, 'getUserByEmailWithPassword')
+        .mockImplementation((request) => {
+          return null;
         });
-      });
 
       //when
       const signedUpUser = await authService.signUp(request);
@@ -134,6 +148,36 @@ describe('AuthService', () => {
         password: expect.any(String),
         role: expect.any(String),
       });
+    });
+  });
+
+  describe('Generace account activation token', () => {
+    it('should generate token for account activation and register a timeout.', async () => {
+      //given
+      const userId = faker.number.int({ max: 2147483647 });
+      jest.spyOn(accountActivationTimeouts, 'setTimeout');
+
+      //when
+      const token = await authService.generateAccountActivationToken(userId);
+
+      //then
+      expect(typeof token).toBe('string');
+      expect(accountActivationTimeouts.setTimeout).toHaveBeenCalled();
+    });
+  });
+
+  describe('Account activation ', () => {
+    it('should activate an account and delete scheduled accout deletion timeout.', async () => {
+      //given
+      const userId = faker.number.int({ max: 2147483647 });
+      jest.spyOn(accountActivationTimeouts, 'deleteTimeout');
+
+      //when
+      const user = await authService.activateAccount(userId);
+
+      //then
+      expect(user.activated).toBe(true);
+      expect(accountActivationTimeouts.deleteTimeout).toHaveBeenCalled();
     });
   });
 });
