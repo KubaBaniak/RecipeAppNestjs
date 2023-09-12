@@ -37,6 +37,7 @@ export class AuthService {
     const user = await this.userRepository.getUserByEmailWithPassword(
       signInRequest.email,
     );
+
     if (!user) {
       throw new UnauthorizedException();
     }
@@ -111,7 +112,7 @@ export class AuthService {
       {
         id: userId,
       },
-      { expiresIn: `${+process.env.ACCOUNT_ACTIVATION_TIME}s` },
+      { expiresIn: `${process.env.ACCOUNT_ACTIVATION_TIME}s` },
     );
 
     await this.userRepository.saveAccountActivationToken(userId, token);

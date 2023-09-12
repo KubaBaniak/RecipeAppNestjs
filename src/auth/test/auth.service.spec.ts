@@ -99,7 +99,7 @@ describe('AuthService', () => {
 
       jest
         .spyOn(userRepository, 'getUserByEmailWithPassword')
-        .mockImplementation((request) => {
+        .mockImplementation((_request) => {
           return null;
         });
 
@@ -109,7 +109,9 @@ describe('AuthService', () => {
       //then
       expect(signedUpUser).toEqual({
         id: expect.any(Number),
+        activated: false,
         email: request.email,
+        password: undefined,
         role: Role.USER,
       });
     });

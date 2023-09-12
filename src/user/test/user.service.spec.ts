@@ -38,6 +38,8 @@ describe('UserService', () => {
       expect(createdUser).toEqual({
         id: expect.any(Number),
         email: request.email,
+        activated: false,
+        password: undefined,
         role: Role.USER,
       });
     });
@@ -56,6 +58,8 @@ describe('UserService', () => {
       expect(createdUser).toEqual({
         id,
         email: data.email,
+        activated: false,
+        password: undefined,
         role: Role.USER,
       });
     });

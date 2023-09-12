@@ -39,9 +39,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Authenticate user' })
   @Post('signin')
   async signIn(@Body() signInRequest: SignInRequest): Promise<SignInResponse> {
-    console.log(signInRequest);
     const accessToken = await this.authService.signIn(signInRequest);
-    console.log(accessToken);
 
     return SignInResponse.from(accessToken);
   }
