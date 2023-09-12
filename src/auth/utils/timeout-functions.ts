@@ -13,9 +13,13 @@ export class AccountActivationTimeouts {
     return `account-activation-${userId}`;
   }
 
-  setTimeout(userId: number, milliseconds: number, name: string): void {
-    const callback = () => {
-      this.userRepository.removeUserById(userId);
+  async addTimeout(
+    userId: number,
+    milliseconds: number,
+    name: string,
+  ): Promise<void> {
+    const callback = async () => {
+      await this.userRepository.removeUserById(userId);
     };
 
     const timeout = setTimeout(callback, milliseconds);
@@ -24,5 +28,9 @@ export class AccountActivationTimeouts {
 
   deleteTimeout(name: string): void {
     this.schedulerRegistry.deleteTimeout(name);
+  }
+
+  getAllTimeouts(): string[] {
+    return this.schedulerRegistry.getTimeouts();
   }
 }

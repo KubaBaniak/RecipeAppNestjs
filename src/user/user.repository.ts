@@ -42,8 +42,8 @@ export class UserRepository {
     return user ? UserPayloadRequest.from(user) : null;
   }
 
-  async removeUserById(id: number): Promise<void> {
-    this.prisma.user.delete({
+  removeUserById(id: number): Promise<User> {
+    return this.prisma.user.delete({
       where: { id },
     });
   }

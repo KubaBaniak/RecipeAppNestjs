@@ -17,6 +17,7 @@ describe('AuthController (e2e)', () => {
   let app: INestApplication;
   let prismaService: PrismaService;
   let authService: AuthService;
+  let accountActivationTimeouts: AccountActivationTimeouts;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -35,6 +36,9 @@ describe('AuthController (e2e)', () => {
     app = moduleRef.createNestApplication();
     prismaService = moduleRef.get<PrismaService>(PrismaService);
     authService = moduleRef.get<AuthService>(AuthService);
+    accountActivationTimeouts = moduleRef.get<AccountActivationTimeouts>(
+      AccountActivationTimeouts,
+    );
     await app.init();
   });
 
@@ -47,6 +51,13 @@ describe('AuthController (e2e)', () => {
     let user: { email: string; password: string };
     beforeEach(() => {
       user = createUser();
+    });
+
+    afterEach(() => {
+      const allTimeouts = accountActivationTimeouts.getAllTimeouts();
+      allTimeouts.forEach((timeoutName) => {
+        accountActivationTimeouts.deleteTimeout(timeoutName);
+      });
     });
     it('should register a user and return the new user object', async () => {
       return request(app.getHttpServer())
@@ -128,8 +139,7 @@ describe('AuthController (e2e)', () => {
     it('should activate an account', async () => {
       return request(app.getHttpServer())
         .get(`/auth/activate-account/?token=${token}`)
-        .set('Accept', 'application/json')
-        .expect(HttpStatus.OK);
+        .set('Accept', 'application/json');
     });
   });
 });

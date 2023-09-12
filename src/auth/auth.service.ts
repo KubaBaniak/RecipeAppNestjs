@@ -29,7 +29,7 @@ export class AuthService {
     private readonly accountActivationTimeouts: AccountActivationTimeouts,
   ) {}
 
-  async verifyJwt(jwtToken: string): Promise<AccessTokenPayload> {
+  verifyJwt(jwtToken: string): Promise<AccessTokenPayload> {
     return this.jwtService.verifyAsync(jwtToken);
   }
 
@@ -120,7 +120,7 @@ export class AuthService {
     const milliseconds = +process.env.ACCOUNT_ACTIVATION_TIME * 1000;
     const timeoutName = this.accountActivationTimeouts.getName(userId);
 
-    this.accountActivationTimeouts.setTimeout(
+    this.accountActivationTimeouts.addTimeout(
       userId,
       milliseconds,
       timeoutName,

@@ -32,7 +32,7 @@ describe('AuthService', () => {
         {
           provide: AccountActivationTimeouts,
           useValue: {
-            setTimeout: jest.fn(),
+            addTimeout: jest.fn(),
             getName: jest.fn(),
             deleteTimeout: jest.fn(),
           },
@@ -157,14 +157,14 @@ describe('AuthService', () => {
     it('should generate token for account activation and register a timeout.', async () => {
       //given
       const userId = faker.number.int({ max: 2147483647 });
-      jest.spyOn(accountActivationTimeouts, 'setTimeout');
+      jest.spyOn(accountActivationTimeouts, 'addTimeout');
 
       //when
       const token = await authService.generateAccountActivationToken(userId);
 
       //then
       expect(typeof token).toBe('string');
-      expect(accountActivationTimeouts.setTimeout).toHaveBeenCalled();
+      expect(accountActivationTimeouts.addTimeout).toHaveBeenCalled();
     });
   });
 
