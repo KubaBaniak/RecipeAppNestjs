@@ -8,7 +8,7 @@ import { faker } from '@faker-js/faker';
 import { ValidationPipe } from '@nestjs/common';
 import { AuthService } from '../src/auth/auth.service';
 import { AuthModule } from '../src/auth/auth.module';
-import { createUser } from '../src/user/test/user.factory';
+import { createUser, userDaoResponse } from '../src/user/test/user.factory';
 import { createRecipe } from '../src/recipe/test/recipe.factory';
 import { Recipe, User } from '@prisma/client';
 import { RedisCacheModule } from '../src/cache/redis-cache.module';
@@ -54,7 +54,7 @@ describe('RecipeController (e2e)', () => {
     authService = moduleRef.get<AuthService>(AuthService);
 
     user = await prismaService.user.create({
-      data: createUser(),
+      data: userDaoResponse(),
     });
     accessToken = await authService.signIn({
       email: user.email,
@@ -389,11 +389,7 @@ describe('RecipeController (e2e)', () => {
   });
 
   afterAll(async () => {
-    prismaService.user.delete({
-      where: {
-        id: user.id,
-      },
-    });
+    await prismaService.personalAccessToken.deleteMany();
     await app.close();
   });
 });

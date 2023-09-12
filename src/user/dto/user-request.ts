@@ -5,12 +5,17 @@ export class UserPayloadRequest {
     public id: number,
     public email: string,
     public role: string,
-    public password?: string,
     public activated?: boolean,
+    public password?: string,
   ) {}
 
   public static from(user: User): UserPayloadRequest {
-    return new UserPayloadRequest(user.id, user.email, user.role);
+    return new UserPayloadRequest(
+      user.id,
+      user.email,
+      user.role,
+      user.activated,
+    );
   }
 
   public static withPasswordFrom(user: User): UserPayloadRequest {
@@ -18,8 +23,8 @@ export class UserPayloadRequest {
       user.id,
       user.email,
       user.role,
-      user.password,
       user.activated,
+      user.password,
     );
   }
 }

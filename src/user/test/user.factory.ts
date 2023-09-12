@@ -21,7 +21,7 @@ export const createUser = (overrides: CreateUserOverrides = {}) => ({
 });
 
 export const userDaoResponse = (overrides: UserDaoResponse = {}) => ({
-  id: overrides.id ?? faker.number.int(),
+  id: overrides.id ?? faker.number.int({ max: 2147483647 }),
   email: overrides.email ?? faker.internet.email(),
   password: overrides.password ?? faker.internet.password(),
   role: overrides.role ?? Role.USER,

@@ -10,12 +10,13 @@ import { faker } from '@faker-js/faker';
 import { createUser } from '../src/user/test/user.factory';
 import { UserRepository } from '../src/user/user.repository';
 import { PersonalAccessTokenRepository } from '../src/auth/personal-access-token.repository';
+import { AccountActivationTimeouts } from '../src/auth/utils/timeout-functions';
+import { SchedulerRegistry } from '@nestjs/schedule';
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication;
   let prismaService: PrismaService;
   let authService: AuthService;
-  let user: { email: string; password: string };
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -26,21 +27,27 @@ describe('AuthController (e2e)', () => {
         UserRepository,
         PersonalAccessTokenRepository,
         PrismaService,
+        SchedulerRegistry,
+        AccountActivationTimeouts,
       ],
     }).compile();
 
     app = moduleRef.createNestApplication();
     prismaService = moduleRef.get<PrismaService>(PrismaService);
     authService = moduleRef.get<AuthService>(AuthService);
-    user = createUser();
     await app.init();
   });
 
-  afterEach(async () => {
-    await prismaService.user.deleteMany({ where: { email: user.email } });
+  afterAll(async () => {
+    await prismaService.user.deleteMany();
+    await app.close();
   });
 
   describe('POST /auth/signup', () => {
+    let user: { email: string; password: string };
+    beforeEach(() => {
+      user = createUser();
+    });
     it('should register a user and return the new user object', async () => {
       return request(app.getHttpServer())
         .post('/auth/signup')
@@ -66,7 +73,9 @@ describe('AuthController (e2e)', () => {
   });
 
   describe('POST /auth/signin', () => {
+    let user: { email: string; password: string };
     beforeEach(async () => {
+      user = createUser();
       await authService.signUp(user);
     });
 
@@ -105,7 +114,22 @@ describe('AuthController (e2e)', () => {
     });
   });
 
-  afterAll(async () => {
-    await app.close();
+  describe('GET /auth/activate-account', () => {
+    let token: string;
+    beforeEach(async () => {
+      const user = createUser();
+      const createdUser = await authService.signUp({
+        email: user.email,
+        password: user.password,
+      });
+      token = await authService.generateAccountActivationToken(createdUser.id);
+    });
+
+    it('should activate an account', async () => {
+      return request(app.getHttpServer())
+        .get(`/auth/activate-account/?token=${token}`)
+        .set('Accept', 'application/json')
+        .expect(HttpStatus.OK);
+    });
   });
 });

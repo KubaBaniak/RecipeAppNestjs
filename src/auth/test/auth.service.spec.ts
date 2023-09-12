@@ -82,7 +82,7 @@ describe('AuthService', () => {
           });
         });
       //when
-      const accessToken = authService.signIn(request);
+      const accessToken = await authService.signIn(request);
 
       //then
       expect(accessToken).toBeDefined();

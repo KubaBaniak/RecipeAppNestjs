@@ -132,7 +132,7 @@ export class AuthService {
     jwtToken: string,
   ): Promise<{ id: number }> {
     try {
-      return await this.jwtService.verifyAsync(jwtToken);
+      return this.jwtService.verifyAsync(jwtToken);
     } catch {
       throw new ForbiddenException('Token expired');
     }
