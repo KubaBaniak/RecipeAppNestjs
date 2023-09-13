@@ -1,0 +1,33 @@
+FROM node:18-alpine as builder
+
+WORKDIR /app
+
+COPY src ./src
+COPY prisma ./prisma/
+COPY nest-cli.json .swcrc package*.json tsconfig*.json ./
+
+RUN npm ci
+RUN npx prisma generate
+RUN npm run build
+RUN ls dist
+
+FROM nginx:alpine
+
+#source maps rollbar
+ARG CODE_VERSION
+ARG ROLLBAR_ACCESS_TOKEN
+ENV CODE_VERSION=${CODE_VERSION}
+ENV ROLLBAR_ACCESS_TOKEN=${ROLLBAR_ACCESS_TOKEN}
+
+
+RUN apk add --no-cache curl
+
+COPY ./nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=builder /app/dist /usr/share/nginx/html
+RUN ls /usr/share/nginx/html
+COPY ./upload-source-maps.sh ./
+EXPOSE 80
+
+CMD ["sh", "upload-source-maps.sh"]
+
+

@@ -15,6 +15,7 @@ commands:
       - run:
           name: Install node dependencies from package-lock
           command: npm ci
+
   setup_prisma:
     steps:
       - run:
@@ -55,6 +56,7 @@ commands:
             WEBHOOK_TOKEN_SECRET_KEY="$WEBHOOK_TOKEN_SECRET_KEY"
             ROLLBAR_ACCESS_TOKEN="$ROLLBAR_ACCESS_TOKEN"
             ENVIRONMENT="$ENVIRONMENT"
+            CODE_VERSION="$(git rev-parse --short HEAD)"
             EOF
             cat .env > test.env
 
@@ -118,6 +120,34 @@ jobs:
       - install_dependencies
       - run: HUSKY=0 npx semantic-release
 
+  send_sourcemaps_to_rollbar:
+    docker:
+      - image: cimg/base:2023.08
+    resource_class: medium
+    steps:
+      - checkout
+      - setup_remote_docker:
+          version: 20.10.14
+      - create_env_files
+      - run:
+          name: Build image to send source maps
+          command: |
+            echo 'export CODE_VERSION=$(git rev-parse --short HEAD)' >> "$BASH_ENV"
+            source "$BASH_ENV"
+            docker build -f Dockerfile.nginx -t nginx . \
+            --build-arg CODE_VERSION=$CODE_VERSION \
+            --build-arg ROLLBAR_ACCESS_TOKEN=$ROLLBAR_ACCESS_TOKEN
+            docker run -t -p 8080:80 nginx
+      - run:
+          name: Build image to send source maps
+          command: |
+            echo 'export CODE_VERSION=$(git rev-parse --short HEAD)' >> "$BASH_ENV"
+            source "$BASH_ENV"
+            docker build -f Dockerfile.nginx -t nginx . \
+            --build-arg CODE_VERSION=$CODE_VERSION \
+            --build-arg ROLLBAR_ACCESS_TOKEN=$ROLLBAR_ACCESS_TOKEN
+            docker run -t -p 8080:80 nginx
+
   deploy:
     docker:
       - image: cimg/node:18.16.0
@@ -126,6 +156,7 @@ jobs:
           fingerprints:
             - '97:69:fe:70:ca:84:59:06:98:ab:9c:ec:d5:26:49:8c'
       - checkout
+      - create_env_files
       - setup_remote_docker:
           version: 20.10.14
       - run:
@@ -134,7 +165,6 @@ jobs:
       - run:
           name: Save built image
           command: docker save $APP_IMAGE_NAME | gzip > appimage.tar.gz
-      - create_env_files
       - run:
           name: Send production env
           command: |
@@ -177,6 +207,12 @@ workflows:
   deploy:
     jobs:
       - deploy:
+          context: recipe-app-production
+          filters:
+            branches:
+              only:
+                - main
+      - send_sourcemaps_to_rollbar:
           context: recipe-app-production
           filters:
             branches:
