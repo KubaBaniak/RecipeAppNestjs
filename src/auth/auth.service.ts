@@ -4,7 +4,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import { bcryptConstants } from './constants';
 import * as bcrypt from 'bcryptjs';
 import {
@@ -38,15 +38,14 @@ export class AuthService {
     secret: string,
     timeInSeconds?: number,
   ): Promise<string> {
-    return this.jwtService.signAsync(
-      {
-        id,
-      },
-      {
-        secret,
-        expiresIn: timeInSeconds ? `${timeInSeconds}s` : undefined,
-      },
-    );
+    const payload = { id };
+    const options: JwtSignOptions = { secret };
+
+    if (timeInSeconds) {
+      options.expiresIn = `${timeInSeconds}s`;
+    }
+
+    return this.jwtService.signAsync(payload, options);
   }
 
   async signIn(signInRequest: SignInRequest): Promise<string> {
