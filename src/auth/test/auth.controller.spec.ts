@@ -9,7 +9,7 @@ import { MailModule } from '../../mail/mail.module';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { UserRepository } from '../../user/user.repository';
 import { PrismaService } from '../../prisma/prisma.service';
-import { MailService } from 'src/mail/mail.service';
+import { MailService } from '../../mail/mail.service';
 import { MAILER_OPTIONS, MailerService } from '@nestjs-modules/mailer';
 import { ChangePasswordRequest } from '../dto';
 import { validate } from 'class-validator';

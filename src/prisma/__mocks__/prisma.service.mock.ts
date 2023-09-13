@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
 import { Prisma, Recipe, User, Role } from '@prisma/client';
-import { UpdateRecipeRequest } from 'src/recipe/dto';
+import { UpdateRecipeRequest } from '../../recipe/dto';
 
 let lastSearchedByIdUser: number;
 

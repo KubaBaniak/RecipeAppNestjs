@@ -1,7 +1,7 @@
 import { SignInRequest, SignUpRequest, UserRequest } from '../dto';
 import { faker } from '@faker-js/faker';
 import { User } from '@prisma/client';
-import { userDaoResponse } from 'src/user/test/user.factory';
+import { userDaoResponse } from '../../user/test/user.factory';
 
 export class MockAuthService {
   signIn(_signInRequest: SignInRequest): Promise<string> {
