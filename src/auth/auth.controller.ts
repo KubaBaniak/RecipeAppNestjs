@@ -5,7 +5,7 @@ import {
   ChangePasswordRequest,
   CreatePatResponse,
   CreateQrcodeFor2FA,
-  Enable2FARespnse,
+  RecoveryKeysRespnse,
   SignInRequest,
   SignInResponse,
   SignUpRequest,
@@ -99,13 +99,13 @@ export class AuthController {
   async enable2FA(
     @UserId() userId: number,
     @Body() twoFactorAuthTokenData: Verify2FARequest,
-  ): Promise<Enable2FARespnse> {
+  ): Promise<RecoveryKeysRespnse> {
     const recoveryKey = await this.authService.enable2fa(
       userId,
       twoFactorAuthTokenData.token,
     );
 
-    return Enable2FARespnse.from(recoveryKey);
+    return RecoveryKeysRespnse.from(recoveryKey);
   }
 
   @HttpCode(200)
@@ -130,5 +130,17 @@ export class AuthController {
     );
 
     return SignInResponse.from(accessToken);
+  }
+
+  @HttpCode(201)
+  @ApiOperation({ summary: 'Regenerate recovery keys for 2FA' })
+  @UseGuards(JwtAuthGuard)
+  @Post('regenerate-recovery-keys')
+  async regenerateRecoveryKeys(
+    @UserId() userId: number,
+  ): Promise<RecoveryKeysRespnse> {
+    const recoveryKeys = await this.authService.generate2faRecoveryKeys(userId);
+
+    return RecoveryKeysRespnse.from(recoveryKeys);
   }
 }

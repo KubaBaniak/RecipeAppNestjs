@@ -2,7 +2,6 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable } from '@nestjs/common';
 import { strategyNameConstants } from '../constants';
-import { TwoFactorAuthPayload } from './payloads/two-factor-auth.payload';
 
 @Injectable()
 export class TwoFactorAuthStrategy extends PassportStrategy(
@@ -15,7 +14,7 @@ export class TwoFactorAuthStrategy extends PassportStrategy(
       secretOrKey: process.env.JWT_2FA_SECRET,
     });
   }
-  validate(payload: TwoFactorAuthPayload): { id: number } {
+  validate(payload: { id: number }): { id: number } {
     return { id: payload.id };
   }
 }
