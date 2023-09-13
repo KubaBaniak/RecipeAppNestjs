@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Prisma, User } from '@prisma/client';
+import {
+  Prisma,
+  TwoFactorAuth,
+  TwoFactorAuthRecoveryKey,
+} from '@prisma/client';
 import { UserPayloadRequest } from './dto';
 
 @Injectable()
@@ -14,12 +18,16 @@ export class UserRepository {
 
     return user ? UserPayloadRequest.from(user) : null;
   }
-  async getUserByEmailWithPassword(email: string): Promise<UserPayloadRequest> {
-    const user = await this.prisma.user.findUnique({
-      where: { email },
-    });
 
-    return user ? UserPayloadRequest.withPasswordFrom(user) : null;
+  getUserByEmail(
+    email: string,
+  ): Promise<Prisma.UserGetPayload<{ include: { twoFactorAuth: true } }>> {
+    return this.prisma.user.findUnique({
+      where: { email },
+      include: {
+        twoFactorAuth: true,
+      },
+    });
   }
 
   async createUser(data: Prisma.UserCreateInput): Promise<UserPayloadRequest> {
@@ -48,42 +56,85 @@ export class UserRepository {
     });
   }
 
-  async enable2FAForUserWithId(
-    id: number,
-    recoveryKeys: string[],
-  ): Promise<string[]> {
-    const keys = await this.prisma.user.update({
-      where: { id },
-      data: {
-        enabled2FA: true,
-        recoveryKeys,
-      },
-      select: {
-        recoveryKeys: true,
-      },
-    });
-    return keys.recoveryKeys;
-  }
-
   async disable2FAForUserWithId(id: number): Promise<UserPayloadRequest> {
     const user = await this.prisma.user.update({
       where: { id },
       data: {
-        enabled2FA: false,
-        recoveryKeys: [],
+        twoFactorAuth: null,
       },
     });
     return user ? UserPayloadRequest.from(user) : null;
   }
 
-  async get2FARecoveryKeysAndEmailByUserId(
+  async get2faRecoveryKeysByUserId(
     userId: number,
-  ): Promise<{ recoveryKeys: string[]; email: string }> {
-    return this.prisma.user.findUnique({
-      where: { id: userId },
+  ): Promise<{ recoveryKeys: { key: string; isUsed: boolean }[] }> {
+    return this.prisma.twoFactorAuth.findUnique({
       select: {
-        recoveryKeys: true,
-        email: true,
+        recoveryKeys: {
+          select: {
+            key: true,
+            isUsed: true,
+          },
+        },
+      },
+      where: { userId },
+    });
+  }
+
+  async expire2faRecoveryKey(key: string): Promise<TwoFactorAuthRecoveryKey> {
+    return this.prisma.twoFactorAuthRecoveryKey.update({
+      data: {
+        isUsed: true,
+        usedAt: new Date(),
+      },
+      where: {
+        key,
+      },
+    });
+  }
+
+  async saveRecoveryKeysForUserWithId(
+    userId: number,
+    recoveryKeys: { key: string }[],
+  ): Promise<TwoFactorAuth> {
+    return this.prisma.twoFactorAuth.update({
+      data: {
+        recoveryKeys: {
+          createMany: {
+            data: recoveryKeys,
+          },
+        },
+      },
+      where: {
+        userId,
+      },
+    });
+  }
+
+  async get2faSecretKeyForUserWithId(
+    userId: number,
+  ): Promise<{ secretKey: string }> {
+    return this.prisma.twoFactorAuth.findUnique({
+      select: {
+        secretKey: true,
+      },
+      where: {
+        userId,
+      },
+    });
+  }
+
+  async save2faSecretKeyForUserWithId(
+    userId: number,
+    secretKey: string,
+  ): Promise<TwoFactorAuth> {
+    return this.prisma.twoFactorAuth.update({
+      data: {
+        secretKey,
+      },
+      where: {
+        userId,
       },
     });
   }

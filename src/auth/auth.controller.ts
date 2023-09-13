@@ -6,7 +6,6 @@ import {
   CreatePatResponse,
   CreateQrcodeFor2FA,
   Enable2FARespnse,
-  Recovery2FARequest,
   SignInRequest,
   SignInResponse,
   SignUpRequest,
@@ -79,7 +78,7 @@ export class AuthController {
   @HttpCode(201)
   @ApiOperation({
     summary:
-      'Creates QR code for user to scan it for auth app (like google Authenticator)',
+      'Creates QR code for user to scan it for auth app (like Google Authenticator)',
   })
   @UseGuards(JwtAuthGuard)
   @Post('create-qr-2fa')
@@ -101,12 +100,12 @@ export class AuthController {
     @UserId() userId: number,
     @Body() twoFactorAuthTokenData: Verify2FARequest,
   ): Promise<Enable2FARespnse> {
-    const recoveryKeys = await this.authService.enable2FA(
+    const recoveryKey = await this.authService.enable2fa(
       userId,
       twoFactorAuthTokenData.token,
     );
 
-    return Enable2FARespnse.from(recoveryKeys);
+    return Enable2FARespnse.from(recoveryKey);
   }
 
   @HttpCode(200)
@@ -128,22 +127,6 @@ export class AuthController {
     const accessToken = await this.authService.verify2FA(
       userId,
       tokenData.token,
-    );
-
-    return SignInResponse.from(accessToken);
-  }
-
-  @HttpCode(200)
-  @ApiOperation({ summary: 'Recover account with recovery keys to login' })
-  @UseGuards(TwoFactorAuthGuard)
-  @Post('recovery-2fa')
-  async recoverAccountWith2FA(
-    @UserId() userId: number,
-    @Body() recoveryData: Recovery2FARequest,
-  ): Promise<SignInResponse> {
-    const accessToken = await this.authService.recoverAccountWith2FA(
-      userId,
-      recoveryData.recoveryKey,
     );
 
     return SignInResponse.from(accessToken);
