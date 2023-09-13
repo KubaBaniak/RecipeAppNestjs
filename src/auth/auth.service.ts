@@ -38,7 +38,10 @@ export class AuthService {
         id,
         email,
       },
-      { expiresIn: `${process.env.JWT_EXPIRY_TIME}s` },
+      {
+        secret: process.env.JWT_SECRET,
+        expiresIn: `${process.env.JWT_EXPIRY_TIME}s`,
+      },
     );
   }
 
@@ -52,11 +55,11 @@ export class AuthService {
       return this.jwtService.signAsync(
         {
           id: user.id,
-          status: 'FURTHER_ACTION_IS_REQUIRED',
-          message:
-            'Go to http://localhost:3000/auth/verify-2fa to continue authentication',
         },
-        { expiresIn: `${process.env.JWT_2FA_EXPIRY_TIME}s` },
+        {
+          secret: process.env.JWT_2FA_SECRET,
+          expiresIn: `${process.env.JWT_2FA_EXPIRY_TIME}s`,
+        },
       );
     }
 
@@ -70,10 +73,13 @@ export class AuthService {
     if (validPersonalAccessToken) {
       this.personalAccessTokenRepository.invalidatePatForUserId(userId);
     }
-    const personalAccessToken = await this.jwtService.signAsync({
-      id: userId,
-      type: 'PAT',
-    });
+    const personalAccessToken = await this.jwtService.signAsync(
+      {
+        id: userId,
+        type: 'PAT',
+      },
+      { secret: process.env.JWT_PAT_SECRET },
+    );
     const { token } =
       await this.personalAccessTokenRepository.savePersonalAccessToken(
         userId,

@@ -3,7 +3,6 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { UserModule } from '../user/user.module';
 import { JwtModule } from '@nestjs/jwt';
-import { jwtConstants } from './constants';
 import { LocalStrategy } from './strategies/local.strategy';
 import { UserAuthBearerStrategy } from './strategies/jwt.strategy';
 import { PassportModule } from '@nestjs/passport';
@@ -20,7 +19,6 @@ import { TwoFactorAuthStrategy } from './strategies/two-factor-auth.strategy';
     PassportModule,
     JwtModule.register({
       global: true,
-      secret: jwtConstants.secret,
     }),
   ],
   controllers: [AuthController],
