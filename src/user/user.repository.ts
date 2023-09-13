@@ -56,14 +56,10 @@ export class UserRepository {
     });
   }
 
-  async disable2FAForUserWithId(id: number): Promise<UserPayloadRequest> {
-    const user = await this.prisma.user.update({
+  async disable2FAForUserWithId(id: number): Promise<TwoFactorAuth> {
+    return this.prisma.twoFactorAuth.delete({
       where: { id },
-      data: {
-        twoFactorAuth: null,
-      },
     });
-    return user ? UserPayloadRequest.from(user) : null;
   }
 
   async get2faRecoveryKeysByUserId(
@@ -129,12 +125,10 @@ export class UserRepository {
     userId: number,
     secretKey: string,
   ): Promise<TwoFactorAuth> {
-    return this.prisma.twoFactorAuth.update({
+    return this.prisma.twoFactorAuth.create({
       data: {
-        secretKey,
-      },
-      where: {
         userId,
+        secretKey,
       },
     });
   }

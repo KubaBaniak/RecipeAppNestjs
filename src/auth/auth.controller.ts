@@ -112,8 +112,8 @@ export class AuthController {
   @ApiOperation({ summary: 'Disables 2FA for logged user' })
   @UseGuards(JwtAuthGuard)
   @Post('disable-2fa')
-  disable2FA(@UserId() userId: number): void {
-    this.authService.disable2FA(userId);
+  async disable2FA(@UserId() userId: number): Promise<void> {
+    await this.authService.disable2FA(userId);
   }
 
   @HttpCode(200)

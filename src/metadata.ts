@@ -16,8 +16,8 @@ export default async () => {
     ['./auth/dto/create-qrcode-2fa-response']: await import(
       './auth/dto/create-qrcode-2fa-response'
     ),
-    ['./auth/dto/enable-2fa-response']: await import(
-      './auth/dto/enable-2fa-response'
+    ['./auth/dto/recovery-keys-response']: await import(
+      './auth/dto/recovery-keys-response'
     ),
     ['./recipe/dto/fetch-recipes-response']: await import(
       './recipe/dto/fetch-recipes-response'
@@ -114,11 +114,7 @@ export default async () => {
           {
             CreateQrcodeFor2FA: {
               qrcodeUrl: { required: true, type: () => String },
-              urlToEnable2FA: {
-                required: true,
-                type: () => Object,
-                default: 'http://localhost:3000/api/auth/enable-2fa',
-              },
+              urlToEnable2FA: { required: true, type: () => Object },
             },
           },
         ],
@@ -129,17 +125,9 @@ export default async () => {
           },
         ],
         [
-          import('./auth/dto/recovery-2fa-request'),
+          import('./auth/dto/recovery-keys-response'),
           {
-            Recovery2FARequest: {
-              recoveryKey: { required: true, type: () => String },
-            },
-          },
-        ],
-        [
-          import('./auth/dto/enable-2fa-response'),
-          {
-            Enable2FARespnse: {
+            RecoveryKeysRespnse: {
               recoveryKeys: { required: true, type: () => [String] },
             },
           },
@@ -269,14 +257,16 @@ export default async () => {
                   .CreateQrcodeFor2FA,
               },
               enable2FA: {
-                type: t['./auth/dto/enable-2fa-response'].Enable2FARespnse,
+                type: t['./auth/dto/recovery-keys-response']
+                  .RecoveryKeysRespnse,
               },
               disable2FA: {},
               verify2FA: {
                 type: t['./auth/dto/sign-in-response'].SignInResponse,
               },
-              recoverAccountWith2FA: {
-                type: t['./auth/dto/sign-in-response'].SignInResponse,
+              regenerateRecoveryKeys: {
+                type: t['./auth/dto/recovery-keys-response']
+                  .RecoveryKeysRespnse,
               },
             },
           },

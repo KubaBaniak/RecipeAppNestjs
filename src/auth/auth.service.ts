@@ -19,6 +19,7 @@ import { UserPayloadRequest } from '../user/dto';
 import { PersonalAccessTokenRepository } from './personal-access-token.repository';
 import { authenticator } from 'otplib';
 import qrcode from 'qrcode';
+import { TwoFactorAuth } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -170,7 +171,7 @@ export class AuthService {
     }
   }
 
-  async disable2FA(userId: number): Promise<UserPayloadRequest> {
+  async disable2FA(userId: number): Promise<TwoFactorAuth> {
     return this.userRepository.disable2FAForUserWithId(userId);
   }
 
@@ -185,7 +186,7 @@ export class AuthService {
       return this.generateBearerToken(user.id, user.email);
     }
 
-    if (keys.includes({ key: token, isUsed: false })) {
+    if (keys.some(({ key, isUsed }) => key === token && !isUsed)) {
       await this.userRepository.expire2faRecoveryKey(token);
       return this.generateBearerToken(user.id, user.email);
     }
