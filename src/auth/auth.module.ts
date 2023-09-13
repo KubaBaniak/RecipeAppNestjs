@@ -3,7 +3,6 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { UserModule } from '../user/user.module';
 import { JwtModule } from '@nestjs/jwt';
-import { jwtConstants } from './constants';
 import { LocalStrategy } from './strategies/local.strategy';
 import { UserAuthBearerStrategy } from './strategies/auth-user.strategy';
 import { PassportModule } from '@nestjs/passport';
@@ -22,7 +21,6 @@ import { SchedulerRegistry } from '@nestjs/schedule';
     PassportModule,
     JwtModule.register({
       global: true,
-      secret: jwtConstants.secret,
     }),
     MailModule,
   ],

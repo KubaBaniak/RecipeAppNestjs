@@ -33,6 +33,22 @@ export class AuthService {
     return this.jwtService.verifyAsync(jwtToken);
   }
 
+  async generateBearerToken(
+    id: number,
+    secret: string,
+    timeInSeconds: number,
+  ): Promise<string> {
+    return this.jwtService.signAsync(
+      {
+        id,
+      },
+      {
+        secret,
+        expiresIn: `${timeInSeconds}s`,
+      },
+    );
+  }
+
   async signIn(signInRequest: SignInRequest): Promise<string> {
     const user = await this.userRepository.getUserByEmailWithPassword(
       signInRequest.email,
@@ -42,12 +58,18 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
-    return this.jwtService.signAsync(
-      {
-        id: user.id,
-        email: user.email,
-      },
-      { expiresIn: `${process.env.JWT_EXPIRY_TIME}s` },
+    if (!user.activated) {
+      return this.generateBearerToken(
+        user.id,
+        process.env.JWT_ACCOUNT_ACTIVATE_SECRET,
+        +process.env.ACCOUNT_ACTIVATION_TIME,
+      );
+    }
+
+    return this.generateBearerToken(
+      user.id,
+      process.env.JWT_SECRET,
+      +process.env.JWT_EXPIRY_TIME,
     );
   }
 
@@ -108,21 +130,19 @@ export class AuthService {
   }
 
   async generateAccountActivationToken(userId: number): Promise<string> {
-    const token = await this.jwtService.signAsync(
-      {
-        id: userId,
-      },
-      { expiresIn: `${process.env.ACCOUNT_ACTIVATION_TIME}s` },
+    const token = await this.generateBearerToken(
+      userId,
+      process.env.JWT_ACCOUNT_ACTIVATE_SECRET,
+      +process.env.ACCOUNT_ACTIVATION_TIME,
     );
-
     await this.userRepository.saveAccountActivationToken(userId, token);
 
-    const milliseconds = +process.env.ACCOUNT_ACTIVATION_TIME * 1000;
+    const timeInMilliseconds = +process.env.ACCOUNT_ACTIVATION_TIME * 1000;
     const timeoutName = this.accountActivationTimeouts.getName(userId);
 
     this.accountActivationTimeouts.addTimeout(
       userId,
-      milliseconds,
+      timeInMilliseconds,
       timeoutName,
     );
 
@@ -133,7 +153,9 @@ export class AuthService {
     jwtToken: string,
   ): Promise<{ id: number }> {
     try {
-      return this.jwtService.verifyAsync(jwtToken);
+      return this.jwtService.verifyAsync(jwtToken, {
+        secret: process.env.JWT_ACCOUNT_ACTIVATE_SECRET,
+      });
     } catch {
       throw new ForbiddenException('Token expired');
     }
