@@ -60,7 +60,7 @@ export class AuthService {
     if (!user.activated) {
       return this.generateBearerToken(
         user.id,
-        process.env.JWT_ACCOUNT_ACTIVATE_SECRET,
+        process.env.JWT_ACCOUNT_ACTIVATION_SECRET,
         +process.env.ACCOUNT_ACTIVATION_TIME,
       );
     }
@@ -131,7 +131,7 @@ export class AuthService {
   async generateAccountActivationToken(userId: number): Promise<string> {
     const token = await this.generateBearerToken(
       userId,
-      process.env.JWT_ACCOUNT_ACTIVATE_SECRET,
+      process.env.JWT_ACCOUNT_ACTIVATION_SECRET,
       +process.env.ACCOUNT_ACTIVATION_TIME,
     );
     await this.userRepository.saveAccountActivationToken(userId, token);
@@ -153,7 +153,7 @@ export class AuthService {
   ): Promise<{ id: number }> {
     try {
       return this.jwtService.verifyAsync(jwtToken, {
-        secret: process.env.JWT_ACCOUNT_ACTIVATE_SECRET,
+        secret: process.env.JWT_ACCOUNT_ACTIVATION_SECRET,
       });
     } catch {
       throw new ForbiddenException('Token expired');
