@@ -36,7 +36,7 @@ export class AuthService {
   async generateBearerToken(
     id: number,
     secret: string,
-    timeInSeconds: number,
+    timeInSeconds?: number,
   ): Promise<string> {
     return this.jwtService.signAsync(
       {
@@ -80,10 +80,10 @@ export class AuthService {
     if (validPersonalAccessToken) {
       this.personalAccessTokenRepository.invalidatePatForUserId(userId);
     }
-    const personalAccessToken = await this.jwtService.signAsync({
-      id: userId,
-      type: 'PAT',
-    });
+    const personalAccessToken = await this.generateBearerToken(
+      userId,
+      process.env.JWT_PAT_SECRET,
+    );
     const { token } =
       await this.personalAccessTokenRepository.savePersonalAccessToken(
         userId,
