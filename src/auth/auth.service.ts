@@ -44,7 +44,7 @@ export class AuthService {
       },
       {
         secret,
-        expiresIn: `${timeInSeconds}s`,
+        expiresIn: timeInSeconds ? `${timeInSeconds}s` : undefined,
       },
     );
   }
