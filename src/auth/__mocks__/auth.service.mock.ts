@@ -37,4 +37,8 @@ export class MockAuthService {
   activateAccount(id: number): Promise<User> {
     return Promise.resolve(userDaoResponse({ id }));
   }
+
+  changePassword(_userId: number, _newPassword: string): Promise<void> {
+    return Promise.resolve();
+  }
 }

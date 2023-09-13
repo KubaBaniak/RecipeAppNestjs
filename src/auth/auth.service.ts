@@ -171,4 +171,15 @@ export class AuthService {
     }
     return this.userRepository.activateAccount(userId);
   }
+
+  async changePassword(
+    userId: number,
+    newPassword: string,
+  ): Promise<UserPayloadRequest> {
+    const hashedPassword = await bcrypt.hash(newPassword, bcryptConstants.salt);
+
+    return this.userRepository.updateUserById(userId, {
+      password: hashedPassword,
+    });
+  }
 }

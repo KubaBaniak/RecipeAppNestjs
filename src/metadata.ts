@@ -62,7 +62,13 @@ export default async () => {
           {
             SignUpRequest: {
               email: { required: true, type: () => String },
-              password: { required: true, type: () => String, minLength: 12 },
+              password: {
+                required: true,
+                type: () => String,
+                minLength: 12,
+                pattern:
+                  '/((?=.*\\d)|(?=.*\\W+))(?![.\\n])(?=.*[A-Z])(?=.*[a-z]).*$/',
+              },
             },
           },
         ],
@@ -80,6 +86,20 @@ export default async () => {
           {
             CreatePatResponse: {
               personalAccessToken: { required: true, type: () => String },
+            },
+          },
+        ],
+        [
+          import('./auth/dto/change-password-request'),
+          {
+            ChangePasswordRequest: {
+              newPassword: {
+                required: true,
+                type: () => String,
+                minLength: 12,
+                pattern:
+                  '/((?=.*\\d)|(?=.*\\W+))(?![.\\n])(?=.*[A-Z])(?=.*[a-z]).*$/',
+              },
             },
           },
         ],
@@ -203,6 +223,7 @@ export default async () => {
                 type: t['./auth/dto/create-pat-response'].CreatePatResponse,
               },
               activateAccount: {},
+              changePassword: {},
             },
           },
         ],

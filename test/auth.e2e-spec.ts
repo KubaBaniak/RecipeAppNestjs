@@ -2,7 +2,7 @@ import request from 'supertest';
 import { Test } from '@nestjs/testing';
 import { AuthModule } from '../src/auth/auth.module';
 import { AuthService } from '../src/auth/auth.service';
-import { HttpStatus, INestApplication } from '@nestjs/common';
+import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
 import { UserService } from '../src/user/user.service';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { Role } from '@prisma/client';
@@ -38,6 +38,12 @@ describe('AuthController (e2e)', () => {
     authService = moduleRef.get<AuthService>(AuthService);
     accountActivationTimeouts = moduleRef.get<AccountActivationTimeouts>(
       AccountActivationTimeouts,
+    );
+    app.useGlobalPipes(
+      new ValidationPipe({
+        whitelist: true,
+        transform: true,
+      }),
     );
     await app.init();
   });
@@ -141,5 +147,47 @@ describe('AuthController (e2e)', () => {
         .get(`/auth/activate-account/?token=${token}`)
         .set('Accept', 'application/json');
     });
+  });
+
+  describe('POST /auth/change-password', () => {
+    let user: { email: string; password: string };
+    let accessToken: string;
+
+    beforeEach(async () => {
+      user = createUser();
+      const createdUser = await authService.signUp(user);
+      await authService.generateAccountActivationToken(createdUser.id);
+      await authService.activateAccount(createdUser.id);
+      accessToken = await authService.signIn(user);
+    });
+
+    it('should change password', async () => {
+      return request(app.getHttpServer())
+        .post('/auth/change-password')
+        .set('Accept', 'application/json')
+        .set({ Authorization: `Bearer ${accessToken}` })
+        .send({ newPassword: faker.internet.password() })
+        .expect(HttpStatus.OK);
+    });
+
+    it('should not not change and return 401 error (UNAUTHORIZED)', async () => {
+      return request(app.getHttpServer())
+        .post('/auth/change-password')
+        .set('Accept', 'application/json')
+        .send({ newPassword: faker.internet.password() })
+        .expect(HttpStatus.UNAUTHORIZED);
+    });
+
+    it('should not change and return 400 error (BAD REQUEST)', async () => {
+      return request(app.getHttpServer())
+        .post('/auth/change-password')
+        .set('Accept', 'application/json')
+        .set({ Authorization: `Bearer ${accessToken}` })
+        .send({ new_password: faker.internet.password() })
+        .expect(HttpStatus.BAD_REQUEST);
+    });
+  });
+  afterAll(async () => {
+    await app.close();
   });
 });

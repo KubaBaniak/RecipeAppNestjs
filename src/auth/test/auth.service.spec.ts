@@ -18,7 +18,6 @@ describe('AuthService', () => {
   let authService: AuthService;
   let userRepository: UserRepository;
   let accountActivationTimeouts: AccountActivationTimeouts;
-  let personalAccessTokenRepository: PersonalAccessTokenRepository;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -48,15 +47,15 @@ describe('AuthService', () => {
       ],
     }).compile();
 
-    jest.clearAllMocks();
     authService = module.get<AuthService>(AuthService);
     userRepository = module.get<UserRepository>(UserRepository);
     accountActivationTimeouts = module.get<AccountActivationTimeouts>(
       AccountActivationTimeouts,
     );
-    personalAccessTokenRepository = module.get<PersonalAccessTokenRepository>(
-      PersonalAccessTokenRepository,
-    );
+  });
+
+  afterAll(() => {
+    jest.clearAllMocks();
   });
 
   it('should be defined', () => {
@@ -96,12 +95,6 @@ describe('AuthService', () => {
         email: faker.internet.email(),
         password: faker.internet.password(),
       };
-
-      jest
-        .spyOn(userRepository, 'getUserByEmailWithPassword')
-        .mockImplementation((_request) => {
-          return null;
-        });
 
       //when
       const signedUpUser = await authService.signUp(request);
@@ -180,6 +173,21 @@ describe('AuthService', () => {
       //then
       expect(user.activated).toBe(true);
       expect(accountActivationTimeouts.deleteTimeout).toHaveBeenCalled();
+    });
+  });
+
+  describe('Change password', () => {
+    it('should change password', async () => {
+      //given
+      const userId = faker.number.int({ max: 2 ** 31 - 1 });
+      const newPassword = faker.internet.password();
+      const spy = jest.spyOn(userRepository, 'updateUserById');
+
+      //when
+      await authService.changePassword(userId, newPassword);
+
+      //then
+      expect(spy).toHaveBeenCalled();
     });
   });
 });
