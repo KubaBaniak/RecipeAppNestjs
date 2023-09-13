@@ -6,7 +6,7 @@ import { MockAuthService } from '../__mocks__/auth.service.mock';
 import { Role } from '@prisma/client';
 import { ChangePasswordRequest } from '../dto';
 import { validate } from 'class-validator';
-import { plainToClassFromExist, plainToInstance } from 'class-transformer';
+import { plainToInstance } from 'class-transformer';
 
 describe('AuthController', () => {
   let authController: AuthController;
@@ -62,7 +62,6 @@ describe('AuthController', () => {
       expect(signedUpUser).toEqual({
         id: expect.any(Number),
         email: request.email,
-        enabled2FA: false,
         role: Role.USER,
       });
     });
