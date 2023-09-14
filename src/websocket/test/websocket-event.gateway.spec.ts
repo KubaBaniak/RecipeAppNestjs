@@ -6,7 +6,6 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { UserRepository } from '../../user/user.repository';
 import { JwtService } from '@nestjs/jwt';
 import { PersonalAccessTokenRepository } from '../../auth/personal-access-token.repository';
-import { AccountActivationTimeouts } from '../../auth/utils/timeout-functions';
 import { SchedulerRegistry } from '@nestjs/schedule';
 
 describe('Websocket', () => {
@@ -20,7 +19,6 @@ describe('Websocket', () => {
         UserRepository,
         PersonalAccessTokenRepository,
         JwtService,
-        AccountActivationTimeouts,
         SchedulerRegistry,
         PrismaService,
       ],

@@ -12,8 +12,6 @@ import { UserRepository } from '../user/user.repository';
 import { PrismaService } from '../prisma/prisma.service';
 import { PersonalAccessTokenRepository } from './personal-access-token.repository';
 import { MailModule } from '../mail/mail.module';
-import { AccountActivationTimeouts } from './utils/timeout-functions';
-import { SchedulerRegistry } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -34,8 +32,6 @@ import { SchedulerRegistry } from '@nestjs/schedule';
     PersonalAccessTokenRepository,
     PrismaService,
     LocalAuthGuard,
-    SchedulerRegistry,
-    AccountActivationTimeouts,
   ],
   exports: [AuthService],
 })

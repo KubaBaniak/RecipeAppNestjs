@@ -16,7 +16,6 @@ import { WebhookService } from '../../webhook/webhook.service';
 import { HttpModule } from '@nestjs/axios';
 import { CryptoUtils } from '../../webhook/utils/crypt-webhook-token';
 import { PersonalAccessTokenRepository } from '../../auth/personal-access-token.repository';
-import { AccountActivationTimeouts } from '../../auth/utils/timeout-functions';
 import { SchedulerRegistry } from '@nestjs/schedule';
 
 describe('RecipeService', () => {
@@ -38,7 +37,6 @@ describe('RecipeService', () => {
         WebhookService,
         WebhookRepository,
         CryptoUtils,
-        AccountActivationTimeouts,
         SchedulerRegistry,
         {
           provide: PrismaService,

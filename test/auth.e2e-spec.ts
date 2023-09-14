@@ -10,14 +10,12 @@ import { faker } from '@faker-js/faker';
 import { createUser } from '../src/user/test/user.factory';
 import { UserRepository } from '../src/user/user.repository';
 import { PersonalAccessTokenRepository } from '../src/auth/personal-access-token.repository';
-import { AccountActivationTimeouts } from '../src/auth/utils/timeout-functions';
 import { SchedulerRegistry } from '@nestjs/schedule';
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication;
   let prismaService: PrismaService;
   let authService: AuthService;
-  let accountActivationTimeouts: AccountActivationTimeouts;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -29,16 +27,13 @@ describe('AuthController (e2e)', () => {
         PersonalAccessTokenRepository,
         PrismaService,
         SchedulerRegistry,
-        AccountActivationTimeouts,
       ],
     }).compile();
 
     app = moduleRef.createNestApplication();
     prismaService = moduleRef.get<PrismaService>(PrismaService);
     authService = moduleRef.get<AuthService>(AuthService);
-    accountActivationTimeouts = moduleRef.get<AccountActivationTimeouts>(
-      AccountActivationTimeouts,
-    );
+
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
@@ -59,12 +54,6 @@ describe('AuthController (e2e)', () => {
       user = createUser();
     });
 
-    afterEach(() => {
-      const allTimeouts = accountActivationTimeouts.getAllTimeouts();
-      allTimeouts.forEach((timeoutName) => {
-        accountActivationTimeouts.deleteTimeout(timeoutName);
-      });
-    });
     it('should register a user and return the new user object', async () => {
       return request(app.getHttpServer())
         .post('/auth/signup')

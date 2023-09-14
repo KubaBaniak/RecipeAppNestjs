@@ -13,7 +13,6 @@ import { HttpModule } from '@nestjs/axios';
 import { WebhookRepository } from '../webhook/webhook.repository';
 import { UserRepository } from '../user/user.repository';
 import { CryptoUtils } from '../webhook/utils/crypt-webhook-token';
-import { AccountActivationTimeouts } from '../auth/utils/timeout-functions';
 import { SchedulerRegistry } from '@nestjs/schedule';
 
 @Module({
@@ -25,7 +24,6 @@ import { SchedulerRegistry } from '@nestjs/schedule';
     PrismaService,
     JwtAuthGuard,
     SchedulerRegistry,
-    AccountActivationTimeouts,
     S3Service,
     WebhookService,
     WebhookRepository,

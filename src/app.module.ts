@@ -13,7 +13,6 @@ import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
-    ScheduleModule.forRoot(),
     AuthModule,
     UserModule,
     RedisCacheModule,
@@ -22,6 +21,7 @@ import { MailModule } from './mail/mail.module';
     WebSocketEventModule,
     WebhookModule,
     MailModule,
+    ScheduleModule.forRoot(),
   ],
   controllers: [AppController],
   providers: [AppService],

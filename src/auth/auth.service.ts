@@ -1,7 +1,6 @@
 import {
   ForbiddenException,
   Injectable,
-  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
@@ -17,8 +16,6 @@ import {
 import { UserRepository } from '../user/user.repository';
 import { UserPayloadRequest } from '../user/dto';
 import { PersonalAccessTokenRepository } from './personal-access-token.repository';
-import { User } from '@prisma/client';
-import { AccountActivationTimeouts } from './utils/timeout-functions';
 
 @Injectable()
 export class AuthService {
@@ -26,7 +23,6 @@ export class AuthService {
     private readonly userRepository: UserRepository,
     private readonly personalAccessTokenRepository: PersonalAccessTokenRepository,
     private readonly jwtService: JwtService,
-    private readonly accountActivationTimeouts: AccountActivationTimeouts,
   ) {}
 
   verifyJwt(jwtToken: string): Promise<AccessTokenPayload> {
@@ -57,14 +53,6 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
-    if (!user.activated) {
-      return this.generateBearerToken(
-        user.id,
-        process.env.JWT_ACCOUNT_ACTIVATION_SECRET,
-        +process.env.ACCOUNT_ACTIVATION_TIME,
-      );
-    }
-
     return this.generateBearerToken(
       user.id,
       process.env.JWT_SECRET,
@@ -92,7 +80,7 @@ export class AuthService {
   }
 
   async signUp(signUpRequest: SignUpRequest): Promise<SignUpResponse> {
-    const user = await this.userRepository.getUserByEmailWithPassword(
+    const user = await this.userRepository.getPendingUserByEmailWithPassword(
       signUpRequest.email,
     );
 
@@ -107,7 +95,7 @@ export class AuthService {
 
     const data = { email: signUpRequest.email, password: hash };
 
-    return this.userRepository.createUser(data);
+    return this.userRepository.createPendingUser(data);
   }
 
   async validateUser(userRequest: UserRequest): Promise<UserPayloadRequest> {
@@ -136,15 +124,6 @@ export class AuthService {
     );
     await this.userRepository.saveAccountActivationToken(userId, token);
 
-    const timeInMilliseconds = +process.env.ACCOUNT_ACTIVATION_TIME * 1000;
-    const timeoutName = this.accountActivationTimeouts.getName(userId);
-
-    this.accountActivationTimeouts.addTimeout(
-      userId,
-      timeInMilliseconds,
-      timeoutName,
-    );
-
     return token;
   }
 
@@ -160,16 +139,12 @@ export class AuthService {
     }
   }
 
-  async activateAccount(userId: number): Promise<User> {
-    const timeoutName = this.accountActivationTimeouts.getName(userId);
-    try {
-      this.accountActivationTimeouts.deleteTimeout(timeoutName);
-    } catch {
-      throw new NotFoundException(
-        `Account deletion timeout has been already deleted, therefore your accound is already activated.`,
-      );
-    }
-    return this.userRepository.activateAccount(userId);
+  async activateAccount(userId: number): Promise<UserPayloadRequest> {
+    const userData = await this.userRepository.getPendingUserById(userId);
+
+    await this.userRepository.removePendingUserById(userId);
+
+    return this.userRepository.createUser(userData);
   }
 
   async changePassword(

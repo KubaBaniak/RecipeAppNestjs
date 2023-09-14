@@ -11,15 +11,21 @@ datasource db {
 }
 
 model User {
-  id                     Int                   @id @default(autoincrement())
-  email                  String                @unique
+  id                  Int                   @id @default(autoincrement())
+  email               String                @unique
+  password            String
+  role                Role                  @default(USER)
+  recipes             Recipe[]
+  webhooks            Webhook[]
+  personalAccessToken PersonalAccessToken[]
+}
+
+model PendingUser {
+  id                     Int      @id @default(autoincrement())
+  email                  String   @unique
   password               String
-  role                   Role                  @default(USER)
-  activated              Boolean               @default(false)
   accountActivationToken String?
-  recipes                Recipe[]
-  webhooks               Webhook[]
-  personalAccessToken    PersonalAccessToken[]
+  createdAt              DateTime @default(now())
 }
 
 model Recipe {

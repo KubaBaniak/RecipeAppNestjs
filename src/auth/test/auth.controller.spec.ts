@@ -4,7 +4,6 @@ import { AuthController } from '../auth.controller';
 import { AuthService } from '../auth.service';
 import { MockAuthService } from '../__mocks__/auth.service.mock';
 import { Role } from '@prisma/client';
-import { AccountActivationTimeouts } from '../utils/timeout-functions';
 import { MailModule } from '../../mail/mail.module';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { UserRepository } from '../../user/user.repository';
@@ -23,7 +22,6 @@ describe('AuthController', () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AuthController, MailModule],
       providers: [
-        AccountActivationTimeouts,
         SchedulerRegistry,
         UserRepository,
         PrismaService,
