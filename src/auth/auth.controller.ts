@@ -5,8 +5,7 @@ import {
   ChangePasswordRequest,
   CreatePatResponse,
   CreateQrcodeFor2FA,
-  Enable2FARespnse,
-  Recovery2FARequest,
+  RecoveryKeysRespnse,
   SignInRequest,
   SignInResponse,
   SignUpRequest,
@@ -79,7 +78,7 @@ export class AuthController {
   @HttpCode(201)
   @ApiOperation({
     summary:
-      'Creates QR code for user to scan it for auth app (like google Authenticator)',
+      'Creates QR code for user to scan it for auth app (like Google Authenticator)',
   })
   @UseGuards(JwtAuthGuard)
   @Post('create-qr-2fa')
@@ -100,21 +99,21 @@ export class AuthController {
   async enable2FA(
     @UserId() userId: number,
     @Body() twoFactorAuthTokenData: Verify2FARequest,
-  ): Promise<Enable2FARespnse> {
-    const recoveryKeys = await this.authService.enable2FA(
+  ): Promise<RecoveryKeysRespnse> {
+    const recoveryKey = await this.authService.enable2fa(
       userId,
       twoFactorAuthTokenData.token,
     );
 
-    return Enable2FARespnse.from(recoveryKeys);
+    return RecoveryKeysRespnse.from(recoveryKey);
   }
 
   @HttpCode(200)
   @ApiOperation({ summary: 'Disables 2FA for logged user' })
   @UseGuards(JwtAuthGuard)
   @Post('disable-2fa')
-  disable2FA(@UserId() userId: number): void {
-    this.authService.disable2FA(userId);
+  async disable2FA(@UserId() userId: number): Promise<void> {
+    await this.authService.disable2FA(userId);
   }
 
   @HttpCode(200)
@@ -133,19 +132,15 @@ export class AuthController {
     return SignInResponse.from(accessToken);
   }
 
-  @HttpCode(200)
-  @ApiOperation({ summary: 'Recover account with recovery keys to login' })
-  @UseGuards(TwoFactorAuthGuard)
-  @Post('recovery-2fa')
-  async recoverAccountWith2FA(
+  @HttpCode(201)
+  @ApiOperation({ summary: 'Regenerate recovery keys for 2FA' })
+  @UseGuards(JwtAuthGuard)
+  @Post('regenerate-recovery-keys')
+  async regenerateRecoveryKeys(
     @UserId() userId: number,
-    @Body() recoveryData: Recovery2FARequest,
-  ): Promise<SignInResponse> {
-    const accessToken = await this.authService.recoverAccountWith2FA(
-      userId,
-      recoveryData.recoveryKey,
-    );
+  ): Promise<RecoveryKeysRespnse> {
+    const recoveryKeys = await this.authService.generate2faRecoveryKeys(userId);
 
-    return SignInResponse.from(accessToken);
+    return RecoveryKeysRespnse.from(recoveryKeys);
   }
 }

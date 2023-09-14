@@ -1,10 +1,11 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { bcryptConstants } from './constants';
+import { bcryptConstants, serviceConstants } from './constants';
 import * as bcrypt from 'bcryptjs';
 import {
   AccessTokenPayload,
@@ -18,6 +19,7 @@ import { UserPayloadRequest } from '../user/dto';
 import { PersonalAccessTokenRepository } from './personal-access-token.repository';
 import { authenticator } from 'otplib';
 import qrcode from 'qrcode';
+import { TwoFactorAuth } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -31,37 +33,38 @@ export class AuthService {
     return this.jwtService.verifyAsync(jwtToken);
   }
 
-  async successfullLoginToken(id: number, email: string): Promise<string> {
+  async generateBearerToken(id: number, email: string): Promise<string> {
     return this.jwtService.signAsync(
       {
         id,
         email,
       },
-      { expiresIn: `${process.env.JWT_EXPIRY_TIME}s` },
+      {
+        secret: process.env.JWT_SECRET,
+        expiresIn: `${process.env.JWT_EXPIRY_TIME}s`,
+      },
     );
   }
 
   async signIn(signInRequest: SignInRequest): Promise<string> {
-    const user = await this.userRepository.getUserByEmailWithPassword(
-      signInRequest.email,
-    );
+    const user = await this.userRepository.getUserByEmail(signInRequest.email);
     if (!user) {
       throw new UnauthorizedException();
     }
 
-    if (user.enabled2FA) {
+    if (user.twoFactorAuth) {
       return this.jwtService.signAsync(
         {
           id: user.id,
-          status: 'FURTHER_ACTION_IS_REQUIRED',
-          message:
-            'Go to http://localhost:3000/auth/verify-2fa to continue authentication',
         },
-        { expiresIn: `${process.env.JWT_2FA_EXPIRY_TIME}s` },
+        {
+          secret: process.env.JWT_2FA_SECRET,
+          expiresIn: `${process.env.JWT_2FA_EXPIRY_TIME}s`,
+        },
       );
     }
 
-    return this.successfullLoginToken(user.id, user.email);
+    return this.generateBearerToken(user.id, user.email);
   }
 
   async createPersonalAccessToken(userId: number): Promise<string> {
@@ -71,10 +74,13 @@ export class AuthService {
     if (validPersonalAccessToken) {
       this.personalAccessTokenRepository.invalidatePatForUserId(userId);
     }
-    const personalAccessToken = await this.jwtService.signAsync({
-      id: userId,
-      type: 'PAT',
-    });
+    const personalAccessToken = await this.jwtService.signAsync(
+      {
+        id: userId,
+        type: 'PAT',
+      },
+      { secret: process.env.JWT_PAT_SECRET },
+    );
     const { token } =
       await this.personalAccessTokenRepository.savePersonalAccessToken(
         userId,
@@ -84,9 +90,7 @@ export class AuthService {
   }
 
   async signUp(signUpRequest: SignUpRequest): Promise<SignUpResponse> {
-    const user = await this.userRepository.getUserByEmailWithPassword(
-      signUpRequest.email,
-    );
+    const user = await this.userRepository.getUserByEmail(signUpRequest.email);
 
     if (user) {
       throw new ForbiddenException();
@@ -103,9 +107,7 @@ export class AuthService {
   }
 
   async validateUser(userRequest: UserRequest): Promise<UserPayloadRequest> {
-    const user = await this.userRepository.getUserByEmailWithPassword(
-      userRequest.email,
-    );
+    const user = await this.userRepository.getUserByEmail(userRequest.email);
 
     if (!user) {
       throw new UnauthorizedException();
@@ -132,58 +134,63 @@ export class AuthService {
   }
 
   async createQrcodeFor2FA(userId: number): Promise<string> {
-    const email = (await this.userRepository.getUserById(userId)).email;
-    const service = 'Recipe App';
+    const { email } = await this.userRepository.getUserById(userId);
+    const service = serviceConstants.name;
+    const secretKey = authenticator.generateSecret();
 
-    const otpauth = authenticator.keyuri(
-      email,
-      service,
-      process.env.SECRET_KEY_2FA,
-    );
+    const otpauth = authenticator.keyuri(email, service, secretKey);
+
+    await this.userRepository.save2faSecretKeyForUserWithId(userId, secretKey);
 
     return qrcode.toDataURL(otpauth);
   }
 
-  async enable2FA(userId: number, providedToken: string): Promise<string[]> {
+  async generate2faRecoveryKeys(userId: number): Promise<string[]> {
     const user = await this.userRepository.getUserById(userId);
 
-    if (authenticator.check(providedToken, process.env.SECRET_KEY_2FA)) {
-      const recoveryKeys: string[] = Array.from({ length: 3 }, () =>
-        authenticator.generateSecret(),
-      );
-      this.userRepository.enable2FAForUserWithId(user.id, recoveryKeys);
-      return recoveryKeys;
+    const recoveryKeys = Array.from({ length: 8 }, () => {
+      return { key: authenticator.generateSecret() };
+    });
+
+    await this.userRepository.saveRecoveryKeysForUserWithId(
+      user.id,
+      recoveryKeys,
+    );
+
+    return recoveryKeys.map((keyObject) => keyObject.key);
+  }
+
+  async enable2fa(userId: number, providedToken: string): Promise<string[]> {
+    const { secretKey } =
+      await this.userRepository.get2faSecretKeyForUserWithId(userId);
+
+    if (authenticator.check(providedToken, secretKey)) {
+      return this.generate2faRecoveryKeys(userId);
     } else {
-      throw new UnauthorizedException('Incorrect 2FA token');
+      throw new BadRequestException('Incorrect 2FA token');
     }
   }
 
-  async disable2FA(userId: number): Promise<UserPayloadRequest> {
+  async disable2FA(userId: number): Promise<TwoFactorAuth> {
     return this.userRepository.disable2FAForUserWithId(userId);
   }
 
   async verify2FA(userId: number, token: string): Promise<string> {
     const user = await this.userRepository.getUserById(userId);
-    const secret = process.env.SECRET_KEY_2FA;
+    const { secretKey } =
+      await this.userRepository.get2faSecretKeyForUserWithId(userId);
+    const { recoveryKeys: keys } =
+      await this.userRepository.get2faRecoveryKeysByUserId(userId);
 
-    if (authenticator.check(token, secret)) {
-      return this.successfullLoginToken(user.id, user.email);
-    } else {
-      throw new UnauthorizedException('Incorrect 2FA token');
-    }
-  }
-
-  async recoverAccountWith2FA(
-    userId: number,
-    providedRecoveryKey: string,
-  ): Promise<string> {
-    const { recoveryKeys, email } =
-      await this.userRepository.get2FARecoveryKeysAndEmailByUserId(userId);
-
-    if (!recoveryKeys.includes(providedRecoveryKey)) {
-      throw new ForbiddenException();
+    if (authenticator.check(token, secretKey)) {
+      return this.generateBearerToken(user.id, user.email);
     }
 
-    return this.successfullLoginToken(userId, email);
+    if (keys.some(({ key, isUsed }) => key === token && !isUsed)) {
+      await this.userRepository.expire2faRecoveryKey(token);
+      return this.generateBearerToken(user.id, user.email);
+    }
+
+    throw new UnauthorizedException('Incorrect 2FA token');
   }
 }

@@ -17,7 +17,6 @@ import { createUserResponse } from 'src/user/test/user.factory';
 describe('AuthService', () => {
   let authService: AuthService;
   let userRepository: UserRepository;
-  let personalAccessTokenRepository: PersonalAccessTokenRepository;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -39,9 +38,6 @@ describe('AuthService', () => {
 
     authService = module.get<AuthService>(AuthService);
     userRepository = module.get<UserRepository>(UserRepository);
-    personalAccessTokenRepository = module.get<PersonalAccessTokenRepository>(
-      PersonalAccessTokenRepository,
-    );
   });
 
   afterAll(() => {
@@ -61,13 +57,13 @@ describe('AuthService', () => {
       };
 
       jest
-        .spyOn(userRepository, 'getUserByEmailWithPassword')
+        .spyOn(userRepository, 'getUserByEmail')
         .mockImplementation((email) => {
           return Promise.resolve({
             id: faker.number.int(),
             email,
             password: request.password,
-            enabled2FA: false,
+            twoFactorAuth: null,
             role: Role.USER,
           });
         });
@@ -94,7 +90,6 @@ describe('AuthService', () => {
       expect(signedUpUser).toEqual({
         id: expect.any(Number),
         email: request.email,
-        enabled2FA: false,
         role: Role.USER,
       });
     });
@@ -112,17 +107,15 @@ describe('AuthService', () => {
         request.password,
         bcryptConstants.salt,
       );
-      jest
-        .spyOn(userRepository, 'getUserByEmailWithPassword')
-        .mockImplementation(() => {
-          return Promise.resolve({
-            id: faker.number.int(),
-            email: faker.internet.email(),
-            password: hashed_password,
-            enabled2FA: false,
-            role: Role.USER,
-          });
+      jest.spyOn(userRepository, 'getUserByEmail').mockImplementation(() => {
+        return Promise.resolve({
+          id: faker.number.int(),
+          email: faker.internet.email(),
+          password: hashed_password,
+          twoFactorAuth: null,
+          role: Role.USER,
         });
+      });
 
       //when
       const validatedUser = await authService.validateUser(request);
@@ -132,7 +125,7 @@ describe('AuthService', () => {
         id: expect.any(Number),
         email: expect.any(String),
         password: expect.any(String),
-        enabled2FA: false,
+        twoFactorAuth: null,
         role: expect.any(String),
       });
     });

@@ -62,7 +62,6 @@ describe('AuthController', () => {
       expect(signedUpUser).toEqual({
         id: expect.any(Number),
         email: request.email,
-        enabled2FA: false,
         role: Role.USER,
       });
     });

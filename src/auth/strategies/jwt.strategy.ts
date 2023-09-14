@@ -1,24 +1,21 @@
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
-import { ForbiddenException, Injectable } from '@nestjs/common';
-import { jwtConstants } from '../constants';
+import { Injectable } from '@nestjs/common';
+import { strategyNameConstants } from '../constants';
 import { JwtPayload } from './payloads/jwt-token.payload';
 
 @Injectable()
 export class UserAuthBearerStrategy extends PassportStrategy(
   Strategy,
-  'jwt.bearer',
+  strategyNameConstants.jwt.bearer,
 ) {
   constructor() {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: jwtConstants.secret,
+      secretOrKey: process.env.JWT_SECRET,
     });
   }
-  validate(payload: any): JwtPayload {
-    if (payload.status === 'FURTHER_ACTION_IS_REQUIRED') {
-      throw new ForbiddenException(payload.message);
-    }
+  validate(payload: JwtPayload): JwtPayload {
     return payload;
   }
 }

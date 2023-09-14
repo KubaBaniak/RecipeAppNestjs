@@ -1,21 +1,20 @@
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable } from '@nestjs/common';
-import { jwtConstants } from '../constants';
-import { TwoFactorAuthPayload } from './payloads/two-factor-auth.payload';
+import { strategyNameConstants } from '../constants';
 
 @Injectable()
 export class TwoFactorAuthStrategy extends PassportStrategy(
   Strategy,
-  '2FA.bearer',
+  strategyNameConstants.jwt.twoFactor,
 ) {
   constructor() {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: jwtConstants.secret,
+      secretOrKey: process.env.JWT_2FA_SECRET,
     });
   }
-  validate(payload: TwoFactorAuthPayload): { id: number } {
+  validate(payload: { id: number }): { id: number } {
     return { id: payload.id };
   }
 }
