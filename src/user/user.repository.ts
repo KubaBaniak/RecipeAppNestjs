@@ -7,13 +7,13 @@ import { UserPayloadRequest } from './dto';
 export class UserRepository {
   constructor(private prisma: PrismaService) {}
 
-  async getUserById(id: number): Promise<User> {
+  getUserById(id: number): Promise<User> {
     return this.prisma.user.findUnique({
       where: { id },
     });
   }
 
-  async getUserByEmail(email: string): Promise<User> {
+  getUserByEmail(email: string): Promise<User> {
     return this.prisma.user.findUnique({
       where: { email },
     });
@@ -45,9 +45,7 @@ export class UserRepository {
     });
   }
 
-  async createPendingUser(
-    data: Prisma.PendingUserCreateInput,
-  ): Promise<PendingUser> {
+  createPendingUser(data: Prisma.PendingUserCreateInput): Promise<PendingUser> {
     return this.prisma.pendingUser.create({ data });
   }
 
@@ -65,7 +63,7 @@ export class UserRepository {
     return this.prisma.pendingUser.findMany();
   }
 
-  async getPendingUserByEmail(email: string): Promise<PendingUser> {
+  getPendingUserByEmail(email: string): Promise<PendingUser> {
     return this.prisma.pendingUser.findUnique({
       where: { email },
     });
@@ -77,7 +75,10 @@ export class UserRepository {
     });
   }
 
-  async saveAccountActivationToken(userId: number, token: string) {
+  saveAccountActivationToken(
+    userId: number,
+    token: string,
+  ): Promise<PendingUser> {
     return this.prisma.pendingUser.update({
       data: {
         accountActivationToken: token,
@@ -88,7 +89,7 @@ export class UserRepository {
     });
   }
 
-  async getAccountActivationToken(
+  getAccountActivationToken(
     userId: number,
   ): Promise<{ accountActivationToken: string }> {
     return this.prisma.pendingUser.findUnique({
