@@ -97,4 +97,11 @@ export class AuthController {
     );
     await this.authService.activateAccount(tokenData.id);
   }
+
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Resets password of the user' })
+  @Post('reset-password')
+  async resetPassword(@Body() password: string) {
+    return;
+  }
 }
