@@ -6,7 +6,6 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { UserRepository } from '../../user/user.repository';
 import { JwtService } from '@nestjs/jwt';
 import { PersonalAccessTokenRepository } from '../../auth/personal-access-token.repository';
-import { SchedulerRegistry } from '@nestjs/schedule';
 
 describe('Websocket', () => {
   let webSocketEventGateway: WebSocketEventGateway;
@@ -19,7 +18,6 @@ describe('Websocket', () => {
         UserRepository,
         PersonalAccessTokenRepository,
         JwtService,
-        SchedulerRegistry,
         PrismaService,
       ],
     }).compile();

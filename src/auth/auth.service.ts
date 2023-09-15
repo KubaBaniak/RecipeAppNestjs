@@ -45,15 +45,13 @@ export class AuthService {
   }
 
   async signUp(signUpRequest: SignUpRequest): Promise<SignUpResponse> {
-    const pendingUserExists = await this.userRepository.getPendingUserByEmail(
+    const pendingUser = await this.userRepository.getPendingUserByEmail(
       signUpRequest.email,
     );
 
-    const userExists = await this.userRepository.getUserByEmail(
-      signUpRequest.email,
-    );
+    const user = await this.userRepository.getUserByEmail(signUpRequest.email);
 
-    if (pendingUserExists || userExists) {
+    if (pendingUser || user) {
       throw new ForbiddenException();
     }
 

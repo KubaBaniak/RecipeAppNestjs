@@ -4,7 +4,6 @@ import { AuthService } from '../auth/auth.service';
 import { UserRepository } from '../user/user.repository';
 import { PrismaService } from '../prisma/prisma.service';
 import { PersonalAccessTokenRepository } from '../auth/personal-access-token.repository';
-import { SchedulerRegistry } from '@nestjs/schedule';
 
 @Module({
   providers: [
@@ -13,7 +12,6 @@ import { SchedulerRegistry } from '@nestjs/schedule';
     PersonalAccessTokenRepository,
     AuthService,
     PrismaService,
-    SchedulerRegistry,
   ],
   exports: [WebSocketEventGateway],
 })

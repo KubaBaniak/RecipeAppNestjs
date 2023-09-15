@@ -11,7 +11,6 @@ import { MockJwtService } from '../__mocks__/jwt.service.mock';
 import { bcryptConstants } from '../constants';
 import { UserRepository } from '../../user/user.repository';
 import { PersonalAccessTokenRepository } from '../personal-access-token.repository';
-import { SchedulerRegistry } from '@nestjs/schedule';
 
 describe('AuthService', () => {
   let authService: AuthService;
@@ -24,7 +23,6 @@ describe('AuthService', () => {
         UserService,
         UserRepository,
         PersonalAccessTokenRepository,
-        SchedulerRegistry,
         {
           provide: PrismaService,
           useClass: MockPrismaService,
@@ -134,7 +132,7 @@ describe('AuthService', () => {
   });
 
   describe('Generace account activation token', () => {
-    it('should generate token for account activation and register a timeout.', async () => {
+    it('should generate and save token for account activation.', async () => {
       //given
       const userId = faker.number.int({ max: 2147483647 });
 
@@ -147,7 +145,7 @@ describe('AuthService', () => {
   });
 
   describe('Account activation ', () => {
-    it('should activate an account and delete scheduled accout deletion timeout.', async () => {
+    it('should delete non-activated account and create activated one with same data', async () => {
       //given
       const userId = faker.number.int({ max: 2147483647 });
 

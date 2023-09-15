@@ -16,7 +16,6 @@ import { WebhookService } from '../../webhook/webhook.service';
 import { HttpModule } from '@nestjs/axios';
 import { CryptoUtils } from '../../webhook/utils/crypt-webhook-token';
 import { PersonalAccessTokenRepository } from '../../auth/personal-access-token.repository';
-import { SchedulerRegistry } from '@nestjs/schedule';
 
 describe('RecipeService', () => {
   let recipeService: RecipeService;
@@ -37,7 +36,6 @@ describe('RecipeService', () => {
         WebhookService,
         WebhookRepository,
         CryptoUtils,
-        SchedulerRegistry,
         {
           provide: PrismaService,
           useClass: MockPrismaService,

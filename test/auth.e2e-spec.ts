@@ -9,7 +9,6 @@ import { faker } from '@faker-js/faker';
 import { createUser } from '../src/user/test/user.factory';
 import { UserRepository } from '../src/user/user.repository';
 import { PersonalAccessTokenRepository } from '../src/auth/personal-access-token.repository';
-import { SchedulerRegistry } from '@nestjs/schedule';
 import * as bcrypt from 'bcryptjs';
 import { bcryptConstants } from '../src/auth/constants';
 
@@ -27,7 +26,6 @@ describe('AuthController (e2e)', () => {
         UserRepository,
         PersonalAccessTokenRepository,
         PrismaService,
-        SchedulerRegistry,
       ],
     }).compile();
 

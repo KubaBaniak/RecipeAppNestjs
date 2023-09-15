@@ -5,7 +5,6 @@ import { AuthService } from '../auth.service';
 import { MockAuthService } from '../__mocks__/auth.service.mock';
 import { Role } from '@prisma/client';
 import { MailModule } from '../../mail/mail.module';
-import { SchedulerRegistry } from '@nestjs/schedule';
 import { UserRepository } from '../../user/user.repository';
 import { PrismaService } from '../../prisma/prisma.service';
 import { MailService } from '../../mail/mail.service';
@@ -22,7 +21,6 @@ describe('AuthController', () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AuthController, MailModule],
       providers: [
-        SchedulerRegistry,
         UserRepository,
         PrismaService,
         MailService,
