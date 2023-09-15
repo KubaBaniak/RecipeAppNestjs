@@ -15,7 +15,10 @@ export class MailService {
     return this.mailerService.sendMail({
       to: userEmail,
       subject: 'Welcome to Nice App! Confirm your Email',
-      html: `<a href="${url}"> CLICK HERE TO ACTIVATE YOUR ACCOUNT </a>`,
+      template: './account-activation-email',
+      context: {
+        activationLink: url,
+      },
     });
   }
 }
