@@ -50,9 +50,6 @@ describe('WebhookController (e2e)', () => {
       data: createUser(),
     });
 
-    await authService.generateAccountActivationToken(user.id);
-    await authService.activateAccount(user.id);
-
     accessToken = await authService.signIn({
       email: user.email,
       password: user.password,

@@ -79,7 +79,6 @@ describe('AuthController', () => {
       expect(signedUpUser).toEqual({
         id: expect.any(Number),
         email: request.email,
-        role: Role.USER,
       });
     });
   });

@@ -54,7 +54,7 @@ describe('RecipeController (e2e)', () => {
     authService = moduleRef.get<AuthService>(AuthService);
 
     user = await prismaService.user.create({
-      data: userDaoResponse(),
+      data: createUser(),
     });
     accessToken = await authService.signIn({
       email: user.email,

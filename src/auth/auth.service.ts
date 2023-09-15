@@ -44,10 +44,31 @@ export class AuthService {
     return this.jwtService.signAsync(payload, options);
   }
 
-  async signIn(signInRequest: SignInRequest): Promise<string> {
-    const user = await this.userRepository.getUserByEmailWithPassword(
-      signInRequest.email,
+  async signUp(signUpRequest: SignUpRequest): Promise<SignUpResponse> {
+    const pendingUserExists = await this.userRepository.getPendingUserByEmail(
+      signUpRequest.email,
     );
+
+    const userExists = await this.userRepository.getUserByEmail(
+      signUpRequest.email,
+    );
+
+    if (pendingUserExists || userExists) {
+      throw new ForbiddenException();
+    }
+
+    const hash = await bcrypt.hash(
+      signUpRequest.password,
+      bcryptConstants.salt,
+    );
+
+    const data = { email: signUpRequest.email, password: hash };
+
+    return this.userRepository.createPendingUser(data);
+  }
+
+  async signIn(signInRequest: SignInRequest): Promise<string> {
+    const user = await this.userRepository.getUserByEmail(signInRequest.email);
 
     if (!user) {
       throw new UnauthorizedException();
@@ -79,29 +100,8 @@ export class AuthService {
     return token;
   }
 
-  async signUp(signUpRequest: SignUpRequest): Promise<SignUpResponse> {
-    const user = await this.userRepository.getPendingUserByEmailWithPassword(
-      signUpRequest.email,
-    );
-
-    if (user) {
-      throw new ForbiddenException();
-    }
-
-    const hash = await bcrypt.hash(
-      signUpRequest.password,
-      bcryptConstants.salt,
-    );
-
-    const data = { email: signUpRequest.email, password: hash };
-
-    return this.userRepository.createPendingUser(data);
-  }
-
   async validateUser(userRequest: UserRequest): Promise<UserPayloadRequest> {
-    const user = await this.userRepository.getUserByEmailWithPassword(
-      userRequest.email,
-    );
+    const user = await this.userRepository.getUserByEmail(userRequest.email);
 
     if (!user) {
       throw new UnauthorizedException();
@@ -120,7 +120,7 @@ export class AuthService {
     const token = await this.generateBearerToken(
       userId,
       process.env.JWT_ACCOUNT_ACTIVATION_SECRET,
-      +process.env.ACCOUNT_ACTIVATION_TIME,
+      +process.env.ACCOUNT_ACTIVATION_TIME_IN_SECONDS,
     );
     await this.userRepository.saveAccountActivationToken(userId, token);
 

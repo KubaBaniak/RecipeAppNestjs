@@ -13,12 +13,10 @@ export class UserRepository {
     });
   }
 
-  async getUserByEmailWithPassword(email: string): Promise<UserPayloadRequest> {
-    const user = await this.prisma.user.findUnique({
+  async getUserByEmail(email: string): Promise<User> {
+    return this.prisma.user.findUnique({
       where: { email },
     });
-
-    return user ? UserPayloadRequest.withPasswordFrom(user) : null;
   }
 
   async createUser(data: Prisma.UserCreateInput): Promise<UserPayloadRequest> {
@@ -66,7 +64,8 @@ export class UserRepository {
   getAllPendingUsers(): Promise<PendingUser[]> {
     return this.prisma.pendingUser.findMany();
   }
-  async getPendingUserByEmailWithPassword(email: string): Promise<PendingUser> {
+
+  async getPendingUserByEmail(email: string): Promise<PendingUser> {
     return this.prisma.pendingUser.findUnique({
       where: { email },
     });

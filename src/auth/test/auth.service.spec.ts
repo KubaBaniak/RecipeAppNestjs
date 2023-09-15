@@ -56,16 +56,19 @@ describe('AuthService', () => {
         password: faker.internet.password(),
       };
 
-      jest
-        .spyOn(userRepository, 'getUserByEmailWithPassword')
-        .mockImplementation((email) => {
-          return Promise.resolve({
-            id: faker.number.int(),
-            email,
-            password: request.password,
-            role: Role.USER,
-          });
+      const hashed_password = await bcrypt.hash(
+        request.password,
+        bcryptConstants.salt,
+      );
+
+      jest.spyOn(userRepository, 'getUserByEmail').mockImplementation(() => {
+        return Promise.resolve({
+          id: faker.number.int(),
+          email: request.email,
+          password: hashed_password,
+          role: Role.USER,
         });
+      });
       //when
       const accessToken = await authService.signIn(request);
 
@@ -88,10 +91,10 @@ describe('AuthService', () => {
       //then
       expect(signedUpUser).toEqual({
         id: expect.any(Number),
-        activated: false,
         email: request.email,
-        password: undefined,
-        role: Role.USER,
+        password: expect.any(String),
+        accountActivationToken: expect.any(String),
+        createdAt: expect.any(Date),
       });
     });
   });
@@ -108,16 +111,14 @@ describe('AuthService', () => {
         request.password,
         bcryptConstants.salt,
       );
-      jest
-        .spyOn(userRepository, 'getUserByEmailWithPassword')
-        .mockImplementation(() => {
-          return Promise.resolve({
-            id: faker.number.int(),
-            email: faker.internet.email(),
-            password: hashed_password,
-            role: Role.USER,
-          });
+      jest.spyOn(userRepository, 'getUserByEmail').mockImplementation(() => {
+        return Promise.resolve({
+          id: faker.number.int(),
+          email: faker.internet.email(),
+          password: hashed_password,
+          role: Role.USER,
         });
+      });
 
       //when
       const validatedUser = await authService.validateUser(request);

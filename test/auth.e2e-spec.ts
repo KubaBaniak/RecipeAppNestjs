@@ -5,12 +5,13 @@ import { AuthService } from '../src/auth/auth.service';
 import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
 import { UserService } from '../src/user/user.service';
 import { PrismaService } from '../src/prisma/prisma.service';
-import { Role } from '@prisma/client';
 import { faker } from '@faker-js/faker';
 import { createUser } from '../src/user/test/user.factory';
 import { UserRepository } from '../src/user/user.repository';
 import { PersonalAccessTokenRepository } from '../src/auth/personal-access-token.repository';
 import { SchedulerRegistry } from '@nestjs/schedule';
+import * as bcrypt from 'bcryptjs';
+import { bcryptConstants } from '../src/auth/constants';
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication;
@@ -60,10 +61,9 @@ describe('AuthController (e2e)', () => {
         .set('Accept', 'application/json')
         .send(user)
         .expect((response: request.Response) => {
-          const { id, email, role } = response.body;
+          const { id, email } = response.body;
           expect(id).toEqual(expect.any(Number));
           expect(email).toEqual(user.email);
-          expect(role).toEqual(Role.USER);
         })
         .expect(HttpStatus.CREATED);
     });
@@ -82,7 +82,13 @@ describe('AuthController (e2e)', () => {
     let user: { email: string; password: string };
     beforeEach(async () => {
       user = createUser();
-      await authService.signUp(user);
+      const hashed_password = await bcrypt.hash(
+        user.password,
+        bcryptConstants.salt,
+      );
+      await prismaService.user.create({
+        data: { email: user.email, password: hashed_password },
+      });
     });
 
     it('should generate access token for user', async () => {
@@ -133,7 +139,7 @@ describe('AuthController (e2e)', () => {
 
     it('should activate an account', async () => {
       return request(app.getHttpServer())
-        .get(`/auth/activate-account/?token=${token}`)
+        .get(`/ auth / activate - account /? token = ${token}`)
         .set('Accept', 'application/json');
     });
   });

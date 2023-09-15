@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { Prisma, Recipe, User, Role } from '@prisma/client';
+import { Prisma, Recipe, User, Role, PendingUser } from '@prisma/client';
 import { UpdateRecipeRequest } from '../../recipe/dto';
 
 let lastSearchedByIdUser: number;
@@ -59,6 +59,59 @@ export class MockPrismaService {
         password: faker.internet.password(),
         role: Role.USER,
         activated: false,
+        accountActivationToken: null,
+      });
+    },
+  };
+
+  pendingUser = {
+    create: function (request: {
+      data: Prisma.UserCreateInput;
+    }): Promise<PendingUser> {
+      return Promise.resolve({
+        id: faker.number.int(),
+        email: request.data.email,
+        password: request.data.password,
+        accountActivationToken: faker.string.alphanumeric(32),
+        createdAt: new Date(),
+      });
+    },
+
+    update: function (request: {
+      where: { id: number };
+      data: {
+        email?: string;
+        password?: string;
+        accountActivationToken?: string;
+      };
+    }): Promise<PendingUser> {
+      const { email, password, accountActivationToken } = request.data;
+      return Promise.resolve({
+        id: request.where.id,
+        email: email ?? faker.internet.email(),
+        password: password ?? faker.internet.password(),
+        createdAt: new Date(),
+        accountActivationToken: accountActivationToken ?? null,
+      });
+    },
+
+    delete: function (_request: { id: number }): Promise<void> {
+      return Promise.resolve();
+    },
+
+    findUnique: function (request: {
+      where: { id?: number; email?: string };
+    }): Promise<PendingUser> | Promise<void> {
+      const { id, email } = request.where;
+
+      if (email) {
+        return Promise.resolve();
+      }
+      return Promise.resolve({
+        id,
+        email: faker.internet.email(),
+        password: faker.internet.password(),
+        createdAt: new Date(),
         accountActivationToken: null,
       });
     },
