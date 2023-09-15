@@ -12,6 +12,7 @@ import { UserRepository } from '../user/user.repository';
 import { PrismaService } from '../prisma/prisma.service';
 import { PersonalAccessTokenRepository } from './personal-access-token.repository';
 import { MailModule } from '../mail/mail.module';
+import { PasswordResetTokenStrategy } from './strategies/reset-password.strategy';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { MailModule } from '../mail/mail.module';
     PersonalAccessTokenStrategy,
     UserRepository,
     PersonalAccessTokenRepository,
+    PasswordResetTokenStrategy,
     PrismaService,
     LocalAuthGuard,
   ],

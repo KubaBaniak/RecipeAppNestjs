@@ -16,6 +16,8 @@ import {
   SignInResponse,
   SignUpRequest,
   SignUpResponse,
+  ResetPasswordRequest,
+  ResetPasswordEmailRequest,
 } from './dto';
 import {
   ApiTags,
@@ -26,6 +28,8 @@ import {
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { UserId } from '../common/decorators/req-user-id.decorator';
 import { MailService } from '../mail/mail.service';
+import { PasswordResetTokenStrategy } from './strategies/reset-password.strategy';
+import { PasswordResetAuthGuard } from './guards/reset-password.guard';
 
 @Controller('auth')
 @ApiTags('Authentication')
@@ -98,10 +102,33 @@ export class AuthController {
     await this.authService.activateAccount(tokenData.id);
   }
 
+  @ApiOperation({ summary: 'Sends link to resets password of the user' })
+  @Get('reset-password-email')
+  async resetPasswordEmail(
+    @Body() resetPasswordRequest: ResetPasswordEmailRequest,
+  ) {
+    const resetPasswordToken =
+      await this.authService.generateResetPasswordToken(
+        resetPasswordRequest.email,
+      );
+
+    await this.mailService.sendResetPasswordEmail(
+      resetPasswordRequest.email,
+      resetPasswordToken,
+    );
+  }
+
   @HttpCode(200)
+  @UseGuards(PasswordResetAuthGuard)
   @ApiOperation({ summary: 'Resets password of the user' })
   @Post('reset-password')
-  async resetPassword(@Body() password: string) {
-    return;
+  async resetPassword(
+    @UserId() userId: number,
+    @Body() resetPasswordRequest: ResetPasswordRequest,
+  ) {
+    await this.authService.changePassword(
+      userId,
+      resetPasswordRequest.newPassword,
+    );
   }
 }

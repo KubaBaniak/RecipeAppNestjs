@@ -6,3 +6,5 @@ export * from './user-request';
 export * from './create-pat-response';
 export * from './access-token-payload';
 export * from './change-password-request';
+export * from './reset-password-request';
+export * from './reset-password-email-request';

@@ -155,4 +155,19 @@ export class AuthService {
 
     return this.userRepository.createUser(userData);
   }
+
+  async generateResetPasswordToken(email: string): Promise<string> {
+    const user = await this.userRepository.getUserByEmail(email);
+
+    if (!user) {
+      return;
+    }
+
+    const token = await this.generateBearerToken(
+      user.id,
+      process.env.JWT_PASSWORD_RESET_SECRET,
+      +process.env.JWT_PASSWORD_RESET_TIME,
+    );
+    return token;
+  }
 }
