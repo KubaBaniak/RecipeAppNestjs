@@ -106,7 +106,7 @@ export class AuthController {
   @Get('reset-password-email')
   async resetPasswordEmail(
     @Body() resetPasswordRequest: ResetPasswordEmailRequest,
-  ) {
+  ): Promise<void> {
     const resetPasswordToken =
       await this.authService.generateResetPasswordToken(
         resetPasswordRequest.email,
@@ -125,7 +125,7 @@ export class AuthController {
   async resetPassword(
     @UserId() userId: number,
     @Body() resetPasswordRequest: ResetPasswordRequest,
-  ) {
+  ): Promise<void> {
     await this.authService.changePassword(
       userId,
       resetPasswordRequest.newPassword,

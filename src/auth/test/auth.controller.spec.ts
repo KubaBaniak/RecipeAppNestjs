@@ -1,21 +1,25 @@
-import { faker } from '@faker-js/faker';
-import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from '../auth.controller';
 import { AuthService } from '../auth.service';
-import { MockAuthService } from '../__mocks__/auth.service.mock';
-import { Role } from '@prisma/client';
-import { ChangePasswordRequest } from '../dto';
-import { validate } from 'class-validator';
-import { plainToInstance } from 'class-transformer';
-import { MailModule } from '../../mail/mail.module';
-import { UserRepository } from '../../user/user.repository';
-import { PrismaService } from '../../prisma/prisma.service';
-import { MailService } from '../../mail/mail.service';
 import { MAILER_OPTIONS, MailerService } from '@nestjs-modules/mailer';
+import { MailModule } from '../../mail/mail.module';
+import { MailService } from '../../mail/mail.service';
+import { MockAuthService } from '../__mocks__/auth.service.mock';
+import { PrismaService } from '../../prisma/prisma.service';
+import { Test, TestingModule } from '@nestjs/testing';
+import { UserRepository } from '../../user/user.repository';
+import { faker } from '@faker-js/faker';
+import { plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
+import {
+  ChangePasswordRequest,
+  ResetPasswordEmailRequest,
+  ResetPasswordRequest,
+} from '../dto';
 
 describe('AuthController', () => {
   let authController: AuthController;
   let authService: AuthService;
+  let mailService: MailService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -40,6 +44,7 @@ describe('AuthController', () => {
     authService = module.get<AuthService>(AuthService);
     authController = module.get<AuthController>(AuthController);
     authService = module.get<AuthService>(AuthService);
+    mailService = module.get<MailService>(MailService);
   });
 
   it('should be defined', () => {
@@ -97,7 +102,6 @@ describe('AuthController', () => {
       //when
       const errors = await validate(changePasswordRequestDto);
       await authController.changePassword(userId, request);
-
       //then
       expect(errors).toHaveLength(0);
       expect(authService.changePassword).toBeCalled();
@@ -116,5 +120,39 @@ describe('AuthController', () => {
       //then
       expect(authService.activateAccount).toHaveBeenCalled();
     });
+  });
+
+  describe('Reset password', () => {
+    it('should send email with link to reset password', async () => {
+      const request: ResetPasswordEmailRequest = {
+        email: faker.internet.email(),
+      };
+      jest.spyOn(authService, 'generateResetPasswordToken');
+      jest.spyOn(mailService, 'sendResetPasswordEmail');
+
+      await authController.resetPasswordEmail(request);
+
+      expect(authService.generateResetPasswordToken).toHaveBeenCalled();
+      expect(mailService.sendResetPasswordEmail).toHaveBeenCalled();
+    });
+  });
+
+  it('should change password for the provided one via form', async () => {
+    const userId = faker.number.int();
+    const request: ResetPasswordRequest = {
+      newPassword: faker.internet.password({ length: 64 }),
+    };
+    jest.spyOn(authService, 'changePassword');
+
+    const resetPasswordRequestDto = plainToInstance(
+      ResetPasswordRequest,
+      request,
+    );
+
+    const errors = await validate(resetPasswordRequestDto);
+    await authController.resetPassword(userId, request);
+
+    expect(errors).toHaveLength(0);
+    expect(authService.changePassword).toBeCalled();
   });
 });

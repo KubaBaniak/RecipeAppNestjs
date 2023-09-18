@@ -173,4 +173,28 @@ describe('AuthService', () => {
       expect(spy).toHaveBeenCalled();
     });
   });
+
+  describe('Reset password', () => {
+    it('should generate password reset token', async () => {
+      //given
+      const email = faker.internet.email();
+
+      jest.spyOn(userRepository, 'getUserByEmail').mockImplementationOnce(() =>
+        Promise.resolve({
+          id: faker.number.int(),
+          email,
+          password: faker.internet.password(),
+          role: Role.USER,
+          activated: false,
+          accountActivationToken: null,
+        }),
+      );
+
+      //when
+      const token = await authService.generateResetPasswordToken(email);
+
+      //then
+      expect(typeof token).toBe('string');
+    });
+  });
 });

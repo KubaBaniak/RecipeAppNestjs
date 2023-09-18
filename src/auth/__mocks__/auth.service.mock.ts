@@ -41,4 +41,8 @@ export class MockAuthService {
   changePassword(_userId: number, _newPassword: string): Promise<void> {
     return Promise.resolve();
   }
+
+  generateResetPasswordToken(_email: string): string {
+    return faker.string.sample(64);
+  }
 }
