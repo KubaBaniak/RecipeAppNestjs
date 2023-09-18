@@ -125,32 +125,12 @@ describe('AuthController (e2e)', () => {
   });
 
   describe('POST /auth/change-password', () => {
-    let token: string;
-    beforeEach(async () => {
-      const user = createUser();
-      await authService.signUp(user);
-      const createdUser = await authService.signUp({
-        email: user.email,
-        password: user.password,
-      });
-      token = await authService.generateAccountActivationToken(createdUser.id);
-    });
-
-    it('should activate an account', async () => {
-      return request(app.getHttpServer())
-        .get(`/ auth / activate - account /? token = ${token}`)
-        .set('Accept', 'application/json');
-    });
-  });
-
-  describe('POST /auth/change-password', () => {
     let user: { email: string; password: string };
     let accessToken: string;
 
     beforeEach(async () => {
       user = createUser();
       const createdUser = await authService.signUp(user);
-      await authService.generateAccountActivationToken(createdUser.id);
       await authService.activateAccount(createdUser.id);
       accessToken = await authService.signIn(user);
     });
