@@ -202,6 +202,25 @@ describe('AuthController (e2e)', () => {
     });
   });
 
+  describe('GET /auth/reset-password-email', () => {
+    let user: { email: string; password: string };
+    beforeEach(async () => {
+      user = createUser();
+      const createdUser = await authService.signUp({
+        email: user.email,
+        password: user.password,
+      });
+      await authService.activateAccount(createdUser.id);
+    });
+
+    it('should send an email with reset password link', async () => {
+      return request(app.getHttpServer())
+        .get(`/auth/reset-password-email`)
+        .set('Accept', 'application/json')
+        .send({ email: user.email });
+    });
+  });
+
   afterAll(async () => {
     await app.close();
   });
