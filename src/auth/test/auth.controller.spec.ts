@@ -90,7 +90,7 @@ describe('AuthController', () => {
     it('should change password', async () => {
       //given
       const request: ChangePasswordRequest = {
-        newPassword: faker.internet.password(),
+        newPassword: faker.internet.password({ length: 64 }),
       };
       const userId = faker.number.int();
       jest.spyOn(authService, 'changePassword');
