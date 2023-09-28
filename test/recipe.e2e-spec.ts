@@ -22,6 +22,7 @@ import { WebhookService } from '../src/webhook/webhook.service';
 import { WebhookRepository } from '../src/webhook/webhook.repository';
 import { CryptoUtils } from '../src/webhook/utils/crypt-webhook-token';
 import { PersonalAccessTokenRepository } from '../src/auth/personal-access-token.repository';
+import { TwoFactorAuthRepository } from '../src/auth/twoFactorAuth.repository';
 
 describe('RecipeController (e2e)', () => {
   let app: INestApplication;
@@ -36,6 +37,7 @@ describe('RecipeController (e2e)', () => {
       imports: [RecipeModule, AuthModule, RedisCacheModule, HttpModule],
       providers: [
         RecipeService,
+        TwoFactorAuthRepository,
         UserRepository,
         PersonalAccessTokenRepository,
         RecipeRepository,

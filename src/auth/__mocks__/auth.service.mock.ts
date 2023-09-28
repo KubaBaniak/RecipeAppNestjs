@@ -1,8 +1,9 @@
 import { SignInRequest, SignUpRequest, UserRequest } from '../dto';
 import { faker } from '@faker-js/faker';
 import { User } from '@prisma/client';
-import { createUserResponse } from 'src/user/test/user.factory';
+import { createUserResponse } from '../../user/test/user.factory';
 import qrcode from 'qrcode';
+import { numberOf2faRecoveryTokens } from '../constants';
 
 export class MockAuthService {
   signIn(_signInRequest: SignInRequest): Promise<string> {
@@ -30,7 +31,7 @@ export class MockAuthService {
     return Promise.resolve(faker.string.sample(64));
   }
 
-  async createQrcodeFor2FA(_userId: number): Promise<string> {
+  async createQrcodeFor2fa(_userId: number): Promise<string> {
     const data = {
       email: faker.internet.email(),
       service: faker.word.noun(),
@@ -39,23 +40,23 @@ export class MockAuthService {
     return qrcode.toDataURL(JSON.stringify(data));
   }
 
-  async enable2FA(_userId: number, _providedToken: string): Promise<string[]> {
+  async enable2fa(_userId: number, _providedToken: string): Promise<string[]> {
     return Promise.resolve(
-      Array.from({ length: 3 }, () => faker.string.alphanumeric(16)),
+      Array.from({ length: numberOf2faRecoveryTokens }, () =>
+        faker.string.alphanumeric(16),
+      ),
     );
   }
 
-  async disable2FA(userId: number, _providedToken: string): Promise<User> {
-    return Promise.resolve(
-      createUserResponse({ id: userId, enabled2FA: true }),
-    );
+  async disable2fa(userId: number, _providedToken: string): Promise<User> {
+    return Promise.resolve(createUserResponse({ id: userId }));
   }
 
-  async verify2FA(_userId: number, _token: string): Promise<string> {
+  async verify2fa(_userId: number, _token: string): Promise<string> {
     return Promise.resolve(faker.string.sample(64));
   }
 
-  async recoverAccountWith2FA(
+  async recoverAccountWith2fa(
     _userId: number,
     _providedRecoveryKey: string,
   ): Promise<string> {

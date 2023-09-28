@@ -7,22 +7,24 @@ import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Role } from '@prisma/client';
 import { MockJwtService } from '../__mocks__/jwt.service.mock';
-import { bcryptConstants } from '../constants';
+import { bcryptConstants, numberOf2faRecoveryTokens } from '../constants';
 import { UserRepository } from '../../user/user.repository';
 import { PersonalAccessTokenRepository } from '../personal-access-token.repository';
 import { MockPrismaService } from '../../prisma/__mocks__/prisma.service.mock';
 import { authenticator } from 'otplib';
-import { createUserResponse } from 'src/user/test/user.factory';
+import { TwoFactorAuthRepository } from '../twoFactorAuth.repository';
 
 describe('AuthService', () => {
   let authService: AuthService;
   let userRepository: UserRepository;
+  let twoFactorAuthRepository: TwoFactorAuthRepository;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
         UserService,
+        TwoFactorAuthRepository,
         UserRepository,
         PersonalAccessTokenRepository,
         {
@@ -38,6 +40,9 @@ describe('AuthService', () => {
 
     authService = module.get<AuthService>(AuthService);
     userRepository = module.get<UserRepository>(UserRepository);
+    twoFactorAuthRepository = module.get<TwoFactorAuthRepository>(
+      TwoFactorAuthRepository,
+    );
   });
 
   afterAll(() => {
@@ -152,7 +157,7 @@ describe('AuthService', () => {
       const userId = faker.number.int();
 
       //when
-      const qrcode = await authService.createQrcodeFor2FA(userId);
+      const qrcode = await authService.createQrcodeFor2fa(userId);
 
       //then
       expect(typeof qrcode).toBe('string');
@@ -164,10 +169,17 @@ describe('AuthService', () => {
       const userId = faker.number.int();
       const token = faker.string.numeric(6);
       jest.spyOn(authenticator, 'check').mockImplementationOnce(() => true);
+      jest
+        .spyOn(twoFactorAuthRepository, 'is2faEnabledForUserWithId')
+        .mockImplementationOnce(() => {
+          return Promise.resolve({
+            isEnabled: false,
+          });
+        });
 
-      const recoveryKeys = await authService.enable2FA(userId, token);
+      const recoveryKeys = await authService.enable2fa(userId, token);
 
-      expect(recoveryKeys).toHaveLength(3);
+      expect(recoveryKeys).toHaveLength(numberOf2faRecoveryTokens);
       recoveryKeys.forEach((key) => {
         expect(typeof key).toBe('string');
       });
@@ -177,10 +189,19 @@ describe('AuthService', () => {
   describe('Disable 2fa', () => {
     it('should disable 2fa', async () => {
       const userId = faker.number.int();
+      jest
+        .spyOn(twoFactorAuthRepository, 'is2faEnabledForUserWithId')
+        .mockImplementationOnce(() => {
+          return Promise.resolve({
+            isEnabled: true,
+          });
+        });
 
-      const user = await authService.disable2FA(userId);
+      const twoFactorAuthData = await authService.disable2fa(userId);
 
-      expect(user.enabled2FA).toBe(false);
+      expect(typeof twoFactorAuthData.id).toBe('number');
+      expect(typeof twoFactorAuthData.userId).toBe('number');
+      expect(typeof twoFactorAuthData.secretKey).toBe('string');
     });
   });
 
@@ -190,36 +211,7 @@ describe('AuthService', () => {
       const token = faker.string.numeric(6);
       jest.spyOn(authenticator, 'check').mockImplementationOnce(() => true);
 
-      const loginToken = await authService.verify2FA(userId, token);
-
-      expect(typeof loginToken).toBe('string');
-    });
-  });
-
-  describe('Recover an account with recovery tokens from 2fa', () => {
-    it('should log in with recovery keys', async () => {
-      const userId = faker.number.int();
-      const recoveryKey = faker.string.numeric(6);
-      const recoveryKeysOfUser = Array.from({ length: 3 }, () =>
-        faker.string.alphanumeric(16),
-      );
-      recoveryKeysOfUser[0] = recoveryKey;
-
-      jest
-        .spyOn(userRepository, 'get2FARecoveryKeysAndEmailByUserId')
-        .mockImplementationOnce(async () =>
-          Promise.resolve(
-            createUserResponse({
-              enabled2FA: true,
-              recoveryKeys: recoveryKeysOfUser,
-            }),
-          ),
-        );
-
-      const loginToken = await authService.recoverAccountWith2FA(
-        userId,
-        recoveryKey,
-      );
+      const loginToken = await authService.verify2fa(userId, token);
 
       expect(typeof loginToken).toBe('string');
     });

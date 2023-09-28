@@ -82,10 +82,10 @@ export class AuthController {
   })
   @UseGuards(JwtAuthGuard)
   @Post('create-qr-2fa')
-  async createQrcodeFor2FA(
+  async createQrcodeFor2fa(
     @UserId() userId: number,
   ): Promise<CreateQrcodeFor2FA> {
-    const qrcode = await this.authService.createQrcodeFor2FA(userId);
+    const qrcode = await this.authService.createQrcodeFor2fa(userId);
 
     return CreateQrcodeFor2FA.from(qrcode);
   }
@@ -112,8 +112,8 @@ export class AuthController {
   @ApiOperation({ summary: 'Disables 2FA for logged user' })
   @UseGuards(JwtAuthGuard)
   @Post('disable-2fa')
-  async disable2FA(@UserId() userId: number): Promise<void> {
-    await this.authService.disable2FA(userId);
+  async disable2fa(@UserId() userId: number): Promise<void> {
+    await this.authService.disable2fa(userId);
   }
 
   @HttpCode(200)
@@ -124,7 +124,7 @@ export class AuthController {
     @UserId() userId: number,
     @Body() tokenData: Verify2FARequest,
   ): Promise<SignInResponse> {
-    const accessToken = await this.authService.verify2FA(
+    const accessToken = await this.authService.verify2fa(
       userId,
       tokenData.token,
     );

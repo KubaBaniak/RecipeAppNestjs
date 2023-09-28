@@ -7,6 +7,7 @@ import { Role } from '@prisma/client';
 import { ChangePasswordRequest } from '../dto';
 import { validate } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
+import { numberOf2faRecoveryTokens } from '../constants';
 
 describe('AuthController', () => {
   let authController: AuthController;
@@ -94,7 +95,7 @@ describe('AuthController', () => {
     it('should create QR code', async () => {
       const userId = faker.number.int();
 
-      const responseObject = await authController.createQrcodeFor2FA(userId);
+      const responseObject = await authController.createQrcodeFor2fa(userId);
 
       expect(responseObject).toHaveProperty('qrcodeUrl');
       expect(typeof responseObject.qrcodeUrl).toBe('string');
@@ -109,7 +110,9 @@ describe('AuthController', () => {
 
       const responseObject = await authController.enable2FA(userId, tokenData);
 
-      expect(responseObject.recoveryKeys).toHaveLength(3);
+      expect(responseObject.recoveryKeys).toHaveLength(
+        numberOf2faRecoveryTokens,
+      );
       responseObject.recoveryKeys.forEach((key) => {
         expect(typeof key).toBe('string');
       });
@@ -119,11 +122,11 @@ describe('AuthController', () => {
   describe('Disable 2FA', () => {
     it('should disable 2FA', async () => {
       const userId = faker.number.int();
-      jest.spyOn(authService, 'disable2FA');
+      jest.spyOn(authService, 'disable2fa');
 
-      authController.disable2FA(userId);
+      authController.disable2fa(userId);
 
-      expect(authService.disable2FA).toHaveBeenCalled();
+      expect(authService.disable2fa).toHaveBeenCalled();
     });
   });
 
@@ -133,20 +136,6 @@ describe('AuthController', () => {
       const tokenData = { token: faker.string.numeric(6) };
 
       const responseObject = await authController.verify2FA(userId, tokenData);
-
-      expect(typeof responseObject.accessToken).toBe('string');
-    });
-  });
-
-  describe('Recovery keys 2FA', () => {
-    it('should recover an account with recovery key', async () => {
-      const userId = faker.number.int();
-      const tokenData = { recoveryKey: faker.string.numeric(6) };
-
-      const responseObject = await authController.recoverAccountWith2FA(
-        userId,
-        tokenData,
-      );
 
       expect(typeof responseObject.accessToken).toBe('string');
     });

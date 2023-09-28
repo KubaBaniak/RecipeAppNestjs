@@ -17,7 +17,7 @@ type CreateUserResponseOverrides = {
 
 export const createUser = (overrides: CreateUserOverrides = {}) => ({
   email: overrides.email ?? faker.internet.email(),
-  password: overrides.password ?? faker.internet.password(),
+  password: overrides.password ?? faker.internet.password(64),
 });
 
 export const createUserResponse = (
@@ -25,8 +25,7 @@ export const createUserResponse = (
 ) => ({
   id: overrides.id ?? faker.number.int(),
   email: overrides.email ?? faker.internet.email(),
-  password: overrides.password ?? faker.internet.password(),
+  password: overrides.password ?? faker.internet.password(64),
   role: overrides.role ?? Role.USER,
-  enabled2FA: overrides.enabled2FA ?? false,
   recoveryKeys: overrides.recoveryKeys ?? [],
 });

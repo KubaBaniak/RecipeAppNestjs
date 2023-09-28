@@ -6,6 +6,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { UserRepository } from '../../user/user.repository';
 import { JwtService } from '@nestjs/jwt';
 import { PersonalAccessTokenRepository } from '../../auth/personal-access-token.repository';
+import { TwoFactorAuthRepository } from '../../auth/twoFactorAuth.repository';
 
 describe('Websocket', () => {
   let webSocketEventGateway: WebSocketEventGateway;
@@ -16,6 +17,7 @@ describe('Websocket', () => {
         WebSocketEventGateway,
         AuthService,
         UserRepository,
+        TwoFactorAuthRepository,
         PersonalAccessTokenRepository,
         JwtService,
         PrismaService,

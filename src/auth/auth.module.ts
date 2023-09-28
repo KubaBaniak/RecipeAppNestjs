@@ -12,6 +12,7 @@ import { UserRepository } from '../user/user.repository';
 import { PrismaService } from '../prisma/prisma.service';
 import { PersonalAccessTokenRepository } from './personal-access-token.repository';
 import { TwoFactorAuthStrategy } from './strategies/two-factor-auth.strategy';
+import { TwoFactorAuthRepository } from './twoFactorAuth.repository';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { TwoFactorAuthStrategy } from './strategies/two-factor-auth.strategy';
     UserAuthBearerStrategy,
     PersonalAccessTokenStrategy,
     TwoFactorAuthStrategy,
+    TwoFactorAuthRepository,
     UserRepository,
     PersonalAccessTokenRepository,
     PrismaService,

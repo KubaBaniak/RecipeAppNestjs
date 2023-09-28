@@ -7,22 +7,28 @@ import { UserService } from '../src/user/user.service';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { Role } from '@prisma/client';
 import { faker } from '@faker-js/faker';
-import { createUser, createUserResponse } from '../src/user/test/user.factory';
+import { createUser } from '../src/user/test/user.factory';
 import { UserRepository } from '../src/user/user.repository';
 import { PersonalAccessTokenRepository } from '../src/auth/personal-access-token.repository';
-import { SignInRequest } from 'src/auth/dto';
+import { SignInRequest } from '../src/auth/dto';
+import { numberOf2faRecoveryTokens } from '../src/auth/constants';
+import { TwoFactorAuthRepository } from '../src/auth/twoFactorAuth.repository';
+import { add2faToUserWithId } from '../src/auth/test/auth.factory';
 import { authenticator } from 'otplib';
+import { warn } from 'console';
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication;
   let prismaService: PrismaService;
   let authService: AuthService;
+  let twoFactorAuthRepository: TwoFactorAuthRepository;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [AuthModule],
       providers: [
         AuthService,
+        TwoFactorAuthRepository,
         UserService,
         UserRepository,
         PersonalAccessTokenRepository,
@@ -33,6 +39,9 @@ describe('AuthController (e2e)', () => {
     app = moduleRef.createNestApplication();
     prismaService = moduleRef.get<PrismaService>(PrismaService);
     authService = moduleRef.get<AuthService>(AuthService);
+    twoFactorAuthRepository = moduleRef.get<TwoFactorAuthRepository>(
+      TwoFactorAuthRepository,
+    );
     app.useGlobalPipes(new ValidationPipe());
 
     await app.init();
@@ -147,11 +156,6 @@ describe('AuthController (e2e)', () => {
   });
 
   describe('2FA Tests', () => {
-    let VALUE_FOR_USER_CREATION = faker.number.int({
-      min: 25000,
-      max: 2000000,
-    });
-
     describe('POST /auth/create-qr-2fa', () => {
       let accessToken: string;
       beforeEach(async () => {
@@ -175,20 +179,25 @@ describe('AuthController (e2e)', () => {
 
     describe('POST /auth/enable-2fa', () => {
       let accessToken: string;
+      let secretKey: string;
       beforeEach(async () => {
-        const tempUser = createUser();
-        await authService.signUp(tempUser);
-        accessToken = await authService.signIn(tempUser);
+        const userData = createUser();
+        const tempUser = await authService.signUp(userData);
+        const twoFactorAuthData = await prismaService.twoFactorAuth.create({
+          data: add2faToUserWithId(tempUser.id),
+        });
+        secretKey = twoFactorAuthData.secretKey;
+        accessToken = await authService.signIn(userData);
       });
       it('should enable 2fa on user account', async () => {
         return request(app.getHttpServer())
           .post('/auth/enable-2fa')
           .set('Accept', 'application/json')
           .set({ Authorization: `Bearer ${accessToken}` })
-          .send({ token: authenticator.generate(process.env.SECRET_KEY_2FA) })
+          .send({ token: authenticator.generate(secretKey) })
           .expect((response: request.Response) => {
             const { recoveryKeys } = response.body;
-            expect(recoveryKeys).toHaveLength(3);
+            expect(recoveryKeys).toHaveLength(numberOf2faRecoveryTokens);
             recoveryKeys.forEach((key: string) => {
               expect(typeof key).toBe('string');
             });
@@ -201,14 +210,14 @@ describe('AuthController (e2e)', () => {
       let accessToken: string;
       beforeEach(async () => {
         const tempUser = await prismaService.user.create({
-          data: createUserResponse({
-            id: VALUE_FOR_USER_CREATION++,
-            enabled2FA: true,
-          }),
+          data: createUser(),
         });
         accessToken = await authService.signIn({
           email: tempUser.email,
           password: tempUser.password,
+        });
+        await prismaService.twoFactorAuth.create({
+          data: add2faToUserWithId(tempUser.id),
         });
       });
       it('should disable 2fa on user account', async () => {
@@ -222,24 +231,31 @@ describe('AuthController (e2e)', () => {
 
     describe('POST /auth/verify-2fa', () => {
       let accessToken: string;
+      let secretKey: string;
       beforeEach(async () => {
-        const tempUser = await prismaService.user.create({
-          data: createUserResponse({
-            id: VALUE_FOR_USER_CREATION++,
-            enabled2FA: true,
-          }),
+        const createdUser = await prismaService.user.create({
+          data: createUser(),
+        });
+        await prismaService.twoFactorAuth.create({
+          data: add2faToUserWithId(createdUser.id),
         });
         accessToken = await authService.signIn({
-          email: tempUser.email,
-          password: tempUser.password,
+          email: createdUser.email,
+          password: createdUser.password,
         });
+        const secretKeyObject =
+          await twoFactorAuthRepository.get2faSecretKeyForUserWithId(
+            createdUser.id,
+          );
+        secretKey = secretKeyObject.secretKey;
       });
+
       it('should verify on user using 2fa', async () => {
         request(app.getHttpServer())
           .post('/auth/verify-2fa')
           .set('Accept', 'application/json')
           .set({ Authorization: `Bearer ${accessToken}` })
-          .send({ token: authenticator.generate(process.env.SECRET_KEY_2FA) })
+          .send({ token: authenticator.generate(secretKey) })
           .expect((response: request.Response) => {
             const accessToken = response.body.accessToken;
             expect(typeof accessToken).toBe('string');
@@ -249,27 +265,30 @@ describe('AuthController (e2e)', () => {
     });
 
     describe('POST /auth/recovery-2fa', () => {
-      const RECOVERY_KEY = 'test';
       let accessToken: string;
+      let recoveryKey: string;
       beforeEach(async () => {
         const tempUser = await prismaService.user.create({
-          data: createUserResponse({
-            id: VALUE_FOR_USER_CREATION++,
-            enabled2FA: true,
-            recoveryKeys: [RECOVERY_KEY, 'recovery', 'key'],
-          }),
+          data: createUser(),
         });
         accessToken = await authService.signIn({
           email: tempUser.email,
           password: tempUser.password,
         });
+        await prismaService.twoFactorAuth.create({
+          data: add2faToUserWithId(tempUser.id),
+        });
+        const recoveryKeys = await authService.generate2faRecoveryKeys(
+          tempUser.id,
+        );
+        recoveryKey = recoveryKeys[0];
       });
-      it('should verify on user using 2fa', async () => {
+      it('should recover account with recovery key', async () => {
         request(app.getHttpServer())
           .post('/auth/verify-2fa')
           .set('Accept', 'application/json')
           .set({ Authorization: `Bearer ${accessToken}` })
-          .send({ token: RECOVERY_KEY })
+          .send({ token: `${recoveryKey}` })
           .expect((response: request.Response) => {
             const accessToken = response.body.accessToken;
             expect(typeof accessToken).toBe('string');

@@ -6,6 +6,8 @@ export const bcryptConstants = {
 
 export const serviceConstants = { name: 'Recipe App' };
 
+export const numberOf2faRecoveryTokens = 8;
+
 export const strategyNameConstants = {
   jwt: {
     bearer: 'jwt.bearer',

@@ -5,7 +5,11 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { bcryptConstants, serviceConstants } from './constants';
+import {
+  bcryptConstants,
+  numberOf2faRecoveryTokens,
+  serviceConstants,
+} from './constants';
 import * as bcrypt from 'bcryptjs';
 import {
   AccessTokenPayload,
@@ -20,11 +24,13 @@ import { PersonalAccessTokenRepository } from './personal-access-token.repositor
 import { authenticator } from 'otplib';
 import qrcode from 'qrcode';
 import { TwoFactorAuth } from '@prisma/client';
+import { TwoFactorAuthRepository } from './twoFactorAuth.repository';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly userRepository: UserRepository,
+    private readonly twoFactorAuthRepository: TwoFactorAuthRepository,
     private readonly personalAccessTokenRepository: PersonalAccessTokenRepository,
     private readonly jwtService: JwtService,
   ) {}
@@ -48,11 +54,12 @@ export class AuthService {
 
   async signIn(signInRequest: SignInRequest): Promise<string> {
     const user = await this.userRepository.getUserByEmail(signInRequest.email);
+
     if (!user) {
       throw new UnauthorizedException();
     }
 
-    if (user.twoFactorAuth) {
+    if (await this.is2faEnabled(user.id)) {
       return this.jwtService.signAsync(
         {
           id: user.id,
@@ -133,27 +140,24 @@ export class AuthService {
     });
   }
 
-  async checkIf2faIsEnabledForUserWithId(
-    userId: number,
-    errorMessage: string,
-  ): Promise<void> {
-    const { isEnabled } = await this.userRepository.is2faEnabledForUserWithId(
-      userId,
-    );
+  async is2faEnabled(userId: number): Promise<boolean> {
+    const isEnabledObject =
+      await this.twoFactorAuthRepository.is2faEnabledForUserWithId(userId);
 
-    if (!isEnabled) {
-      throw new BadRequestException(errorMessage);
-    }
+    return isEnabledObject?.isEnabled === true;
   }
 
-  async createQrcodeFor2FA(userId: number): Promise<string> {
+  async createQrcodeFor2fa(userId: number): Promise<string> {
     const { email } = await this.userRepository.getUserById(userId);
     const service = serviceConstants.name;
     const secretKey = authenticator.generateSecret();
 
     const otpauth = authenticator.keyuri(email, service, secretKey);
 
-    await this.userRepository.save2faSecretKeyForUserWithId(userId, secretKey);
+    await this.twoFactorAuthRepository.save2faSecretKeyForUserWithId(
+      userId,
+      secretKey,
+    );
 
     return qrcode.toDataURL(otpauth);
   }
@@ -161,16 +165,14 @@ export class AuthService {
   async generate2faRecoveryKeys(userId: number): Promise<string[]> {
     const user = await this.userRepository.getUserById(userId);
 
-    this.checkIf2faIsEnabledForUserWithId(
-      userId,
-      'You have to enable or verify 2FA first',
+    const recoveryKeys = Array.from(
+      { length: numberOf2faRecoveryTokens },
+      () => {
+        return { key: authenticator.generateSecret() };
+      },
     );
 
-    const recoveryKeys = Array.from({ length: 8 }, () => {
-      return { key: authenticator.generateSecret() };
-    });
-
-    await this.userRepository.saveRecoveryKeysForUserWithId(
+    await this.twoFactorAuthRepository.saveRecoveryKeysForUserWithId(
       user.id,
       recoveryKeys,
     );
@@ -179,13 +181,11 @@ export class AuthService {
   }
 
   async enable2fa(userId: number, providedToken: string): Promise<string[]> {
-    this.checkIf2faIsEnabledForUserWithId(
-      userId,
-      'You have already enabled 2FA',
-    );
-
+    if (await this.is2faEnabled(userId)) {
+      throw new BadRequestException('You have already enabled 2FA');
+    }
     const { secretKey } =
-      await this.userRepository.get2faSecretKeyForUserWithId(userId);
+      await this.twoFactorAuthRepository.get2faSecretKeyForUserWithId(userId);
 
     if (authenticator.check(providedToken, secretKey)) {
       return this.generate2faRecoveryKeys(userId);
@@ -194,30 +194,41 @@ export class AuthService {
     }
   }
 
-  async disable2FA(userId: number): Promise<TwoFactorAuth> {
-    this.checkIf2faIsEnabledForUserWithId(
-      userId,
-      'Could not disable 2FA, because it was not enabled',
-    );
-    return this.userRepository.disable2faForUserWithId(userId);
+  async disable2fa(userId: number): Promise<TwoFactorAuth> {
+    if (!(await this.is2faEnabled(userId))) {
+      throw new BadRequestException(
+        'Could not disable 2FA, because it was not enabled',
+      );
+    }
+    return this.twoFactorAuthRepository.disable2faForUserWithId(userId);
   }
 
-  async verify2FA(userId: number, token: string): Promise<string> {
+  async verify2fa(userId: number, token: string): Promise<string> {
     const user = await this.userRepository.getUserById(userId);
     const { secretKey } =
-      await this.userRepository.get2faSecretKeyForUserWithId(userId);
+      await this.twoFactorAuthRepository.get2faSecretKeyForUserWithId(userId);
     const { recoveryKeys: keys } =
-      await this.userRepository.get2faRecoveryKeysByUserId(userId);
+      await this.twoFactorAuthRepository.get2faRecoveryKeysForUserWithId(
+        userId,
+      );
 
     if (authenticator.check(token, secretKey)) {
       return this.generateBearerToken(user.id, user.email);
     }
 
     if (keys.some(({ key, isUsed }) => key === token && !isUsed)) {
-      await this.userRepository.expire2faRecoveryKey(token);
+      await this.twoFactorAuthRepository.expire2faRecoveryKey(token);
       return this.generateBearerToken(user.id, user.email);
     }
 
     throw new UnauthorizedException('Incorrect 2FA token');
+  }
+
+  async regenerate2faRecoveryTokens(userId: number) {
+    if (!(await this.is2faEnabled(userId))) {
+      throw new BadRequestException('You have to enable 2FA first');
+    }
+
+    return this.generate2faRecoveryKeys(userId);
   }
 }

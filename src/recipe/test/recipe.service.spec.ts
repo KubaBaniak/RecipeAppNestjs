@@ -16,6 +16,7 @@ import { WebhookService } from '../../webhook/webhook.service';
 import { HttpModule } from '@nestjs/axios';
 import { CryptoUtils } from '../../webhook/utils/crypt-webhook-token';
 import { PersonalAccessTokenRepository } from '../../auth/personal-access-token.repository';
+import { TwoFactorAuthRepository } from '../../auth/twoFactorAuth.repository';
 
 describe('RecipeService', () => {
   let recipeService: RecipeService;
@@ -28,6 +29,7 @@ describe('RecipeService', () => {
         RecipeService,
         S3Service,
         RecipeRepository,
+        TwoFactorAuthRepository,
         UserRepository,
         PersonalAccessTokenRepository,
         WebSocketEventGateway,
