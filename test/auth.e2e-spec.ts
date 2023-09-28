@@ -15,7 +15,6 @@ import { numberOf2faRecoveryTokens } from '../src/auth/constants';
 import { TwoFactorAuthRepository } from '../src/auth/twoFactorAuth.repository';
 import { add2faToUserWithId } from '../src/auth/test/auth.factory';
 import { authenticator } from 'otplib';
-import { warn } from 'console';
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication;
@@ -77,12 +76,10 @@ describe('AuthController (e2e)', () => {
   });
 
   describe('POST /auth/signin', () => {
-    let accessToken: string;
     let tempUser: SignInRequest;
     beforeEach(async () => {
       tempUser = createUser();
       await authService.signUp(tempUser);
-      accessToken = await authService.signIn(tempUser);
     });
 
     it('should generate access token for user', async () => {
