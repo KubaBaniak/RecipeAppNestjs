@@ -133,6 +133,19 @@ export class AuthService {
     });
   }
 
+  async checkIf2faIsEnabledForUserWithId(
+    userId: number,
+    errorMessage: string,
+  ): Promise<void> {
+    const { isEnabled } = await this.userRepository.is2faEnabledForUserWithId(
+      userId,
+    );
+
+    if (!isEnabled) {
+      throw new BadRequestException(errorMessage);
+    }
+  }
+
   async createQrcodeFor2FA(userId: number): Promise<string> {
     const { email } = await this.userRepository.getUserById(userId);
     const service = serviceConstants.name;
@@ -148,6 +161,11 @@ export class AuthService {
   async generate2faRecoveryKeys(userId: number): Promise<string[]> {
     const user = await this.userRepository.getUserById(userId);
 
+    this.checkIf2faIsEnabledForUserWithId(
+      userId,
+      'You have to enable or verify 2FA first',
+    );
+
     const recoveryKeys = Array.from({ length: 8 }, () => {
       return { key: authenticator.generateSecret() };
     });
@@ -161,6 +179,11 @@ export class AuthService {
   }
 
   async enable2fa(userId: number, providedToken: string): Promise<string[]> {
+    this.checkIf2faIsEnabledForUserWithId(
+      userId,
+      'You have already enabled 2FA',
+    );
+
     const { secretKey } =
       await this.userRepository.get2faSecretKeyForUserWithId(userId);
 
@@ -172,7 +195,11 @@ export class AuthService {
   }
 
   async disable2FA(userId: number): Promise<TwoFactorAuth> {
-    return this.userRepository.disable2FAForUserWithId(userId);
+    this.checkIf2faIsEnabledForUserWithId(
+      userId,
+      'Could not disable 2FA, because it was not enabled',
+    );
+    return this.userRepository.disable2faForUserWithId(userId);
   }
 
   async verify2FA(userId: number, token: string): Promise<string> {
