@@ -73,6 +73,7 @@ model TwoFactorAuth {
   user         User                       @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId       Int                        @unique
   secretKey    String
+  isEnabled    Boolean                    @default(false)
 }
 
 model TwoFactorAuthRecoveryKey {

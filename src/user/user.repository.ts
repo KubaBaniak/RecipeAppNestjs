@@ -56,8 +56,31 @@ export class UserRepository {
     });
   }
 
-  async disable2FAForUserWithId(id: number): Promise<TwoFactorAuth> {
-    return this.prisma.twoFactorAuth.delete({
+  async is2faEnabledForUserWithId(
+    userId: number,
+  ): Promise<{ isEnabled: boolean }> {
+    return this.prisma.twoFactorAuth.findUnique({
+      select: {
+        isEnabled: true,
+      },
+      where: { userId },
+    });
+  }
+
+  async enable2faForUserWithId(id: number): Promise<TwoFactorAuth> {
+    return this.prisma.twoFactorAuth.update({
+      data: {
+        isEnabled: true,
+      },
+      where: { id },
+    });
+  }
+
+  async disable2faForUserWithId(id: number): Promise<TwoFactorAuth> {
+    return this.prisma.twoFactorAuth.update({
+      data: {
+        isEnabled: false,
+      },
       where: { id },
     });
   }
