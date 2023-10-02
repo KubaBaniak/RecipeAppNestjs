@@ -1,3 +1,11 @@
+## [1.1.6](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.1.5...v1.1.6) (2023-10-02)
+
+
+### Bug Fixes
+
+* e2e and unit tests ([5ded8a3](https://github.com/KubaBaniak/RecipeAppNestjs/commit/5ded8a35766dbb635f84f55e97efcea32882f3ac))
+* resolve conflicts ([6dad207](https://github.com/KubaBaniak/RecipeAppNestjs/commit/6dad207438761f8d54937bcbecf292767ca757c2))
+
 ## [1.1.5](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.1.4...v1.1.5) (2023-09-06)
 
 
