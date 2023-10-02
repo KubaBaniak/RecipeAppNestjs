@@ -1,12 +1,12 @@
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable } from '@nestjs/common';
-import { strategyNameConstants } from '../constants';
+import { STRATEGY } from '../constants';
 
 @Injectable()
 export class PasswordResetTokenStrategy extends PassportStrategy(
   Strategy,
-  strategyNameConstants.jwt.passwordReset,
+  STRATEGY.passwordReset,
 ) {
   constructor() {
     super({

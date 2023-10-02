@@ -13,6 +13,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { PersonalAccessTokenRepository } from './personal-access-token.repository';
 import { MailModule } from '../mail/mail.module';
 import { PasswordResetTokenStrategy } from './strategies/reset-password.strategy';
+import { TwoFactorAuthStrategy } from './strategies/two-factor-auth.strategy';
+import { TwoFactorAuthRepository } from './twoFactorAuth.repository';
 
 @Module({
   imports: [
@@ -29,6 +31,8 @@ import { PasswordResetTokenStrategy } from './strategies/reset-password.strategy
     LocalStrategy,
     UserAuthBearerStrategy,
     PersonalAccessTokenStrategy,
+    TwoFactorAuthStrategy,
+    TwoFactorAuthRepository,
     UserRepository,
     PersonalAccessTokenRepository,
     PasswordResetTokenStrategy,

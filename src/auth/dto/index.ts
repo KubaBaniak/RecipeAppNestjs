@@ -8,3 +8,6 @@ export * from './access-token-payload';
 export * from './change-password-request';
 export * from './reset-password-request';
 export * from './reset-password-email-request';
+export * from './create-qrcode-2fa-response';
+export * from './verify-2fa-request';
+export * from './recovery-keys-response';

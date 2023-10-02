@@ -13,9 +13,14 @@ export class UserRepository {
     });
   }
 
-  getUserByEmail(email: string): Promise<User> {
+  getUserByEmail(
+    email: string,
+  ): Promise<Prisma.UserGetPayload<{ include: { twoFactorAuth: true } }>> {
     return this.prisma.user.findUnique({
       where: { email },
+      include: {
+        twoFactorAuth: true,
+      },
     });
   }
 

@@ -6,13 +6,12 @@ type CreateUserOverrides = {
   password?: string;
 };
 
-type UserDaoResponse = {
+type CreateUserResponseOverrides = {
   id?: number;
   email?: string;
   password?: string;
   role?: Role;
-  activated?: boolean;
-  accountActivationToken?: string;
+  recoveryKeys?: string[];
 };
 
 export const createUser = (overrides: CreateUserOverrides = {}) => ({
@@ -20,12 +19,12 @@ export const createUser = (overrides: CreateUserOverrides = {}) => ({
   password: overrides.password ?? faker.internet.password({ length: 64 }),
 });
 
-export const userDaoResponse = (overrides: UserDaoResponse = {}) => ({
-  id: overrides.id ?? faker.number.int({ max: 2147483647 }),
+export const createUserResponse = (
+  overrides: CreateUserResponseOverrides = {},
+) => ({
+  id: overrides.id ?? faker.number.int(),
   email: overrides.email ?? faker.internet.email(),
-  password: overrides.password ?? faker.internet.password(),
+  password: overrides.password ?? faker.internet.password(64),
   role: overrides.role ?? Role.USER,
-  activated: overrides.activated ?? true,
-  accountActivationToken:
-    overrides.accountActivationToken ?? faker.string.sample(64),
+  recoveryKeys: overrides.recoveryKeys ?? [],
 });

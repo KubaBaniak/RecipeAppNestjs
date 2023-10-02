@@ -15,6 +15,7 @@ import {
   ResetPasswordEmailRequest,
   ResetPasswordRequest,
 } from '../dto';
+import { NUMBER_OF_2FA_RECOVERY_TOKENS } from '../constants';
 
 describe('AuthController', () => {
   let authController: AuthController;
@@ -135,24 +136,78 @@ describe('AuthController', () => {
       expect(authService.generateResetPasswordToken).toHaveBeenCalled();
       expect(mailService.sendResetPasswordEmail).toHaveBeenCalled();
     });
+
+    it('should change password', async () => {
+      const userId = faker.number.int();
+      const request: ResetPasswordRequest = {
+        newPassword: faker.internet.password({ length: 64 }),
+      };
+      jest.spyOn(authService, 'changePassword');
+
+      const resetPasswordRequestDto = plainToInstance(
+        ResetPasswordRequest,
+        request,
+      );
+
+      const errors = await validate(resetPasswordRequestDto);
+      await authController.resetPassword(userId, request);
+
+      expect(errors).toHaveLength(0);
+      expect(authService.changePassword).toBeCalled();
+    });
   });
 
-  it('should change password', async () => {
-    const userId = faker.number.int();
-    const request: ResetPasswordRequest = {
-      newPassword: faker.internet.password({ length: 64 }),
-    };
-    jest.spyOn(authService, 'changePassword');
+  describe('QR code for 2FA', () => {
+    it('should create QR code', async () => {
+      const userId = faker.number.int();
 
-    const resetPasswordRequestDto = plainToInstance(
-      ResetPasswordRequest,
-      request,
-    );
+      const responseObject = await authController.createQrCodeFor2fa(userId);
 
-    const errors = await validate(resetPasswordRequestDto);
-    await authController.resetPassword(userId, request);
+      expect(responseObject).toHaveProperty('qrCodeUrl');
+      expect(typeof responseObject.qrCodeUrl).toBe('string');
+      expect(responseObject).toHaveProperty('urlToEnable2FA');
+    });
+  });
 
-    expect(errors).toHaveLength(0);
-    expect(authService.changePassword).toBeCalled();
+  describe('Enable 2FA', () => {
+    it('should enable 2FA', async () => {
+      const userId = faker.number.int();
+      const tokenData = { token: faker.string.numeric(6) };
+
+      const responseObject = await authController.enable2FA(userId, tokenData);
+
+      expect(responseObject.recoveryKeys).toHaveLength(
+        NUMBER_OF_2FA_RECOVERY_TOKENS,
+      );
+
+      expect(responseObject.recoveryKeys).toBeInstanceOf(Array);
+      expect(responseObject.recoveryKeys).not.toHaveLength(0);
+
+      responseObject.recoveryKeys.forEach((key) => {
+        expect(typeof key).toBe('string');
+      });
+    });
+  });
+
+  describe('Disable 2FA', () => {
+    it('should disable 2FA', async () => {
+      const userId = faker.number.int();
+      jest.spyOn(authService, 'disable2fa');
+
+      authController.disable2fa(userId);
+
+      expect(authService.disable2fa).toHaveBeenCalled();
+    });
+  });
+
+  describe('Verify 2FA', () => {
+    it('should verify 2FA', async () => {
+      const userId = faker.number.int();
+      const tokenData = { token: faker.string.numeric(6) };
+
+      const responseObject = await authController.verify2FA(userId, tokenData);
+
+      expect(typeof responseObject.accessToken).toBe('string');
+    });
   });
 });
