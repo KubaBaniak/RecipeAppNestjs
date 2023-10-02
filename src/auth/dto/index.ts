@@ -6,3 +6,6 @@ export * from './user-request';
 export * from './create-pat-response';
 export * from './access-token-payload';
 export * from './change-password-request';
+export * from './create-qrcode-2fa-response';
+export * from './verify-2fa-request';
+export * from './recovery-keys-response';

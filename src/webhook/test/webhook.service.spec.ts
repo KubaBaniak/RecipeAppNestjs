@@ -9,7 +9,7 @@ import {
   createWebhookResponse,
   createWebhookWithUserId,
 } from './webhook.factory';
-import { createRecipeResponse } from 'src/recipe/test/recipe.factory';
+import { createRecipeResponse } from '../../recipe/test/recipe.factory';
 import { WebhookEventType } from '../dto';
 import { of } from 'rxjs';
 import { CryptoUtils } from '../utils/crypt-webhook-token';

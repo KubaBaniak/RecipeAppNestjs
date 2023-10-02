@@ -1,20 +1,16 @@
-import {
-  Controller,
-  Body,
-  Post,
-  Get,
-  HttpCode,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Body, Post, HttpCode, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import {
   ChangePasswordRequest,
   CreatePatResponse,
+  CreateQrCodeFor2FA,
+  RecoveryKeysRespnse,
   SignInRequest,
   SignInResponse,
   SignUpRequest,
   SignUpResponse,
+  Verify2FARequest,
 } from './dto';
 import {
   ApiTags,
@@ -24,6 +20,7 @@ import {
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { UserId } from '../common/decorators/req-user-id.decorator';
+import { TwoFactorAuthGuard } from './guards/two-factor-auth.guard';
 
 @Controller('auth')
 @ApiTags('Authentication')
@@ -53,6 +50,8 @@ export class AuthController {
     return SignUpResponse.from(createdUser);
   }
 
+  @HttpCode(201)
+  @ApiOperation({ summary: 'Add PAT for user' })
   @UseGuards(JwtAuthGuard)
   @Post('create/pat')
   async createPersonalAccessToken(
@@ -62,9 +61,9 @@ export class AuthController {
     return CreatePatResponse.from(patToken);
   }
 
-  @UseGuards(JwtAuthGuard)
   @HttpCode(200)
   @ApiOperation({ summary: 'Changes password of the user' })
+  @UseGuards(JwtAuthGuard)
   @Post('change-password')
   async changePassword(
     @UserId() userId: number,
@@ -74,5 +73,74 @@ export class AuthController {
       userId,
       changePasswordRequest.newPassword,
     );
+  }
+
+  @HttpCode(201)
+  @ApiOperation({
+    summary:
+      'Creates QR code for user to scan it for auth app (like Google Authenticator)',
+  })
+  @UseGuards(JwtAuthGuard)
+  @Post('create-qr-code-for-2fa-authenticator-app')
+  async createQrCodeFor2fa(
+    @UserId() userId: number,
+  ): Promise<CreateQrCodeFor2FA> {
+    const qrCode = await this.authService.createQrCodeFor2fa(userId);
+
+    return CreateQrCodeFor2FA.from(qrCode);
+  }
+
+  @HttpCode(200)
+  @ApiOperation({
+    summary: 'Enables 2FA authentication for user',
+  })
+  @UseGuards(JwtAuthGuard)
+  @Post('enable-2fa')
+  async enable2FA(
+    @UserId() userId: number,
+    @Body() twoFactorAuthTokenData: Verify2FARequest,
+  ): Promise<RecoveryKeysRespnse> {
+    const recoveryKey = await this.authService.enable2fa(
+      userId,
+      twoFactorAuthTokenData.token,
+    );
+
+    return RecoveryKeysRespnse.from(recoveryKey);
+  }
+
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Disables 2FA for logged user' })
+  @UseGuards(JwtAuthGuard)
+  @Post('disable-2fa')
+  async disable2fa(@UserId() userId: number): Promise<void> {
+    await this.authService.disable2fa(userId);
+  }
+
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Authenticate with 2FA to login' })
+  @UseGuards(TwoFactorAuthGuard)
+  @Post('verify-2fa')
+  async verify2FA(
+    @UserId() userId: number,
+    @Body() tokenData: Verify2FARequest,
+  ): Promise<SignInResponse> {
+    const accessToken = await this.authService.verify2fa(
+      userId,
+      tokenData.token,
+    );
+
+    return SignInResponse.from(accessToken);
+  }
+
+  @HttpCode(201)
+  @ApiOperation({ summary: 'Regenerate recovery keys for 2FA' })
+  @UseGuards(JwtAuthGuard)
+  @Post('regenerate-recovery-keys')
+  async regenerateRecoveryKeys(
+    @UserId() userId: number,
+  ): Promise<RecoveryKeysRespnse> {
+    const recoveryKeys = await this.authService.generate2faRecoveryKeys(userId);
+
+    return RecoveryKeysRespnse.from(recoveryKeys);
   }
 }

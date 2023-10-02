@@ -3,7 +3,6 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { UserModule } from '../user/user.module';
 import { JwtModule } from '@nestjs/jwt';
-import { jwtConstants } from './constants';
 import { LocalStrategy } from './strategies/local.strategy';
 import { UserAuthBearerStrategy } from './strategies/jwt.strategy';
 import { PassportModule } from '@nestjs/passport';
@@ -12,6 +11,8 @@ import { PersonalAccessTokenStrategy } from './strategies/pat.strategy';
 import { UserRepository } from '../user/user.repository';
 import { PrismaService } from '../prisma/prisma.service';
 import { PersonalAccessTokenRepository } from './personal-access-token.repository';
+import { TwoFactorAuthStrategy } from './strategies/two-factor-auth.strategy';
+import { TwoFactorAuthRepository } from './twoFactorAuth.repository';
 
 @Module({
   imports: [
@@ -19,7 +20,6 @@ import { PersonalAccessTokenRepository } from './personal-access-token.repositor
     PassportModule,
     JwtModule.register({
       global: true,
-      secret: jwtConstants.secret,
     }),
   ],
   controllers: [AuthController],
@@ -28,6 +28,8 @@ import { PersonalAccessTokenRepository } from './personal-access-token.repositor
     LocalStrategy,
     UserAuthBearerStrategy,
     PersonalAccessTokenStrategy,
+    TwoFactorAuthStrategy,
+    TwoFactorAuthRepository,
     UserRepository,
     PersonalAccessTokenRepository,
     PrismaService,

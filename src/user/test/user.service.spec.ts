@@ -39,6 +39,7 @@ describe('UserService', () => {
         id: expect.any(Number),
         email: request.email,
         role: Role.USER,
+        password: undefined,
       });
     });
   });
@@ -57,6 +58,7 @@ describe('UserService', () => {
         id,
         email: data.email,
         role: Role.USER,
+        password: undefined,
       });
     });
   });

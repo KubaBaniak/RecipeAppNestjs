@@ -14,12 +14,16 @@ export class UserRepository {
 
     return user ? UserPayloadRequest.from(user) : null;
   }
-  async getUserByEmailWithPassword(email: string): Promise<UserPayloadRequest> {
-    const user = await this.prisma.user.findUnique({
-      where: { email },
-    });
 
-    return user ? UserPayloadRequest.withPasswordFrom(user) : null;
+  getUserByEmail(
+    email: string,
+  ): Promise<Prisma.UserGetPayload<{ include: { twoFactorAuth: true } }>> {
+    return this.prisma.user.findUnique({
+      where: { email },
+      include: {
+        twoFactorAuth: true,
+      },
+    });
   }
 
   async createUser(data: Prisma.UserCreateInput): Promise<UserPayloadRequest> {

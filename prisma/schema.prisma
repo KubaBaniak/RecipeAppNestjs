@@ -18,6 +18,7 @@ model User {
   recipes             Recipe[]
   webhooks            Webhook[]
   personalAccessToken PersonalAccessToken[]
+  twoFactorAuth       TwoFactorAuth?
 }
 
 model Recipe {
@@ -64,6 +65,24 @@ model PersonalAccessToken {
   userId        Int
   token         String
   invalidatedAt DateTime?
+}
+
+model TwoFactorAuth {
+  id           Int                        @id @default(autoincrement())
+  recoveryKeys TwoFactorAuthRecoveryKey[]
+  user         User                       @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId       Int                        @unique
+  secretKey    String
+  isEnabled    Boolean                    @default(false)
+}
+
+model TwoFactorAuthRecoveryKey {
+  id              Int            @id @default(autoincrement())
+  key             String         @unique // The recovery key itself
+  isUsed          Boolean        @default(false)
+  usedAt          DateTime?
+  twoFactorAuthId Int
+  TwoFactorAuth   TwoFactorAuth? @relation(fields: [twoFactorAuthId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 enum Role {

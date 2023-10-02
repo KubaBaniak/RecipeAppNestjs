@@ -13,6 +13,12 @@ export default async () => {
     ['./auth/dto/create-pat-response']: await import(
       './auth/dto/create-pat-response'
     ),
+    ['./auth/dto/create-qrcode-2fa-response']: await import(
+      './auth/dto/create-qrcode-2fa-response'
+    ),
+    ['./auth/dto/recovery-keys-response']: await import(
+      './auth/dto/recovery-keys-response'
+    ),
     ['./recipe/dto/fetch-recipes-response']: await import(
       './recipe/dto/fetch-recipes-response'
     ),
@@ -100,6 +106,29 @@ export default async () => {
                 pattern:
                   '/((?=.*\\d)|(?=.*\\W+))(?![.\\n])(?=.*[A-Z])(?=.*[a-z]).*$/',
               },
+            },
+          },
+        ],
+        [
+          import('./auth/dto/create-qrcode-2fa-response'),
+          {
+            CreateQrCodeFor2FA: {
+              qrCodeUrl: { required: true, type: () => String },
+              urlToEnable2FA: { required: true, type: () => Object },
+            },
+          },
+        ],
+        [
+          import('./auth/dto/verify-2fa-request'),
+          {
+            Verify2FARequest: { token: { required: true, type: () => String } },
+          },
+        ],
+        [
+          import('./auth/dto/recovery-keys-response'),
+          {
+            RecoveryKeysRespnse: {
+              recoveryKeys: { required: true, type: () => [String] },
             },
           },
         ],
@@ -223,6 +252,22 @@ export default async () => {
                 type: t['./auth/dto/create-pat-response'].CreatePatResponse,
               },
               changePassword: {},
+              createQrCodeFor2fa: {
+                type: t['./auth/dto/create-qrcode-2fa-response']
+                  .CreateQrCodeFor2FA,
+              },
+              enable2FA: {
+                type: t['./auth/dto/recovery-keys-response']
+                  .RecoveryKeysRespnse,
+              },
+              disable2fa: {},
+              verify2FA: {
+                type: t['./auth/dto/sign-in-response'].SignInResponse,
+              },
+              regenerateRecoveryKeys: {
+                type: t['./auth/dto/recovery-keys-response']
+                  .RecoveryKeysRespnse,
+              },
             },
           },
         ],
