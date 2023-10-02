@@ -137,7 +137,7 @@ describe('AuthController', () => {
     });
   });
 
-  it('should change password for the provided one via form', async () => {
+  it('should change password', async () => {
     const userId = faker.number.int();
     const request: ResetPasswordRequest = {
       newPassword: faker.internet.password({ length: 64 }),

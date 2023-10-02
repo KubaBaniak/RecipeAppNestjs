@@ -14,7 +14,7 @@ export class MailService {
 
     return this.mailerService.sendMail({
       to: userEmail,
-      subject: 'Welcome to Nice App! Confirm your Email',
+      subject: 'Welcome to Recipe App! Confirm your Email',
       template: './account-activation-email',
       context: {
         activationLink: url,

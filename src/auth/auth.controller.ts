@@ -103,7 +103,7 @@ export class AuthController {
   }
 
   @ApiOperation({ summary: 'Sends link to resets password of the user' })
-  @Get('reset-password-email')
+  @Get('reset-password')
   async resetPasswordEmail(
     @Body() resetPasswordRequest: ResetPasswordEmailRequest,
   ): Promise<void> {
