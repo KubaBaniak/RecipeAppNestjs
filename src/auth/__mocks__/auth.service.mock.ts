@@ -3,7 +3,7 @@ import { faker } from '@faker-js/faker';
 import { User } from '@prisma/client';
 import { createUserResponse } from '../../user/test/user.factory';
 import qrcode from 'qrcode';
-import { numberOf2faRecoveryTokens } from '../constants';
+import { NUMBER_OF_2FA_RECOVERY_TOKENS } from '../constants';
 
 export class MockAuthService {
   signIn(_signInRequest: SignInRequest): Promise<string> {
@@ -31,7 +31,7 @@ export class MockAuthService {
     return Promise.resolve(faker.string.sample(64));
   }
 
-  async createQrcodeFor2fa(_userId: number): Promise<string> {
+  async createQrCodeFor2fa(_userId: number): Promise<string> {
     const data = {
       email: faker.internet.email(),
       service: faker.word.noun(),
@@ -42,7 +42,7 @@ export class MockAuthService {
 
   async enable2fa(_userId: number, _providedToken: string): Promise<string[]> {
     return Promise.resolve(
-      Array.from({ length: numberOf2faRecoveryTokens }, () =>
+      Array.from({ length: NUMBER_OF_2FA_RECOVERY_TOKENS }, () =>
         faker.string.alphanumeric(16),
       ),
     );

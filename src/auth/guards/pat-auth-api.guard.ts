@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { strategyNameConstants } from '../constants';
+import { STRATEGY } from '../constants';
 
 @Injectable()
 export class ApiAuthGuard extends AuthGuard([
-  strategyNameConstants.jwt.pat,
-  strategyNameConstants.jwt.bearer,
+  STRATEGY.jwt.pat,
+  STRATEGY.jwt.bearer,
 ]) {}

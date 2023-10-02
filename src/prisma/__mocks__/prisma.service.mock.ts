@@ -7,7 +7,7 @@ import {
   TwoFactorAuth,
   TwoFactorAuthRecoveryKey,
 } from '@prisma/client';
-import { numberOf2faRecoveryTokens } from '../../auth/constants';
+import { NUMBER_OF_2FA_RECOVERY_TOKENS } from '../../auth/constants';
 import { UpdateRecipeRequest } from '../../recipe/dto';
 
 let lastSearchedByIdUser: number;
@@ -157,9 +157,12 @@ export class MockPrismaService {
       userId: number;
     }): Promise<{ recoveryKeys: { key: string; isUsed: boolean }[] }> {
       return Promise.resolve({
-        recoveryKeys: Array.from({ length: numberOf2faRecoveryTokens }, () => {
-          return { key: faker.string.alphanumeric(16), isUsed: false };
-        }),
+        recoveryKeys: Array.from(
+          { length: NUMBER_OF_2FA_RECOVERY_TOKENS },
+          () => {
+            return { key: faker.string.alphanumeric(16), isUsed: false };
+          },
+        ),
       });
     },
 

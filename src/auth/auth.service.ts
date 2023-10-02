@@ -5,11 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import {
-  bcryptConstants,
-  numberOf2faRecoveryTokens,
-  serviceConstants,
-} from './constants';
+import { BCRYPT, NUMBER_OF_2FA_RECOVERY_TOKENS, SERVICE } from './constants';
 import * as bcrypt from 'bcryptjs';
 import {
   AccessTokenPayload,
@@ -103,10 +99,7 @@ export class AuthService {
       throw new ForbiddenException();
     }
 
-    const hash = await bcrypt.hash(
-      signUpRequest.password,
-      bcryptConstants.salt,
-    );
+    const hash = await bcrypt.hash(signUpRequest.password, BCRYPT.salt);
 
     const data = { email: signUpRequest.email, password: hash };
 
@@ -133,7 +126,7 @@ export class AuthService {
     userId: number,
     newPassword: string,
   ): Promise<UserPayloadRequest> {
-    const hashedPassword = await bcrypt.hash(newPassword, bcryptConstants.salt);
+    const hashedPassword = await bcrypt.hash(newPassword, BCRYPT.salt);
 
     return this.userRepository.updateUserById(userId, {
       password: hashedPassword,
@@ -147,9 +140,9 @@ export class AuthService {
     return isEnabledObject?.isEnabled === true;
   }
 
-  async createQrcodeFor2fa(userId: number): Promise<string> {
+  async createQrCodeFor2fa(userId: number): Promise<string> {
     const { email } = await this.userRepository.getUserById(userId);
-    const service = serviceConstants.name;
+    const service = SERVICE.name;
     const secretKey = authenticator.generateSecret();
 
     const otpauth = authenticator.keyuri(email, service, secretKey);
@@ -166,7 +159,7 @@ export class AuthService {
     const user = await this.userRepository.getUserById(userId);
 
     const recoveryKeys = Array.from(
-      { length: numberOf2faRecoveryTokens },
+      { length: NUMBER_OF_2FA_RECOVERY_TOKENS },
       () => {
         return { key: authenticator.generateSecret() };
       },
@@ -224,7 +217,7 @@ export class AuthService {
     throw new UnauthorizedException('Incorrect 2FA token');
   }
 
-  async regenerate2faRecoveryTokens(userId: number) {
+  async regenerate2faRecoveryTokens(userId: number): Promise<string[]> {
     if (!(await this.is2faEnabled(userId))) {
       throw new BadRequestException('You have to enable 2FA first');
     }

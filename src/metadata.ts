@@ -112,8 +112,8 @@ export default async () => {
         [
           import('./auth/dto/create-qrcode-2fa-response'),
           {
-            CreateQrcodeFor2FA: {
-              qrcodeUrl: { required: true, type: () => String },
+            CreateQrCodeFor2FA: {
+              qrCodeUrl: { required: true, type: () => String },
               urlToEnable2FA: { required: true, type: () => Object },
             },
           },
@@ -252,15 +252,15 @@ export default async () => {
                 type: t['./auth/dto/create-pat-response'].CreatePatResponse,
               },
               changePassword: {},
-              createQrcodeFor2FA: {
+              createQrCodeFor2fa: {
                 type: t['./auth/dto/create-qrcode-2fa-response']
-                  .CreateQrcodeFor2FA,
+                  .CreateQrCodeFor2FA,
               },
               enable2FA: {
                 type: t['./auth/dto/recovery-keys-response']
                   .RecoveryKeysRespnse,
               },
-              disable2FA: {},
+              disable2fa: {},
               verify2FA: {
                 type: t['./auth/dto/sign-in-response'].SignInResponse,
               },

@@ -1,8 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { strategyNameConstants } from '../constants';
+import { STRATEGY } from '../constants';
 
 @Injectable()
-export class TwoFactorAuthGuard extends AuthGuard(
-  strategyNameConstants.jwt.twoFactor,
-) {}
+export class TwoFactorAuthGuard extends AuthGuard(STRATEGY.jwt.twoFactor) {}

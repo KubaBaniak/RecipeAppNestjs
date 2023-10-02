@@ -11,7 +11,7 @@ import { createUser } from '../src/user/test/user.factory';
 import { UserRepository } from '../src/user/user.repository';
 import { PersonalAccessTokenRepository } from '../src/auth/personal-access-token.repository';
 import { SignInRequest } from '../src/auth/dto';
-import { numberOf2faRecoveryTokens } from '../src/auth/constants';
+import { NUMBER_OF_2FA_RECOVERY_TOKENS } from '../src/auth/constants';
 import { TwoFactorAuthRepository } from '../src/auth/twoFactorAuth.repository';
 import { add2faToUserWithId } from '../src/auth/test/auth.factory';
 import { authenticator } from 'otplib';
@@ -51,8 +51,8 @@ describe('AuthController (e2e)', () => {
   });
 
   describe('POST /auth/signup', () => {
-    const tempUser = createUser();
     it('should register a user and return the new user object', async () => {
+      const tempUser = createUser();
       return request(app.getHttpServer())
         .post('/auth/signup')
         .set('Accept', 'application/json')
@@ -67,6 +67,8 @@ describe('AuthController (e2e)', () => {
     });
 
     it('should not register a user (already in db) and return 403 error (FORBIDDEN ACCESS)', async () => {
+      const tempUser = createUser();
+      await prismaService.user.create({ data: tempUser });
       return request(app.getHttpServer())
         .post('/auth/signup')
         .set('Accept', 'application/json')
@@ -130,7 +132,7 @@ describe('AuthController (e2e)', () => {
         .post('/auth/change-password')
         .set('Accept', 'application/json')
         .set({ Authorization: `Bearer ${accessToken}` })
-        .send({ newPassword: faker.internet.password() })
+        .send({ newPassword: faker.internet.password({ length: 64 }) })
         .expect(HttpStatus.OK);
     });
 
@@ -153,21 +155,21 @@ describe('AuthController (e2e)', () => {
   });
 
   describe('2FA Tests', () => {
-    describe('POST /auth/create-qr-2fa', () => {
+    describe('POST /auth/create-qr-code-for-2fa-authenticator-app', () => {
       let accessToken: string;
       beforeEach(async () => {
         const tempUser = createUser();
         await authService.signUp(tempUser);
         accessToken = await authService.signIn(tempUser);
       });
-      it('should create a new qrcode for 2fa', async () => {
+      it('should create a new QR code for 2fa', async () => {
         return request(app.getHttpServer())
-          .post('/auth/create-qr-2fa')
+          .post('/auth/create-qr-code-for-2fa-authenticator-app')
           .set('Accept', 'application/json')
           .set({ Authorization: `Bearer ${accessToken}` })
           .expect((response: request.Response) => {
-            const { qrcodeUrl, urlToEnable2FA } = response.body;
-            expect(qrcodeUrl).toBeDefined();
+            const { qrCodeUrl, urlToEnable2FA } = response.body;
+            expect(qrCodeUrl).toBeDefined();
             expect(urlToEnable2FA).toBeDefined();
           })
           .expect(HttpStatus.CREATED);
@@ -194,7 +196,7 @@ describe('AuthController (e2e)', () => {
           .send({ token: authenticator.generate(secretKey) })
           .expect((response: request.Response) => {
             const { recoveryKeys } = response.body;
-            expect(recoveryKeys).toHaveLength(numberOf2faRecoveryTokens);
+            expect(recoveryKeys).toHaveLength(NUMBER_OF_2FA_RECOVERY_TOKENS);
             recoveryKeys.forEach((key: string) => {
               expect(typeof key).toBe('string');
             });
@@ -261,7 +263,7 @@ describe('AuthController (e2e)', () => {
       });
     });
 
-    describe('POST /auth/recovery-2fa', () => {
+    describe('POST /auth/verify-2fa (with recovery keys)', () => {
       let accessToken: string;
       let recoveryKey: string;
       beforeEach(async () => {

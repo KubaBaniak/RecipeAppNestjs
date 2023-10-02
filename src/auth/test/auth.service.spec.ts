@@ -7,7 +7,7 @@ import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Role } from '@prisma/client';
 import { MockJwtService } from '../__mocks__/jwt.service.mock';
-import { bcryptConstants, numberOf2faRecoveryTokens } from '../constants';
+import { BCRYPT, NUMBER_OF_2FA_RECOVERY_TOKENS } from '../constants';
 import { UserRepository } from '../../user/user.repository';
 import { PersonalAccessTokenRepository } from '../personal-access-token.repository';
 import { MockPrismaService } from '../../prisma/__mocks__/prisma.service.mock';
@@ -108,10 +108,7 @@ describe('AuthService', () => {
         password: faker.internet.password(),
       };
 
-      const hashed_password = await bcrypt.hash(
-        request.password,
-        bcryptConstants.salt,
-      );
+      const hashed_password = await bcrypt.hash(request.password, BCRYPT.salt);
       jest.spyOn(userRepository, 'getUserByEmail').mockImplementation(() => {
         return Promise.resolve({
           id: faker.number.int(),
@@ -151,16 +148,16 @@ describe('AuthService', () => {
     });
   });
 
-  describe('Create qrcode', () => {
+  describe('Create QR Code', () => {
     it('should change password', async () => {
       //given
       const userId = faker.number.int();
 
       //when
-      const qrcode = await authService.createQrcodeFor2fa(userId);
+      const qrCode = await authService.createQrCodeFor2fa(userId);
 
       //then
-      expect(typeof qrcode).toBe('string');
+      expect(typeof qrCode).toBe('string');
     });
   });
 
@@ -179,7 +176,7 @@ describe('AuthService', () => {
 
       const recoveryKeys = await authService.enable2fa(userId, token);
 
-      expect(recoveryKeys).toHaveLength(numberOf2faRecoveryTokens);
+      expect(recoveryKeys).toHaveLength(NUMBER_OF_2FA_RECOVERY_TOKENS);
       recoveryKeys.forEach((key) => {
         expect(typeof key).toBe('string');
       });

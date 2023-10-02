@@ -7,7 +7,7 @@ import { Role } from '@prisma/client';
 import { ChangePasswordRequest } from '../dto';
 import { validate } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
-import { numberOf2faRecoveryTokens } from '../constants';
+import { NUMBER_OF_2FA_RECOVERY_TOKENS } from '../constants';
 
 describe('AuthController', () => {
   let authController: AuthController;
@@ -95,10 +95,10 @@ describe('AuthController', () => {
     it('should create QR code', async () => {
       const userId = faker.number.int();
 
-      const responseObject = await authController.createQrcodeFor2fa(userId);
+      const responseObject = await authController.createQrCodeFor2fa(userId);
 
-      expect(responseObject).toHaveProperty('qrcodeUrl');
-      expect(typeof responseObject.qrcodeUrl).toBe('string');
+      expect(responseObject).toHaveProperty('qrCodeUrl');
+      expect(typeof responseObject.qrCodeUrl).toBe('string');
       expect(responseObject).toHaveProperty('urlToEnable2FA');
     });
   });
@@ -111,8 +111,12 @@ describe('AuthController', () => {
       const responseObject = await authController.enable2FA(userId, tokenData);
 
       expect(responseObject.recoveryKeys).toHaveLength(
-        numberOf2faRecoveryTokens,
+        NUMBER_OF_2FA_RECOVERY_TOKENS,
       );
+
+      expect(responseObject.recoveryKeys).toBeInstanceOf(Array);
+      expect(responseObject.recoveryKeys).not.toHaveLength(0);
+
       responseObject.recoveryKeys.forEach((key) => {
         expect(typeof key).toBe('string');
       });

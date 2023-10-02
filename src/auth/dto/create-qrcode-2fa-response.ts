@@ -1,12 +1,12 @@
-export class CreateQrcodeFor2FA {
-  public qrcodeUrl: string;
-  public urlToEnable2FA = `${process.env.URL}/api/auth/enable-2fa`;
+export class CreateQrCodeFor2FA {
+  public qrCodeUrl: string;
+  public urlToEnable2FA = `${process.env.BASE_URL}/api/auth/enable-2fa`;
 
-  constructor(qrcodeUrl: string) {
-    this.qrcodeUrl = qrcodeUrl;
+  constructor(qrCodeUrl: string) {
+    this.qrCodeUrl = qrCodeUrl;
   }
 
-  public static from(qrcodeUrl: string): CreateQrcodeFor2FA {
-    return new CreateQrcodeFor2FA(qrcodeUrl);
+  public static from(qrCodeUrl: string): CreateQrCodeFor2FA {
+    return new CreateQrCodeFor2FA(qrCodeUrl);
   }
 }
