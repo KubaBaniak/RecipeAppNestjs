@@ -1,12 +1,14 @@
 import 'dotenv/config';
 
-export const bcryptConstants = {
+export const BCRYPT = {
   salt: +process.env.BCRYPT_SALT_ROUNDS,
 };
 
-export const serviceConstants = { name: 'Recipe App' };
+export const SERVICE = { name: 'Recipe App' };
 
-export const strategyNameConstants = {
+export const NUMBER_OF_2FA_RECOVERY_TOKENS = 8;
+
+export const STRATEGY = {
   jwt: {
     bearer: 'jwt.bearer',
     pat: 'jwt.pat',

@@ -7,6 +7,7 @@ import { Role } from '@prisma/client';
 import { ChangePasswordRequest } from '../dto';
 import { validate } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
+import { NUMBER_OF_2FA_RECOVERY_TOKENS } from '../constants';
 
 describe('AuthController', () => {
   let authController: AuthController;
@@ -87,6 +88,60 @@ describe('AuthController', () => {
       //then
       expect(errors).toHaveLength(0);
       expect(authService.changePassword).toBeCalled();
+    });
+  });
+
+  describe('QR code for 2FA', () => {
+    it('should create QR code', async () => {
+      const userId = faker.number.int();
+
+      const responseObject = await authController.createQrCodeFor2fa(userId);
+
+      expect(responseObject).toHaveProperty('qrCodeUrl');
+      expect(typeof responseObject.qrCodeUrl).toBe('string');
+      expect(responseObject).toHaveProperty('urlToEnable2FA');
+    });
+  });
+
+  describe('Enable 2FA', () => {
+    it('should enable 2FA', async () => {
+      const userId = faker.number.int();
+      const tokenData = { token: faker.string.numeric(6) };
+
+      const responseObject = await authController.enable2FA(userId, tokenData);
+
+      expect(responseObject.recoveryKeys).toHaveLength(
+        NUMBER_OF_2FA_RECOVERY_TOKENS,
+      );
+
+      expect(responseObject.recoveryKeys).toBeInstanceOf(Array);
+      expect(responseObject.recoveryKeys).not.toHaveLength(0);
+
+      responseObject.recoveryKeys.forEach((key) => {
+        expect(typeof key).toBe('string');
+      });
+    });
+  });
+
+  describe('Disable 2FA', () => {
+    it('should disable 2FA', async () => {
+      const userId = faker.number.int();
+      jest.spyOn(authService, 'disable2fa');
+
+      authController.disable2fa(userId);
+
+      expect(authService.disable2fa).toHaveBeenCalled();
+    });
+  });
+
+  describe('Verify 2FA', () => {
+    it('should verify 2FA', async () => {
+      const userId = faker.number.int();
+      const tokenData = { token: faker.string.numeric(6) };
+
+      const responseObject = await authController.verify2FA(userId, tokenData);
+
+      expect(typeof responseObject.accessToken).toBe('string');
     });
   });
 });

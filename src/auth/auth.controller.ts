@@ -4,7 +4,7 @@ import { LocalAuthGuard } from './guards/local-auth.guard';
 import {
   ChangePasswordRequest,
   CreatePatResponse,
-  CreateQrcodeFor2FA,
+  CreateQrCodeFor2FA,
   RecoveryKeysRespnse,
   SignInRequest,
   SignInResponse,
@@ -81,13 +81,13 @@ export class AuthController {
       'Creates QR code for user to scan it for auth app (like Google Authenticator)',
   })
   @UseGuards(JwtAuthGuard)
-  @Post('create-qr-2fa')
-  async createQrcodeFor2FA(
+  @Post('create-qr-code-for-2fa-authenticator-app')
+  async createQrCodeFor2fa(
     @UserId() userId: number,
-  ): Promise<CreateQrcodeFor2FA> {
-    const qrcode = await this.authService.createQrcodeFor2FA(userId);
+  ): Promise<CreateQrCodeFor2FA> {
+    const qrCode = await this.authService.createQrCodeFor2fa(userId);
 
-    return CreateQrcodeFor2FA.from(qrcode);
+    return CreateQrCodeFor2FA.from(qrCode);
   }
 
   @HttpCode(200)
@@ -112,8 +112,8 @@ export class AuthController {
   @ApiOperation({ summary: 'Disables 2FA for logged user' })
   @UseGuards(JwtAuthGuard)
   @Post('disable-2fa')
-  async disable2FA(@UserId() userId: number): Promise<void> {
-    await this.authService.disable2FA(userId);
+  async disable2fa(@UserId() userId: number): Promise<void> {
+    await this.authService.disable2fa(userId);
   }
 
   @HttpCode(200)
@@ -124,7 +124,7 @@ export class AuthController {
     @UserId() userId: number,
     @Body() tokenData: Verify2FARequest,
   ): Promise<SignInResponse> {
-    const accessToken = await this.authService.verify2FA(
+    const accessToken = await this.authService.verify2fa(
       userId,
       tokenData.token,
     );
