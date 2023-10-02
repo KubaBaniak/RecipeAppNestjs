@@ -5,12 +5,12 @@ import { AuthService } from '../auth.service';
 import { faker } from '@faker-js/faker';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../../prisma/prisma.service';
+import { MockPrismaService } from '../../prisma/__mocks__/prisma.service.mock';
 import { Role } from '@prisma/client';
 import { MockJwtService } from '../__mocks__/jwt.service.mock';
 import { BCRYPT, NUMBER_OF_2FA_RECOVERY_TOKENS } from '../constants';
 import { UserRepository } from '../../user/user.repository';
 import { PersonalAccessTokenRepository } from '../personal-access-token.repository';
-import { MockPrismaService } from '../../prisma/__mocks__/prisma.service.mock';
 import { authenticator } from 'otplib';
 import { TwoFactorAuthRepository } from '../twoFactorAuth.repository';
 
@@ -61,19 +61,22 @@ describe('AuthService', () => {
         password: faker.internet.password(),
       };
 
+      const hashed_password = await bcrypt.hash(request.password, BCRYPT.salt);
+
       jest
         .spyOn(userRepository, 'getUserByEmail')
         .mockImplementation((email) => {
           return Promise.resolve({
             id: faker.number.int(),
             email,
-            password: request.password,
+            password: hashed_password,
             twoFactorAuth: null,
             role: Role.USER,
           });
         });
+
       //when
-      const accessToken = authService.signIn(request);
+      const accessToken = await authService.signIn(request);
 
       //then
       expect(accessToken).toBeDefined();
@@ -95,7 +98,9 @@ describe('AuthService', () => {
       expect(signedUpUser).toEqual({
         id: expect.any(Number),
         email: request.email,
-        role: Role.USER,
+        password: expect.any(String),
+        accountActivationToken: expect.any(String),
+        createdAt: expect.any(Date),
       });
     });
   });
@@ -109,6 +114,7 @@ describe('AuthService', () => {
       };
 
       const hashed_password = await bcrypt.hash(request.password, BCRYPT.salt);
+
       jest.spyOn(userRepository, 'getUserByEmail').mockImplementation(() => {
         return Promise.resolve({
           id: faker.number.int(),
@@ -138,6 +144,34 @@ describe('AuthService', () => {
       //given
       const userId = faker.number.int({ max: 2 ** 31 - 1 });
       const newPassword = faker.internet.password();
+      jest.spyOn(userRepository, 'updateUserById');
+
+      //when
+      await authService.changePassword(userId, newPassword);
+
+      //then
+      expect(userRepository.updateUserById).toHaveBeenCalled();
+    });
+  });
+
+  describe('Account activation ', () => {
+    it('should delete non-activated account and create activated one with same data', async () => {
+      //given
+      const userId = faker.number.int({ max: 2147483647 });
+
+      //when
+      const user = await authService.activateAccount(userId);
+
+      //then
+      expect(user).toBeDefined();
+    });
+  });
+
+  describe('Change password', () => {
+    it('should change password', async () => {
+      //given
+      const userId = faker.number.int({ max: 2 ** 31 - 1 });
+      const newPassword = faker.internet.password();
       const spy = jest.spyOn(userRepository, 'updateUserById');
 
       //when
@@ -145,6 +179,31 @@ describe('AuthService', () => {
 
       //then
       expect(spy).toHaveBeenCalled();
+    });
+  });
+
+  describe('Reset password', () => {
+    it('should generate password reset token', async () => {
+      //given
+      const email = faker.internet.email();
+
+      jest.spyOn(userRepository, 'getUserByEmail').mockImplementationOnce(() =>
+        Promise.resolve({
+          id: faker.number.int(),
+          email,
+          password: faker.internet.password(),
+          role: Role.USER,
+          activated: false,
+          twoFactorAuth: null,
+          accountActivationToken: null,
+        }),
+      );
+
+      //when
+      const token = await authService.generateResetPasswordToken(email);
+
+      //then
+      expect(typeof token).toBe('string');
     });
   });
 

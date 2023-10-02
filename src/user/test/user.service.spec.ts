@@ -3,7 +3,6 @@ import { UserService } from '../user.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { faker } from '@faker-js/faker';
 import { MockPrismaService } from '../../prisma/__mocks__/prisma.service.mock';
-import { Role } from '@prisma/client';
 import { createUser } from './user.factory';
 import { UserRepository } from '../user.repository';
 
@@ -38,8 +37,6 @@ describe('UserService', () => {
       expect(createdUser).toEqual({
         id: expect.any(Number),
         email: request.email,
-        role: Role.USER,
-        password: undefined,
       });
     });
   });
@@ -57,8 +54,6 @@ describe('UserService', () => {
       expect(createdUser).toEqual({
         id,
         email: data.email,
-        role: Role.USER,
-        password: undefined,
       });
     });
   });

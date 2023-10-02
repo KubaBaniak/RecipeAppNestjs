@@ -12,5 +12,6 @@ export const STRATEGY = {
   bearer: 'jwt.bearer',
   pat: 'jwt.pat',
   twoFactor: '2fa.bearer',
+  passwordReset: 'jwt.passwordReset',
   local: 'local',
 };

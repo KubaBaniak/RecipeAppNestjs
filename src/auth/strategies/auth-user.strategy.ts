@@ -15,7 +15,7 @@ export class UserAuthBearerStrategy extends PassportStrategy(
       secretOrKey: process.env.JWT_SECRET,
     });
   }
-  validate(payload: JwtPayload): JwtPayload {
+  async validate(payload: JwtPayload): Promise<JwtPayload> {
     return payload;
   }
 }

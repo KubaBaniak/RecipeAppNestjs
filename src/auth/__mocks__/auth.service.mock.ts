@@ -19,12 +19,28 @@ export class MockAuthService {
     );
   }
 
+  generateAccountActivationToken(_id: number): string {
+    return faker.string.sample(64);
+  }
+
+  verifyAccountActivationToken(_token: string): Promise<{ id: number }> {
+    return Promise.resolve({ id: faker.number.int() });
+  }
+
+  activateAccount(id: number): Promise<User> {
+    return Promise.resolve(createUserResponse({ id }));
+  }
+
   validateUser(_userRequest: UserRequest): Promise<User> {
     return Promise.resolve(createUserResponse());
   }
 
   changePassword(_userId: number, _newPassword: string): Promise<void> {
     return Promise.resolve();
+  }
+
+  generateResetPasswordToken(_email: string): string {
+    return faker.string.sample(64);
   }
 
   async successfullLoginToken(_id: number, _email: string): Promise<string> {

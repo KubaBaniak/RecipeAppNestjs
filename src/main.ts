@@ -18,6 +18,8 @@ async function bootstrap() {
     }),
   );
 
+  app.enableCors();
+
   app.useGlobalFilters(new HttpExceptionFilter());
 
   const swaggerConfig = initalizeSwagger();

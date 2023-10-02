@@ -1,4 +1,12 @@
-import { Controller, Body, Post, HttpCode, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Body,
+  Post,
+  Get,
+  HttpCode,
+  UseGuards,
+  Query,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import {
@@ -10,6 +18,8 @@ import {
   SignInResponse,
   SignUpRequest,
   SignUpResponse,
+  ResetPasswordRequest,
+  ResetPasswordEmailRequest,
   Verify2FARequest,
 } from './dto';
 import {
@@ -20,12 +30,17 @@ import {
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { UserId } from '../common/decorators/req-user-id.decorator';
+import { MailService } from '../mail/mail.service';
+import { PasswordResetAuthGuard } from './guards/reset-password.guard';
 import { TwoFactorAuthGuard } from './guards/two-factor-auth.guard';
 
 @Controller('auth')
 @ApiTags('Authentication')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly mailService: MailService,
+  ) {}
 
   @HttpCode(200)
   @UseGuards(LocalAuthGuard)
@@ -46,6 +61,14 @@ export class AuthController {
   @Post('signup')
   async signUp(@Body() signUpRequest: SignUpRequest): Promise<SignUpResponse> {
     const createdUser = await this.authService.signUp(signUpRequest);
+
+    const accountActivationToken =
+      await this.authService.generateAccountActivationToken(createdUser.id);
+
+    await this.mailService.sendAccountActivationEmail(
+      createdUser.email,
+      accountActivationToken,
+    );
 
     return SignUpResponse.from(createdUser);
   }
@@ -72,6 +95,45 @@ export class AuthController {
     await this.authService.changePassword(
       userId,
       changePasswordRequest.newPassword,
+    );
+  }
+
+  @HttpCode(200)
+  @Get('activate-account')
+  async activateAccount(@Query('token') token: string): Promise<void> {
+    const tokenData = await this.authService.verifyAccountActivationToken(
+      token,
+    );
+    await this.authService.activateAccount(tokenData.id);
+  }
+
+  @ApiOperation({ summary: 'Sends link to resets password of the user' })
+  @Get('reset-password')
+  async resetPasswordEmail(
+    @Body() resetPasswordRequest: ResetPasswordEmailRequest,
+  ): Promise<void> {
+    const resetPasswordToken =
+      await this.authService.generateResetPasswordToken(
+        resetPasswordRequest.email,
+      );
+
+    await this.mailService.sendResetPasswordEmail(
+      resetPasswordRequest.email,
+      resetPasswordToken,
+    );
+  }
+
+  @HttpCode(200)
+  @UseGuards(PasswordResetAuthGuard)
+  @ApiOperation({ summary: 'Resets password of the user' })
+  @Post('reset-password')
+  async resetPassword(
+    @UserId() userId: number,
+    @Body() resetPasswordRequest: ResetPasswordRequest,
+  ): Promise<void> {
+    await this.authService.changePassword(
+      userId,
+      resetPasswordRequest.newPassword,
     );
   }
 

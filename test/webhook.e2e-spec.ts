@@ -49,6 +49,7 @@ describe('WebhookController (e2e)', () => {
     user = await prismaService.user.create({
       data: createUser(),
     });
+
     accessToken = await authService.signIn({
       email: user.email,
       password: user.password,

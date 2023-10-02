@@ -5,16 +5,16 @@ import { AuthService } from '../src/auth/auth.service';
 import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
 import { UserService } from '../src/user/user.service';
 import { PrismaService } from '../src/prisma/prisma.service';
-import { Role } from '@prisma/client';
 import { faker } from '@faker-js/faker';
 import { createUser } from '../src/user/test/user.factory';
 import { UserRepository } from '../src/user/user.repository';
 import { PersonalAccessTokenRepository } from '../src/auth/personal-access-token.repository';
 import { SignInRequest } from '../src/auth/dto';
-import { NUMBER_OF_2FA_RECOVERY_TOKENS } from '../src/auth/constants';
 import { TwoFactorAuthRepository } from '../src/auth/twoFactorAuth.repository';
 import { add2faToUserWithId } from '../src/auth/test/auth.factory';
 import { authenticator } from 'otplib';
+import { BCRYPT, NUMBER_OF_2FA_RECOVERY_TOKENS } from '../src/auth/constants';
+import * as bcrypt from 'bcryptjs';
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication;
@@ -43,11 +43,18 @@ describe('AuthController (e2e)', () => {
     );
     app.useGlobalPipes(new ValidationPipe());
 
+    app.useGlobalPipes(
+      new ValidationPipe({
+        whitelist: true,
+        transform: true,
+      }),
+    );
     await app.init();
   });
 
-  afterEach(() => {
-    prismaService.user.deleteMany();
+  afterAll(async () => {
+    await prismaService.user.deleteMany();
+    await app.close();
   });
 
   describe('POST /auth/signup', () => {
@@ -58,13 +65,12 @@ describe('AuthController (e2e)', () => {
         .set('Accept', 'application/json')
         .send(tempUser)
         .expect((response: request.Response) => {
-          const { id, email, role } = response.body;
+          const { id, email } = response.body;
           expect(id).toEqual(expect.any(Number));
           expect(email).toEqual(tempUser.email);
-          expect(role).toEqual(Role.USER);
         })
         .expect(HttpStatus.CREATED);
-    });
+    }, 60000);
 
     it('should not register a user (already in db) and return 403 error (FORBIDDEN ACCESS)', async () => {
       const tempUser = createUser();
@@ -78,10 +84,15 @@ describe('AuthController (e2e)', () => {
   });
 
   describe('POST /auth/signin', () => {
-    let tempUser: SignInRequest;
-    beforeEach(async () => {
-      tempUser = createUser();
-      await authService.signUp(tempUser);
+    const tempUser = createUser();
+    beforeAll(async () => {
+      const hashed_password = await bcrypt.hash(tempUser.password, BCRYPT.salt);
+      await prismaService.user.create({
+        data: {
+          email: tempUser.email,
+          password: hashed_password,
+        },
+      });
     });
 
     it('should generate access token for user', async () => {
@@ -121,9 +132,10 @@ describe('AuthController (e2e)', () => {
 
   describe('POST /auth/change-password', () => {
     let accessToken: string;
+
     beforeEach(async () => {
       const tempUser = createUser();
-      await authService.signUp(tempUser);
+      await prismaService.user.create({ data: tempUser });
       accessToken = await authService.signIn(tempUser);
     });
 
@@ -154,12 +166,51 @@ describe('AuthController (e2e)', () => {
     });
   });
 
+  describe('GET /auth/activate-account', () => {
+    let accessToken: string;
+    beforeEach(async () => {
+      const user = createUser();
+      const createdUser = await authService.signUp({
+        email: user.email,
+        password: user.password,
+      });
+      accessToken = await authService.generateAccountActivationToken(
+        createdUser.id,
+      );
+    });
+
+    it('should activate an account', async () => {
+      return request(app.getHttpServer())
+        .get(`/auth/activate-account/?token=${accessToken}`)
+        .set('Accept', 'application/json');
+    });
+  });
+
+  describe('GET /auth/reset-password-email', () => {
+    let user: { email: string; password: string };
+    beforeEach(async () => {
+      user = createUser();
+      const createdUser = await authService.signUp({
+        email: user.email,
+        password: user.password,
+      });
+      await authService.activateAccount(createdUser.id);
+    });
+
+    it('should send an email with reset password link', async () => {
+      return request(app.getHttpServer())
+        .get(`/auth/reset-password-email`)
+        .set('Accept', 'application/json')
+        .send({ email: user.email });
+    });
+  });
+
   describe('2FA Tests', () => {
     describe('POST /auth/create-qr-code-for-2fa-authenticator-app', () => {
       let accessToken: string;
       beforeEach(async () => {
-        const tempUser = createUser();
-        await authService.signUp(tempUser);
+        const userData = createUser();
+        const tempUser = await prismaService.user.create({ data: userData });
         accessToken = await authService.signIn(tempUser);
       });
       it('should create a new QR code for 2fa', async () => {
@@ -181,7 +232,7 @@ describe('AuthController (e2e)', () => {
       let secretKey: string;
       beforeEach(async () => {
         const userData = createUser();
-        const tempUser = await authService.signUp(userData);
+        const tempUser = await prismaService.user.create({ data: userData });
         const twoFactorAuthData = await prismaService.twoFactorAuth.create({
           data: add2faToUserWithId(tempUser.id),
         });

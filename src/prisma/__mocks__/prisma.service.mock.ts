@@ -1,4 +1,4 @@
-import { faker } from '@faker-js/faker';
+import { NUMBER_OF_2FA_RECOVERY_TOKENS } from '../../auth/constants';
 import {
   Prisma,
   Recipe,
@@ -6,8 +6,9 @@ import {
   Role,
   TwoFactorAuth,
   TwoFactorAuthRecoveryKey,
+  PendingUser,
 } from '@prisma/client';
-import { NUMBER_OF_2FA_RECOVERY_TOKENS } from '../../auth/constants';
+import { faker } from '@faker-js/faker';
 import { UpdateRecipeRequest } from '../../recipe/dto';
 
 let lastSearchedByIdUser: number;
@@ -22,8 +23,8 @@ export class MockPrismaService {
         email: request.data.email,
         password: request.data.password,
         role: Role.USER,
-        enabled2FA: false,
-        recoveryKeys: [],
+        activated: false,
+        accountActivationToken: null,
       });
     },
 
@@ -60,8 +61,59 @@ export class MockPrismaService {
         email: faker.internet.email(),
         password: faker.internet.password(),
         role: Role.USER,
-        enabled2FA: false,
-        recoveryKeys: [],
+      });
+    },
+  };
+
+  pendingUser = {
+    create: function (request: {
+      data: Prisma.UserCreateInput;
+    }): Promise<PendingUser> {
+      return Promise.resolve({
+        id: faker.number.int(),
+        email: request.data.email,
+        password: request.data.password,
+        accountActivationToken: faker.string.alphanumeric(32),
+        createdAt: new Date(),
+      });
+    },
+
+    update: function (request: {
+      where: { id: number };
+      data: {
+        email?: string;
+        password?: string;
+        accountActivationToken?: string;
+      };
+    }): Promise<PendingUser> {
+      const { email, password, accountActivationToken } = request.data;
+      return Promise.resolve({
+        id: request.where.id,
+        email: email ?? faker.internet.email(),
+        password: password ?? faker.internet.password(),
+        createdAt: new Date(),
+        accountActivationToken: accountActivationToken ?? null,
+      });
+    },
+
+    delete: function (_request: { id: number }): Promise<void> {
+      return Promise.resolve();
+    },
+
+    findUnique: function (request: {
+      where: { id?: number; email?: string };
+    }): Promise<PendingUser> | Promise<void> {
+      const { id, email } = request.where;
+
+      if (email) {
+        return Promise.resolve();
+      }
+      return Promise.resolve({
+        id,
+        email: faker.internet.email(),
+        password: faker.internet.password(),
+        createdAt: new Date(),
+        accountActivationToken: faker.string.alphanumeric(16),
       });
     },
   };

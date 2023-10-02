@@ -11,13 +11,12 @@ type CreateUserResponseOverrides = {
   email?: string;
   password?: string;
   role?: Role;
-  enabled2FA?: boolean;
   recoveryKeys?: string[];
 };
 
 export const createUser = (overrides: CreateUserOverrides = {}) => ({
   email: overrides.email ?? faker.internet.email(),
-  password: overrides.password ?? faker.internet.password(64),
+  password: overrides.password ?? faker.internet.password({ length: 64 }),
 });
 
 export const createUserResponse = (

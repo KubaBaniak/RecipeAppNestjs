@@ -391,11 +391,7 @@ describe('RecipeController (e2e)', () => {
   });
 
   afterAll(async () => {
-    prismaService.user.delete({
-      where: {
-        id: user.id,
-      },
-    });
+    await prismaService.personalAccessToken.deleteMany();
     await app.close();
   });
 });

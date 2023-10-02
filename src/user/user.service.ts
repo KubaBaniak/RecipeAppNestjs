@@ -5,6 +5,7 @@ import {
   UpdateUserRequest,
   CreateUserRequest,
 } from './dto';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class UserService {
@@ -18,7 +19,7 @@ export class UserService {
     return this.userRepository.updateUserById(payload.id, payload.data);
   }
 
-  deleteUser(id: number): Promise<void> {
+  deleteUser(id: number): Promise<User> {
     return this.userRepository.removeUserById(id);
   }
 }

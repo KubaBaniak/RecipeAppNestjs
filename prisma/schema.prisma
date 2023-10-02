@@ -21,6 +21,14 @@ model User {
   twoFactorAuth       TwoFactorAuth?
 }
 
+model PendingUser {
+  id                     Int      @id @default(autoincrement())
+  email                  String   @unique
+  password               String
+  accountActivationToken String?
+  createdAt              DateTime @default(now())
+}
+
 model Recipe {
   id          Int      @id @default(autoincrement())
   createdAt   DateTime @default(now())
