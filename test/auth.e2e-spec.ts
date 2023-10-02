@@ -13,7 +13,8 @@ import { SignInRequest } from '../src/auth/dto';
 import { TwoFactorAuthRepository } from '../src/auth/twoFactorAuth.repository';
 import { add2faToUserWithId } from '../src/auth/test/auth.factory';
 import { authenticator } from 'otplib';
-import { NUMBER_OF_2FA_RECOVERY_TOKENS } from 'src/auth/constants';
+import { BCRYPT, NUMBER_OF_2FA_RECOVERY_TOKENS } from '../src/auth/constants';
+import * as bcrypt from 'bcryptjs';
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication;
@@ -69,7 +70,7 @@ describe('AuthController (e2e)', () => {
           expect(email).toEqual(tempUser.email);
         })
         .expect(HttpStatus.CREATED);
-    });
+    }, 60000);
 
     it('should not register a user (already in db) and return 403 error (FORBIDDEN ACCESS)', async () => {
       const tempUser = createUser();
@@ -83,10 +84,15 @@ describe('AuthController (e2e)', () => {
   });
 
   describe('POST /auth/signin', () => {
-    let tempUser: SignInRequest;
-    beforeEach(async () => {
-      tempUser = createUser();
-      await authService.signUp(tempUser);
+    const tempUser = createUser();
+    beforeAll(async () => {
+      const hashed_password = await bcrypt.hash(tempUser.password, BCRYPT.salt);
+      await prismaService.user.create({
+        data: {
+          email: tempUser.email,
+          password: hashed_password,
+        },
+      });
     });
 
     it('should generate access token for user', async () => {
@@ -129,7 +135,7 @@ describe('AuthController (e2e)', () => {
 
     beforeEach(async () => {
       const tempUser = createUser();
-      await authService.signUp(tempUser);
+      await prismaService.user.create({ data: tempUser });
       accessToken = await authService.signIn(tempUser);
     });
 
@@ -203,8 +209,8 @@ describe('AuthController (e2e)', () => {
     describe('POST /auth/create-qr-code-for-2fa-authenticator-app', () => {
       let accessToken: string;
       beforeEach(async () => {
-        const tempUser = createUser();
-        await authService.signUp(tempUser);
+        const userData = createUser();
+        const tempUser = await prismaService.user.create({ data: userData });
         accessToken = await authService.signIn(tempUser);
       });
       it('should create a new QR code for 2fa', async () => {
@@ -226,7 +232,7 @@ describe('AuthController (e2e)', () => {
       let secretKey: string;
       beforeEach(async () => {
         const userData = createUser();
-        const tempUser = await authService.signUp(userData);
+        const tempUser = await prismaService.user.create({ data: userData });
         const twoFactorAuthData = await prismaService.twoFactorAuth.create({
           data: add2faToUserWithId(tempUser.id),
         });

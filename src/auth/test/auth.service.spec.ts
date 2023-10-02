@@ -194,6 +194,7 @@ describe('AuthService', () => {
           password: faker.internet.password(),
           role: Role.USER,
           activated: false,
+          twoFactorAuth: null,
           accountActivationToken: null,
         }),
       );

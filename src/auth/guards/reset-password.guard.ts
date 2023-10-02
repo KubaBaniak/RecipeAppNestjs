@@ -1,8 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { strategyNameConstants } from '../constants';
+import { STRATEGY } from '../constants';
 
 @Injectable()
-export class PasswordResetAuthGuard extends AuthGuard(
-  strategyNameConstants.jwt.passwordReset,
-) {}
+export class PasswordResetAuthGuard extends AuthGuard(STRATEGY.passwordReset) {}
