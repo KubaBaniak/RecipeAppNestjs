@@ -6,7 +6,7 @@ import { STRATEGY } from '../constants';
 @Injectable()
 export class TwoFactorAuthStrategy extends PassportStrategy(
   Strategy,
-  STRATEGY.jwt.twoFactor,
+  STRATEGY.twoFactor,
 ) {
   constructor() {
     super({

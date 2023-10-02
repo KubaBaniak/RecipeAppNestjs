@@ -3,4 +3,4 @@ import { AuthGuard } from '@nestjs/passport';
 import { STRATEGY } from '../constants';
 
 @Injectable()
-export class TwoFactorAuthGuard extends AuthGuard(STRATEGY.jwt.twoFactor) {}
+export class TwoFactorAuthGuard extends AuthGuard(STRATEGY.twoFactor) {}

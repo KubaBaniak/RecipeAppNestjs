@@ -7,7 +7,7 @@ import { JwtPayload } from './payloads/jwt-token.payload';
 @Injectable()
 export class UserAuthBearerStrategy extends PassportStrategy(
   Strategy,
-  STRATEGY.jwt.bearer,
+  STRATEGY.bearer,
 ) {
   constructor() {
     super({

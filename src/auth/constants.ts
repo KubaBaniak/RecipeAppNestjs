@@ -9,10 +9,8 @@ export const SERVICE = { name: 'Recipe App' };
 export const NUMBER_OF_2FA_RECOVERY_TOKENS = 8;
 
 export const STRATEGY = {
-  jwt: {
-    bearer: 'jwt.bearer',
-    pat: 'jwt.pat',
-    twoFactor: '2fa.bearer',
-  },
+  bearer: 'jwt.bearer',
+  pat: 'jwt.pat',
+  twoFactor: '2fa.bearer',
   local: 'local',
 };

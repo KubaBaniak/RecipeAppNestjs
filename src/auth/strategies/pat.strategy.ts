@@ -7,7 +7,7 @@ import { PatJwtPayload } from './payloads/pat-jwt-token.payload';
 @Injectable()
 export class PersonalAccessTokenStrategy extends PassportStrategy(
   Strategy,
-  STRATEGY.jwt.pat,
+  STRATEGY.pat,
 ) {
   constructor() {
     super({
