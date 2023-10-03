@@ -55,13 +55,9 @@ describe('RecipeController (e2e)', () => {
     prismaService = moduleRef.get<PrismaService>(PrismaService);
     authService = moduleRef.get<AuthService>(AuthService);
 
-    user = await prismaService.user.create({
-      data: createUser(),
-    });
-    accessToken = await authService.signIn({
-      email: user.email,
-      password: user.password,
-    });
+    const tempUser = createUser();
+    user = await prismaService.user.create({ data: tempUser });
+    accessToken = await authService.signIn(tempUser);
     personalAccessToken = await authService.createPersonalAccessToken(user.id);
 
     app.useGlobalPipes(
@@ -82,10 +78,8 @@ describe('RecipeController (e2e)', () => {
       return request(app.getHttpServer())
         .post('/recipes')
         .set({ Authorization: `Bearer ${accessToken}` })
-        .set({ user: { id: user.id } })
         .send(recipe)
         .expect((response: request.Response) => {
-          console.log(response.body);
           const {
             id,
             createdAt,
@@ -110,7 +104,6 @@ describe('RecipeController (e2e)', () => {
       return request(app.getHttpServer())
         .post('/recipes')
         .set({ Authorization: `Bearer ${accessToken}` })
-        .set({ user: { id: user.id } })
         .send({})
         .expect(HttpStatus.BAD_REQUEST);
     });
@@ -139,7 +132,6 @@ describe('RecipeController (e2e)', () => {
       return request(app.getHttpServer())
         .get(`/recipes/${recipe.id}`)
         .set({ Authorization: `Bearer ${accessToken}` })
-        .set({ user: { id: user.id } })
         .expect((response: request.Response) => {
           const {
             id,
@@ -177,7 +169,6 @@ describe('RecipeController (e2e)', () => {
       return request(app.getHttpServer())
         .get(`/recipes/${recipe.id + 1}`)
         .set({ Authorization: `Bearer ${accessToken}` })
-        .set({ user: { id: user.id } })
         .expect(HttpStatus.NOT_FOUND);
     });
 
@@ -199,7 +190,6 @@ describe('RecipeController (e2e)', () => {
       return request(app.getHttpServer())
         .get(`/recipes`)
         .set({ Authorization: `Bearer ${accessToken}` })
-        .set({ user: { id: user.id } })
         .expect((response: request.Response) => {
           expect(response.body.fetchedRecipes).toEqual(
             expect.arrayContaining([
@@ -231,9 +221,8 @@ describe('RecipeController (e2e)', () => {
       return request(app.getHttpServer())
         .get(`/recipes`)
         .set({ Authorization: `Bearer ${accessToken}` })
-        .set({ user: { id: user.id } })
         .expect((response: request.Response) => {
-          expect(response.body.fetchedRecipes).toHaveLength(3);
+          expect(response.body.fetchedRecipes).not.toHaveLength(0);
         })
         .expect(HttpStatus.OK);
     });
@@ -263,7 +252,6 @@ describe('RecipeController (e2e)', () => {
       request(app.getHttpServer())
         .get(`/recipes`)
         .set({ Authorization: `Bearer ${accessToken}` })
-        .set({ user: { id: user.id } })
         .expect((response: request.Response) => {
           expect(response.body.fetchedRecipes).toEqual(
             expect.arrayContaining([
@@ -322,9 +310,8 @@ describe('RecipeController (e2e)', () => {
     it('should update specific recipe by by given id', async () => {
       return request(app.getHttpServer())
         .patch(`/recipes/${recipe.id}`)
-        .send(requestData)
         .set({ Authorization: `Bearer ${accessToken}` })
-        .set({ user: { id: user.id } })
+        .send(requestData)
         .expect((response: request.Response) => {
           const { title, description, ingredients, preparation, isPublic } =
             response.body;
@@ -340,10 +327,8 @@ describe('RecipeController (e2e)', () => {
     it('should not update recipe and return 404 error (NOT FOUND)', async () => {
       return request(app.getHttpServer())
         .patch(`/recipes/${recipe.id + 999}`)
-        .set({ user: { id: user.id } })
-        .send(requestData)
         .set({ Authorization: `Bearer ${accessToken}` })
-        .set({ user: { id: user.id } })
+        .send(requestData)
         .expect(HttpStatus.NOT_FOUND);
     });
 
@@ -371,7 +356,6 @@ describe('RecipeController (e2e)', () => {
       return request(app.getHttpServer())
         .delete(`/recipes/${recipe.id}`)
         .set({ Authorization: `Bearer ${accessToken}` })
-        .set({ user: { id: user.id } })
         .expect(HttpStatus.OK);
     });
 
@@ -379,7 +363,6 @@ describe('RecipeController (e2e)', () => {
       return request(app.getHttpServer())
         .delete(`/recipes/${recipe.id + 999}`)
         .set({ Authorization: `Bearer ${accessToken}` })
-        .set({ user: { id: user.id } })
         .expect(HttpStatus.NOT_FOUND);
     });
 

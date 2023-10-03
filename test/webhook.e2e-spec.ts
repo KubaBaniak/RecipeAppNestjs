@@ -109,7 +109,6 @@ describe('WebhookController (e2e)', () => {
         .get('/webhooks')
         .set({ Authorization: `Bearer ${accessToken}` })
         .expect((response: request.Response) => {
-          console.log(response.body);
           expect(response.body.webhooks).toEqual(
             expect.arrayContaining([
               {
