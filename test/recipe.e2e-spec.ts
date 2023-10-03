@@ -269,12 +269,12 @@ describe('RecipeController (e2e)', () => {
         })
         .expect(HttpStatus.OK);
 
-      prismaService.recipe.deleteMany({
+      await prismaService.recipe.deleteMany({
         where: {
           authorId: otherUser.id,
         },
       });
-      prismaService.user.delete({
+      await prismaService.user.delete({
         where: {
           id: otherUser.id,
         },

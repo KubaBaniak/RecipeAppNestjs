@@ -13,9 +13,9 @@ import {
   createWebhookRequest,
   createWebhookWithUserId,
 } from '../src/webhook/test/webhook.factory';
-import { AuthModule } from '../src/auth/auth.module';
 import { WebhookModule } from '../src/webhook/webhook.module';
 import { CryptoUtils } from '../src/webhook/utils/crypt-webhook-token';
+import { AuthModule } from '../src/auth/auth.module';
 
 describe('WebhookController (e2e)', () => {
   let app: INestApplication;
@@ -54,6 +54,8 @@ describe('WebhookController (e2e)', () => {
       email: user.email,
       password: user.password,
     });
+
+    console.log(await authService.verifyJwt(accessToken));
   });
 
   afterAll(async () => {

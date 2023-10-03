@@ -33,8 +33,8 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  verifyJwt(jwtToken: string): Promise<AccessTokenPayload> {
-    return this.jwtService.verifyAsync(jwtToken);
+  verifyJwt(jwtToken: string, secret: string): Promise<AccessTokenPayload> {
+    return this.jwtService.verifyAsync(jwtToken, { secret });
   }
 
   async generateToken(
