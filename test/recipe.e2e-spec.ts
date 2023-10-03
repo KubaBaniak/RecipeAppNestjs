@@ -24,7 +24,7 @@ import { CryptoUtils } from '../src/webhook/utils/crypt-webhook-token';
 import { PersonalAccessTokenRepository } from '../src/auth/personal-access-token.repository';
 import { TwoFactorAuthRepository } from '../src/auth/twoFactorAuth.repository';
 import * as bcrypt from 'bcryptjs';
-import { BCRYPT } from 'src/auth/constants';
+import { BCRYPT } from '../src/auth/constants';
 
 describe('RecipeController (e2e)', () => {
   let app: INestApplication;

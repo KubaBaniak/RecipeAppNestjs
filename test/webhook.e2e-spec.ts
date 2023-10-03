@@ -56,14 +56,10 @@ describe('WebhookController (e2e)', () => {
     });
   });
 
-  afterAll(async () => {
-    await prismaService.webhook.deleteMany();
-  });
-
   describe('POST /webhooks', () => {
     it('should create webhook', async () => {
       const webhook = createWebhookRequest();
-      request(app.getHttpServer())
+      return request(app.getHttpServer())
         .post('/webhooks')
         .set({ Authorization: `Bearer ${accessToken}` })
         .send(webhook)
@@ -86,7 +82,7 @@ describe('WebhookController (e2e)', () => {
         data: testWebhooks,
       });
       const webhook = createWebhookRequest();
-      request(app.getHttpServer())
+      return request(app.getHttpServer())
         .post('/webhooks')
         .set({ Authorization: `Bearer ${accessToken}` })
         .send(webhook)
@@ -137,6 +133,7 @@ describe('WebhookController (e2e)', () => {
   });
 
   afterAll(async () => {
+    await prismaService.webhook.deleteMany();
     await app.close();
   });
 });
