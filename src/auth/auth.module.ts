@@ -15,7 +15,7 @@ import { MailModule } from '../mail/mail.module';
 import { PasswordResetTokenStrategy } from './strategies/reset-password.strategy';
 import { TwoFactorAuthStrategy } from './strategies/two-factor-auth.strategy';
 import { TwoFactorAuthRepository } from './twoFactorAuth.repository';
-import { PendingUserRepository } from '../user/pending-user.repository';
+import { PendingUsersRepository } from '../user/pending-user.repository';
 
 @Module({
   imports: [
@@ -35,7 +35,7 @@ import { PendingUserRepository } from '../user/pending-user.repository';
     TwoFactorAuthStrategy,
     TwoFactorAuthRepository,
     UserRepository,
-    PendingUserRepository,
+    PendingUsersRepository,
     PersonalAccessTokenRepository,
     PasswordResetTokenStrategy,
     PrismaService,

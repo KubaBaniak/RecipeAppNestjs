@@ -17,7 +17,7 @@ import { PersonalAccessTokenRepository } from '../../auth/personal-access-token.
 import { TwoFactorAuthRepository } from '../../auth/twoFactorAuth.repository';
 import { RecipeRepository } from '../recipe.repository';
 import { UserRepository } from '../../user/user.repository';
-import { PendingUserRepository } from '../../user/pending-user.repository';
+import { PendingUsersRepository } from '../../user/pending-user.repository';
 
 describe('RecipeService', () => {
   let recipeService: RecipeService;
@@ -31,7 +31,7 @@ describe('RecipeService', () => {
         S3Service,
         RecipeRepository,
         TwoFactorAuthRepository,
-        PendingUserRepository,
+        PendingUsersRepository,
         UserRepository,
         PersonalAccessTokenRepository,
         WebSocketEventGateway,

@@ -14,7 +14,7 @@ import { add2faToUserWithId } from '../src/auth/test/auth.factory';
 import { authenticator } from 'otplib';
 import { BCRYPT, NUMBER_OF_2FA_RECOVERY_TOKENS } from '../src/auth/constants';
 import * as bcrypt from 'bcryptjs';
-import { PendingUserRepository } from '../src/user/pending-user.repository';
+import { PendingUsersRepository } from '../src/user/pending-user.repository';
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication;
@@ -28,7 +28,7 @@ describe('AuthController (e2e)', () => {
       providers: [
         AuthService,
         TwoFactorAuthRepository,
-        PendingUserRepository,
+        PendingUsersRepository,
         UserService,
         UserRepository,
         PersonalAccessTokenRepository,

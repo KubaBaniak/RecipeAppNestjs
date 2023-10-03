@@ -21,14 +21,7 @@ model User {
   twoFactorAuth       TwoFactorAuth?
 }
 
-model PendingUser {
-  id                     Int      @id @default(autoincrement())
-  email                  String   @unique
-  password               String
-  createdAt              DateTime @default(now())
-}
-
-model PendingUser {
+model PendingUsers {
   id                     Int      @id @default(autoincrement())
   email                  String   @unique
   password               String

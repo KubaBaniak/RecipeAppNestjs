@@ -21,12 +21,12 @@ import { authenticator } from 'otplib';
 import qrcode from 'qrcode';
 import { TwoFactorAuth } from '@prisma/client';
 import { TwoFactorAuthRepository } from './twoFactorAuth.repository';
-import { PendingUserRepository } from '../user/pending-user.repository';
+import { PendingUsersRepository } from '../user/pending-user.repository';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly pendingUserRepository: PendingUserRepository,
+    private readonly pendingUsersRepository: PendingUsersRepository,
     private readonly userRepository: UserRepository,
     private readonly twoFactorAuthRepository: TwoFactorAuthRepository,
     private readonly personalAccessTokenRepository: PersonalAccessTokenRepository,
@@ -54,7 +54,7 @@ export class AuthService {
 
   async signUp(signUpRequest: SignUpRequest): Promise<SignUpResponse> {
     const [pendingUser, user] = await Promise.all([
-      this.pendingUserRepository.getPendingUserByEmail(signUpRequest.email),
+      this.pendingUsersRepository.getPendingUserByEmail(signUpRequest.email),
       this.userRepository.getUserByEmail(signUpRequest.email),
     ]);
 
@@ -66,7 +66,7 @@ export class AuthService {
 
     const data = { email: signUpRequest.email, password: hash };
 
-    return this.pendingUserRepository.createPendingUser(data);
+    return this.pendingUsersRepository.createPendingUser(data);
   }
 
   async signIn(signInRequest: SignInRequest): Promise<string> {
@@ -131,12 +131,12 @@ export class AuthService {
   }
 
   async activateAccount(userId: number): Promise<UserPayloadRequest> {
-    const userData = await this.pendingUserRepository.getPendingUserById(
+    const userData = await this.pendingUsersRepository.getPendingUserById(
       userId,
     );
     const createdUser = this.userRepository.createUser(userData);
 
-    await this.pendingUserRepository.removePendingUserById(userId);
+    await this.pendingUsersRepository.removePendingUserById(userId);
 
     return createdUser;
   }

@@ -16,7 +16,7 @@ import {
   ResetPasswordRequest,
 } from '../dto';
 import { NUMBER_OF_2FA_RECOVERY_TOKENS } from '../constants';
-import { PendingUserRepository } from '../../user/pending-user.repository';
+import { PendingUsersRepository } from '../../user/pending-user.repository';
 
 describe('AuthController', () => {
   let authController: AuthController;
@@ -28,7 +28,7 @@ describe('AuthController', () => {
       controllers: [AuthController, MailModule],
       providers: [
         UserRepository,
-        PendingUserRepository,
+        PendingUsersRepository,
         PrismaService,
         MailService,
         {

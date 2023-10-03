@@ -6,7 +6,7 @@ import {
   Role,
   TwoFactorAuth,
   TwoFactorAuthRecoveryKey,
-  PendingUser,
+  PendingUsers,
 } from '@prisma/client';
 import { UpdateRecipeRequest } from '../../recipe/dto';
 import { faker } from '@faker-js/faker';
@@ -70,10 +70,10 @@ export class MockPrismaService {
     },
   };
 
-  pendingUser = {
+  pendingUsers = {
     create: function (request: {
       data: Prisma.UserCreateInput;
-    }): Promise<PendingUser> {
+    }): Promise<PendingUsers> {
       return Promise.resolve({
         id: faker.number.int(),
         email: request.data.email,
@@ -90,7 +90,7 @@ export class MockPrismaService {
         password?: string;
         accountActivationToken?: string;
       };
-    }): Promise<PendingUser> {
+    }): Promise<PendingUsers> {
       const { email, password, accountActivationToken } = request.data;
       return Promise.resolve({
         id: request.where.id,
@@ -107,7 +107,7 @@ export class MockPrismaService {
 
     findUnique: function (request: {
       where: { id?: number; email?: string };
-    }): Promise<PendingUser> | Promise<void> {
+    }): Promise<PendingUsers> | Promise<void> {
       const { id, email } = request.where;
 
       if (email) {

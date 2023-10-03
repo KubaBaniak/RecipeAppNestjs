@@ -3,7 +3,7 @@ import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { UserRepository } from './user.repository';
-import { PendingUserRepository } from './pending-user.repository';
+import { PendingUsersRepository } from './pending-user.repository';
 import { PendingUserDeletionCronService } from './pending-user-cron';
 
 @Module({
@@ -11,10 +11,10 @@ import { PendingUserDeletionCronService } from './pending-user-cron';
   providers: [
     UserService,
     UserRepository,
-    PendingUserRepository,
+    PendingUsersRepository,
     PrismaService,
     PendingUserDeletionCronService,
   ],
-  exports: [UserService, UserRepository, PendingUserRepository],
+  exports: [UserService, UserRepository, PendingUsersRepository],
 })
 export class UserModule {}

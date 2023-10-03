@@ -5,13 +5,13 @@ import { UserRepository } from '../user/user.repository';
 import { PrismaService } from '../prisma/prisma.service';
 import { PersonalAccessTokenRepository } from '../auth/personal-access-token.repository';
 import { TwoFactorAuthRepository } from '../auth/twoFactorAuth.repository';
-import { PendingUserRepository } from '../user/pending-user.repository';
+import { PendingUsersRepository } from '../user/pending-user.repository';
 
 @Module({
   providers: [
     WebSocketEventGateway,
     UserRepository,
-    PendingUserRepository,
+    PendingUsersRepository,
     TwoFactorAuthRepository,
     PersonalAccessTokenRepository,
     AuthService,

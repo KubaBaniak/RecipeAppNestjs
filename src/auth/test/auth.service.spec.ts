@@ -13,7 +13,7 @@ import { UserRepository } from '../../user/user.repository';
 import { PersonalAccessTokenRepository } from '../personal-access-token.repository';
 import { authenticator } from 'otplib';
 import { TwoFactorAuthRepository } from '../twoFactorAuth.repository';
-import { PendingUserRepository } from '../../user/pending-user.repository';
+import { PendingUsersRepository } from '../../user/pending-user.repository';
 
 const MAX_INT32 = 2147483647;
 
@@ -27,7 +27,7 @@ describe('AuthService', () => {
       providers: [
         AuthService,
         UserService,
-        PendingUserRepository,
+        PendingUsersRepository,
         TwoFactorAuthRepository,
         UserRepository,
         PersonalAccessTokenRepository,
