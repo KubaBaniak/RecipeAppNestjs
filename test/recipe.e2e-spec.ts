@@ -23,6 +23,8 @@ import { WebhookRepository } from '../src/webhook/webhook.repository';
 import { CryptoUtils } from '../src/webhook/utils/crypt-webhook-token';
 import { PersonalAccessTokenRepository } from '../src/auth/personal-access-token.repository';
 import { TwoFactorAuthRepository } from '../src/auth/twoFactorAuth.repository';
+import * as bcrypt from 'bcryptjs';
+import { BCRYPT } from 'src/auth/constants';
 
 describe('RecipeController (e2e)', () => {
   let app: INestApplication;
@@ -56,7 +58,13 @@ describe('RecipeController (e2e)', () => {
     authService = moduleRef.get<AuthService>(AuthService);
 
     const tempUser = createUser();
-    user = await prismaService.user.create({ data: tempUser });
+    const hashedPassword = await bcrypt.hash(tempUser.password, BCRYPT.salt);
+    user = await prismaService.user.create({
+      data: {
+        email: tempUser.email,
+        password: hashedPassword,
+      },
+    });
     accessToken = await authService.signIn(tempUser);
     personalAccessToken = await authService.createPersonalAccessToken(user.id);
 
@@ -76,7 +84,6 @@ describe('RecipeController (e2e)', () => {
         .set({ Authorization: `Bearer ${accessToken}` })
         .send(recipe)
         .expect((response: request.Response) => {
-          console.log(response.body);
           const {
             id,
             createdAt,
@@ -102,9 +109,6 @@ describe('RecipeController (e2e)', () => {
         .post('/recipes')
         .set({ Authorization: `Bearer ${accessToken}` })
         .send({})
-        .expect((response: request.Response) => {
-          console.log(response.body);
-        })
         .expect(HttpStatus.BAD_REQUEST);
     });
 
