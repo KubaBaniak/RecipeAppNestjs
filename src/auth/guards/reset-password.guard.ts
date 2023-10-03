@@ -3,4 +3,4 @@ import { AuthGuard } from '@nestjs/passport';
 import { STRATEGY } from '../constants';
 
 @Injectable()
-export class ApiAuthGuard extends AuthGuard([STRATEGY.pat, STRATEGY.bearer]) {}
+export class PasswordResetAuthGuard extends AuthGuard(STRATEGY.passwordReset) {}

@@ -1,6 +1,15 @@
-import { faker } from '@faker-js/faker';
-import { Prisma, Recipe, User, Role, PendingUser } from '@prisma/client';
+import { NUMBER_OF_2FA_RECOVERY_TOKENS } from '../../auth/constants';
+import {
+  Prisma,
+  Recipe,
+  User,
+  Role,
+  TwoFactorAuth,
+  TwoFactorAuthRecoveryKey,
+  PendingUser,
+} from '@prisma/client';
 import { UpdateRecipeRequest } from '../../recipe/dto';
+import { faker } from '@faker-js/faker';
 
 let lastSearchedByIdUser: number;
 
@@ -28,15 +37,12 @@ export class MockPrismaService {
         accountActivationToken?: string;
       };
     }): Promise<User> {
-      const { email, password, activated, accountActivationToken } =
-        request.data;
+      const { email, password } = request.data;
       return Promise.resolve({
         id: request.where.id,
         email: email ?? faker.internet.email(),
         password: password ?? faker.internet.password(),
         role: Role.USER,
-        activated: activated ?? false,
-        accountActivationToken: accountActivationToken ?? null,
       });
     },
 
@@ -112,7 +118,7 @@ export class MockPrismaService {
         email: faker.internet.email(),
         password: faker.internet.password(),
         createdAt: new Date(),
-        accountActivationToken: null,
+        accountActivationToken: faker.string.alphanumeric(16),
       });
     },
   };
@@ -189,6 +195,64 @@ export class MockPrismaService {
 
     delete: function (_request: number): Promise<void> {
       return Promise.resolve();
+    },
+  };
+
+  twoFactorAuth = {
+    create: function (data: {
+      userId: number;
+      secretKey: string;
+    }): Promise<TwoFactorAuth> {
+      return Promise.resolve({
+        id: faker.number.int(),
+        ...data,
+        isEnabled: false,
+      });
+    },
+
+    findUnique: function (_where: {
+      userId: number;
+    }): Promise<{ recoveryKeys: { key: string; isUsed: boolean }[] }> {
+      return Promise.resolve({
+        recoveryKeys: Array.from(
+          { length: NUMBER_OF_2FA_RECOVERY_TOKENS },
+          () => {
+            return { key: faker.string.alphanumeric(16), isUsed: false };
+          },
+        ),
+      });
+    },
+
+    update: function (_where: { userId: number }): Promise<TwoFactorAuth> {
+      return Promise.resolve({
+        id: faker.number.int(),
+        userId: faker.number.int(),
+        secretKey: faker.string.alphanumeric(16),
+        isEnabled: false,
+      });
+    },
+
+    delete: function (_where: { id: number }): Promise<TwoFactorAuth> {
+      return Promise.resolve({
+        id: faker.number.int(),
+        userId: faker.number.int(),
+        secretKey: faker.string.numeric(6),
+        isEnabled: true,
+      });
+    },
+  };
+
+  twoFactorAuthRecoveryKey = {
+    update: function (where: {
+      key: string;
+    }): Promise<TwoFactorAuthRecoveryKey> {
+      return Promise.resolve({
+        id: faker.number.int(),
+        key: where.key,
+        isUsed: true,
+        usedAt: new Date(),
+        twoFactorAuthId: faker.number.int(),
+      });
     },
   };
 }

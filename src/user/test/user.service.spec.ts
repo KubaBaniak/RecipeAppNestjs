@@ -37,7 +37,6 @@ describe('UserService', () => {
       expect(createdUser).toEqual({
         id: expect.any(Number),
         email: request.email,
-        password: undefined,
       });
     });
   });
@@ -55,7 +54,6 @@ describe('UserService', () => {
       expect(createdUser).toEqual({
         id,
         email: data.email,
-        password: undefined,
       });
     });
   });

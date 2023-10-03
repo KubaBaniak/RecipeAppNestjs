@@ -8,7 +8,7 @@ import { faker } from '@faker-js/faker';
 import { ValidationPipe } from '@nestjs/common';
 import { AuthService } from '../src/auth/auth.service';
 import { AuthModule } from '../src/auth/auth.module';
-import { createUser, userDaoResponse } from '../src/user/test/user.factory';
+import { createUser } from '../src/user/test/user.factory';
 import { createRecipe } from '../src/recipe/test/recipe.factory';
 import { Recipe, User } from '@prisma/client';
 import { RedisCacheModule } from '../src/cache/redis-cache.module';
@@ -22,6 +22,7 @@ import { WebhookService } from '../src/webhook/webhook.service';
 import { WebhookRepository } from '../src/webhook/webhook.repository';
 import { CryptoUtils } from '../src/webhook/utils/crypt-webhook-token';
 import { PersonalAccessTokenRepository } from '../src/auth/personal-access-token.repository';
+import { TwoFactorAuthRepository } from '../src/auth/twoFactorAuth.repository';
 
 describe('RecipeController (e2e)', () => {
   let app: INestApplication;
@@ -36,6 +37,7 @@ describe('RecipeController (e2e)', () => {
       imports: [RecipeModule, AuthModule, RedisCacheModule, HttpModule],
       providers: [
         RecipeService,
+        TwoFactorAuthRepository,
         UserRepository,
         PersonalAccessTokenRepository,
         RecipeRepository,
