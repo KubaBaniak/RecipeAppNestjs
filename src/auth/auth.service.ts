@@ -21,41 +21,42 @@ import { authenticator } from 'otplib';
 import qrcode from 'qrcode';
 import { TwoFactorAuth } from '@prisma/client';
 import { TwoFactorAuthRepository } from './twoFactorAuth.repository';
+import { PendingUsersRepository } from '../user/pending-user.repository';
 
 @Injectable()
 export class AuthService {
   constructor(
+    private readonly pendingUsersRepository: PendingUsersRepository,
     private readonly userRepository: UserRepository,
     private readonly twoFactorAuthRepository: TwoFactorAuthRepository,
     private readonly personalAccessTokenRepository: PersonalAccessTokenRepository,
     private readonly jwtService: JwtService,
   ) {}
 
-  verifyJwt(jwtToken: string): Promise<AccessTokenPayload> {
-    return this.jwtService.verifyAsync(jwtToken);
+  verifyJwt(jwtToken: string, secret: string): Promise<AccessTokenPayload> {
+    return this.jwtService.verifyAsync(jwtToken, { secret });
   }
 
-  async generateBearerToken(
+  async generateToken(
     id: number,
     secret: string,
-    timeInSeconds?: number,
+    time?: string,
   ): Promise<string> {
     const payload = { id };
     const options: JwtSignOptions = { secret };
 
-    if (timeInSeconds) {
-      options.expiresIn = `${timeInSeconds}s`;
+    if (time) {
+      options.expiresIn = time;
     }
 
     return this.jwtService.signAsync(payload, options);
   }
 
   async signUp(signUpRequest: SignUpRequest): Promise<SignUpResponse> {
-    const pendingUser = await this.userRepository.getPendingUserByEmail(
-      signUpRequest.email,
-    );
-
-    const user = await this.userRepository.getUserByEmail(signUpRequest.email);
+    const [pendingUser, user] = await Promise.all([
+      this.pendingUsersRepository.getPendingUserByEmail(signUpRequest.email),
+      this.userRepository.getUserByEmail(signUpRequest.email),
+    ]);
 
     if (pendingUser || user) {
       throw new ForbiddenException();
@@ -65,7 +66,7 @@ export class AuthService {
 
     const data = { email: signUpRequest.email, password: hash };
 
-    return this.userRepository.createPendingUser(data);
+    return this.pendingUsersRepository.createPendingUser(data);
   }
 
   async signIn(signInRequest: SignInRequest): Promise<string> {
@@ -75,10 +76,10 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
-    return this.generateBearerToken(
+    return this.generateToken(
       user.id,
       process.env.JWT_SECRET,
-      +process.env.JWT_EXPIRY_TIME,
+      process.env.JWT_EXPIRY_TIME,
     );
   }
 
@@ -89,7 +90,7 @@ export class AuthService {
     if (validPersonalAccessToken) {
       this.personalAccessTokenRepository.invalidatePatForUserId(userId);
     }
-    const personalAccessToken = await this.generateBearerToken(
+    const personalAccessToken = await this.generateToken(
       userId,
       process.env.JWT_PAT_SECRET,
     );
@@ -117,28 +118,6 @@ export class AuthService {
     return user;
   }
 
-  async changePassword(
-    userId: number,
-    newPassword: string,
-  ): Promise<UserPayloadRequest> {
-    const hashedPassword = await bcrypt.hash(newPassword, BCRYPT.salt);
-
-    return this.userRepository.updateUserById(userId, {
-      password: hashedPassword,
-    });
-  }
-
-  async generateAccountActivationToken(userId: number): Promise<string> {
-    const token = await this.generateBearerToken(
-      userId,
-      process.env.JWT_ACCOUNT_ACTIVATION_SECRET,
-      +process.env.ACCOUNT_ACTIVATION_TIME_IN_SECONDS,
-    );
-    await this.userRepository.saveAccountActivationToken(userId, token);
-
-    return token;
-  }
-
   async verifyAccountActivationToken(
     jwtToken: string,
   ): Promise<{ id: number }> {
@@ -152,11 +131,35 @@ export class AuthService {
   }
 
   async activateAccount(userId: number): Promise<UserPayloadRequest> {
-    const userData = await this.userRepository.getPendingUserById(userId);
+    const userData = await this.pendingUsersRepository.getPendingUserById(
+      userId,
+    );
+    const createdUser = this.userRepository.createUser(userData);
 
-    await this.userRepository.removePendingUserById(userId);
+    await this.pendingUsersRepository.removePendingUserById(userId);
 
-    return this.userRepository.createUser(userData);
+    return createdUser;
+  }
+
+  async changePassword(
+    userId: number,
+    newPassword: string,
+  ): Promise<UserPayloadRequest> {
+    const hashedPassword = await bcrypt.hash(newPassword, BCRYPT.salt);
+
+    return this.userRepository.updateUserById(userId, {
+      password: hashedPassword,
+    });
+  }
+
+  async generateAccountActivationToken(userId: number): Promise<string> {
+    const token = await this.generateToken(
+      userId,
+      process.env.JWT_ACCOUNT_ACTIVATION_SECRET,
+      process.env.ACCOUNT_ACTIVATION_TIME_IN_SECONDS,
+    );
+
+    return token;
   }
 
   async generateResetPasswordToken(email: string): Promise<string> {
@@ -166,10 +169,10 @@ export class AuthService {
       return;
     }
 
-    const token = await this.generateBearerToken(
+    const token = await this.generateToken(
       user.id,
       process.env.JWT_PASSWORD_RESET_SECRET,
-      +process.env.JWT_PASSWORD_RESET_TIME,
+      process.env.JWT_PASSWORD_RESET_TIME,
     );
     return token;
   }
@@ -247,12 +250,20 @@ export class AuthService {
       );
 
     if (authenticator.check(token, secretKey)) {
-      return this.generateBearerToken(user.id, user.email);
+      return this.generateToken(
+        user.id,
+        process.env.JWT_ACCOUNT_ACTIVATION_SECRET,
+        process.env.ACCOUNT_ACTIVATION_TIME_IN_SECONDS,
+      );
     }
 
     if (keys.some(({ key, isUsed }) => key === token && !isUsed)) {
       await this.twoFactorAuthRepository.expire2faRecoveryKey(token);
-      return this.generateBearerToken(user.id, user.email);
+      return this.generateToken(
+        user.id,
+        process.env.JWT_SECRET,
+        process.env.JWT_EXPIRY_TIME,
+      );
     }
 
     throw new UnauthorizedException('Incorrect 2FA token');

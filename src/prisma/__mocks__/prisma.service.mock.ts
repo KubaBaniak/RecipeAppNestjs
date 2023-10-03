@@ -6,10 +6,10 @@ import {
   Role,
   TwoFactorAuth,
   TwoFactorAuthRecoveryKey,
-  PendingUser,
+  PendingUsers,
 } from '@prisma/client';
-import { faker } from '@faker-js/faker';
 import { UpdateRecipeRequest } from '../../recipe/dto';
+import { faker } from '@faker-js/faker';
 
 let lastSearchedByIdUser: number;
 
@@ -29,8 +29,13 @@ export class MockPrismaService {
     },
 
     update: function (request: {
-      data: { email?: string; password?: string };
       where: { id: number };
+      data: {
+        email?: string;
+        password?: string;
+        activated?: boolean;
+        accountActivationToken?: string;
+      };
     }): Promise<User> {
       const { email, password } = request.data;
       return Promise.resolve({
@@ -38,8 +43,6 @@ export class MockPrismaService {
         email: email ?? faker.internet.email(),
         password: password ?? faker.internet.password(),
         role: Role.USER,
-        enabled2FA: false,
-        recoveryKeys: [],
       });
     },
 
@@ -61,14 +64,16 @@ export class MockPrismaService {
         email: faker.internet.email(),
         password: faker.internet.password(),
         role: Role.USER,
+        activated: false,
+        accountActivationToken: null,
       });
     },
   };
 
-  pendingUser = {
+  pendingUsers = {
     create: function (request: {
       data: Prisma.UserCreateInput;
-    }): Promise<PendingUser> {
+    }): Promise<PendingUsers> {
       return Promise.resolve({
         id: faker.number.int(),
         email: request.data.email,
@@ -85,7 +90,7 @@ export class MockPrismaService {
         password?: string;
         accountActivationToken?: string;
       };
-    }): Promise<PendingUser> {
+    }): Promise<PendingUsers> {
       const { email, password, accountActivationToken } = request.data;
       return Promise.resolve({
         id: request.where.id,
@@ -102,7 +107,7 @@ export class MockPrismaService {
 
     findUnique: function (request: {
       where: { id?: number; email?: string };
-    }): Promise<PendingUser> | Promise<void> {
+    }): Promise<PendingUsers> | Promise<void> {
       const { id, email } = request.where;
 
       if (email) {
@@ -218,7 +223,7 @@ export class MockPrismaService {
       });
     },
 
-    update: function (where: { userId: number }): Promise<TwoFactorAuth> {
+    update: function (_where: { userId: number }): Promise<TwoFactorAuth> {
       return Promise.resolve({
         id: faker.number.int(),
         userId: faker.number.int(),

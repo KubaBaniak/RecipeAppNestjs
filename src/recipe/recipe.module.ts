@@ -14,6 +14,7 @@ import { WebhookRepository } from '../webhook/webhook.repository';
 import { UserRepository } from '../user/user.repository';
 import { CryptoUtils } from '../webhook/utils/crypt-webhook-token';
 import { TwoFactorAuthRepository } from '../auth/twoFactorAuth.repository';
+import { PendingUsersRepository } from '../user/pending-user.repository';
 
 @Module({
   imports: [RedisCacheModule, WebSocketEventModule, HttpModule],
@@ -28,6 +29,7 @@ import { TwoFactorAuthRepository } from '../auth/twoFactorAuth.repository';
     WebhookRepository,
     CryptoUtils,
     TwoFactorAuthRepository,
+    PendingUsersRepository,
     UserRepository,
   ],
   controllers: [RecipeController],

@@ -1,9 +1,9 @@
 import { AuthController } from '../auth.controller';
 import { AuthService } from '../auth.service';
-import { MAILER_OPTIONS, MailerService } from '@nestjs-modules/mailer';
+import { MockAuthService } from '../__mocks__/auth.service.mock';
 import { MailModule } from '../../mail/mail.module';
 import { MailService } from '../../mail/mail.service';
-import { MockAuthService } from '../__mocks__/auth.service.mock';
+import { MAILER_OPTIONS, MailerService } from '@nestjs-modules/mailer';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserRepository } from '../../user/user.repository';
@@ -16,6 +16,7 @@ import {
   ResetPasswordRequest,
 } from '../dto';
 import { NUMBER_OF_2FA_RECOVERY_TOKENS } from '../constants';
+import { PendingUsersRepository } from '../../user/pending-user.repository';
 
 describe('AuthController', () => {
   let authController: AuthController;
@@ -27,6 +28,7 @@ describe('AuthController', () => {
       controllers: [AuthController, MailModule],
       providers: [
         UserRepository,
+        PendingUsersRepository,
         PrismaService,
         MailService,
         {
@@ -84,6 +86,20 @@ describe('AuthController', () => {
         id: expect.any(Number),
         email: request.email,
       });
+    });
+  });
+
+  describe('Activate account', () => {
+    it('should activate user account', async () => {
+      //given
+      const token = faker.string.sample(64);
+      jest.spyOn(authService, 'activateAccount');
+
+      //when
+      await authController.activateAccount(token);
+
+      //then
+      expect(authService.activateAccount).toHaveBeenCalled();
     });
   });
 

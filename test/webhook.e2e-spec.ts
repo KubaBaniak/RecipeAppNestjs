@@ -13,9 +13,9 @@ import {
   createWebhookRequest,
   createWebhookWithUserId,
 } from '../src/webhook/test/webhook.factory';
-import { AuthModule } from '../src/auth/auth.module';
 import { WebhookModule } from '../src/webhook/webhook.module';
 import { CryptoUtils } from '../src/webhook/utils/crypt-webhook-token';
+import { AuthModule } from '../src/auth/auth.module';
 
 describe('WebhookController (e2e)', () => {
   let app: INestApplication;
@@ -56,27 +56,26 @@ describe('WebhookController (e2e)', () => {
     });
   });
 
-  beforeEach(async () => {
-    await prismaService.webhook.deleteMany();
-  });
-
   describe('POST /webhooks', () => {
     it('should create webhook', async () => {
       const webhook = createWebhookRequest();
-      request(app.getHttpServer())
+      return request(app.getHttpServer())
         .post('/webhooks')
         .set({ Authorization: `Bearer ${accessToken}` })
         .send(webhook)
+        .expect(async () => {
+          const createdWebhook = await prismaService.webhook.findFirst({
+            where: {
+              name: webhook.name,
+            },
+          });
+          expect(createdWebhook).toBeDefined();
+        })
         .expect(HttpStatus.CREATED);
-      expect(
-        await prismaService.webhook.findFirst({
-          where: { name: webhook.name },
-        }),
-      ).toBeDefined();
     });
+
     it('should not create new webhook due to the limit (5 webhooks)', async () => {
       const testWebhooks = [
-        createWebhookWithUserId(user.id),
         createWebhookWithUserId(user.id),
         createWebhookWithUserId(user.id),
         createWebhookWithUserId(user.id),
@@ -86,7 +85,7 @@ describe('WebhookController (e2e)', () => {
         data: testWebhooks,
       });
       const webhook = createWebhookRequest();
-      request(app.getHttpServer())
+      return request(app.getHttpServer())
         .post('/webhooks')
         .set({ Authorization: `Bearer ${accessToken}` })
         .send(webhook)
@@ -137,6 +136,7 @@ describe('WebhookController (e2e)', () => {
   });
 
   afterAll(async () => {
+    await prismaService.webhook.deleteMany();
     await app.close();
   });
 });

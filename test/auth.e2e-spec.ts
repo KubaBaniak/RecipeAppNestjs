@@ -9,12 +9,12 @@ import { faker } from '@faker-js/faker';
 import { createUser } from '../src/user/test/user.factory';
 import { UserRepository } from '../src/user/user.repository';
 import { PersonalAccessTokenRepository } from '../src/auth/personal-access-token.repository';
-import { SignInRequest } from '../src/auth/dto';
 import { TwoFactorAuthRepository } from '../src/auth/twoFactorAuth.repository';
 import { add2faToUserWithId } from '../src/auth/test/auth.factory';
 import { authenticator } from 'otplib';
 import { BCRYPT, NUMBER_OF_2FA_RECOVERY_TOKENS } from '../src/auth/constants';
 import * as bcrypt from 'bcryptjs';
+import { PendingUsersRepository } from '../src/user/pending-user.repository';
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication;
@@ -28,6 +28,7 @@ describe('AuthController (e2e)', () => {
       providers: [
         AuthService,
         TwoFactorAuthRepository,
+        PendingUsersRepository,
         UserService,
         UserRepository,
         PersonalAccessTokenRepository,
@@ -41,6 +42,7 @@ describe('AuthController (e2e)', () => {
     twoFactorAuthRepository = moduleRef.get<TwoFactorAuthRepository>(
       TwoFactorAuthRepository,
     );
+
     app.useGlobalPipes(new ValidationPipe());
 
     app.useGlobalPipes(
@@ -86,11 +88,11 @@ describe('AuthController (e2e)', () => {
   describe('POST /auth/signin', () => {
     const tempUser = createUser();
     beforeAll(async () => {
-      const hashed_password = await bcrypt.hash(tempUser.password, BCRYPT.salt);
+      const hashedPassword = await bcrypt.hash(tempUser.password, BCRYPT.salt);
       await prismaService.user.create({
         data: {
           email: tempUser.email,
-          password: hashed_password,
+          password: hashedPassword,
         },
       });
     });
@@ -130,6 +132,25 @@ describe('AuthController (e2e)', () => {
     });
   });
 
+  describe('GET /auth/activate-account', () => {
+    let token: string;
+    beforeEach(async () => {
+      const user = createUser();
+      const createdUser = await authService.signUp({
+        email: user.email,
+        password: user.password,
+      });
+      token = await authService.generateAccountActivationToken(createdUser.id);
+    });
+
+    it('should activate an account', async () => {
+      return request(app.getHttpServer())
+        .get(`/auth/activate-account/?token=${token}`)
+        .set('Accept', 'application/json')
+        .expect(HttpStatus.OK);
+    });
+  });
+
   describe('POST /auth/change-password', () => {
     let accessToken: string;
 
@@ -163,26 +184,6 @@ describe('AuthController (e2e)', () => {
         .set({ Authorization: `Bearer ${accessToken}` })
         .send({ new_password: faker.internet.password() })
         .expect(HttpStatus.BAD_REQUEST);
-    });
-  });
-
-  describe('GET /auth/activate-account', () => {
-    let accessToken: string;
-    beforeEach(async () => {
-      const user = createUser();
-      const createdUser = await authService.signUp({
-        email: user.email,
-        password: user.password,
-      });
-      accessToken = await authService.generateAccountActivationToken(
-        createdUser.id,
-      );
-    });
-
-    it('should activate an account', async () => {
-      return request(app.getHttpServer())
-        .get(`/auth/activate-account/?token=${accessToken}`)
-        .set('Accept', 'application/json');
     });
   });
 

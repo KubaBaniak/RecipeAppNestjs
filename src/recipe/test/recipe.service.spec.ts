@@ -5,8 +5,6 @@ import { faker } from '@faker-js/faker';
 import { MockPrismaService } from '../../prisma/__mocks__/prisma.service.mock';
 import { RecipeCacheService } from '../recipe.cache.service';
 import { MockRecipeCacheService } from '../__mocks__/recipe.cache.mock';
-import { RecipeRepository } from '../recipe.repository';
-import { UserRepository } from '../../user/user.repository';
 import { S3Service } from '../s3-bucket.service';
 import { WebSocketEventGateway } from '../../websocket/websocket-event.gateway';
 import { AuthService } from '../../auth/auth.service';
@@ -17,6 +15,9 @@ import { HttpModule } from '@nestjs/axios';
 import { CryptoUtils } from '../../webhook/utils/crypt-webhook-token';
 import { PersonalAccessTokenRepository } from '../../auth/personal-access-token.repository';
 import { TwoFactorAuthRepository } from '../../auth/twoFactorAuth.repository';
+import { RecipeRepository } from '../recipe.repository';
+import { UserRepository } from '../../user/user.repository';
+import { PendingUsersRepository } from '../../user/pending-user.repository';
 
 describe('RecipeService', () => {
   let recipeService: RecipeService;
@@ -30,6 +31,7 @@ describe('RecipeService', () => {
         S3Service,
         RecipeRepository,
         TwoFactorAuthRepository,
+        PendingUsersRepository,
         UserRepository,
         PersonalAccessTokenRepository,
         WebSocketEventGateway,

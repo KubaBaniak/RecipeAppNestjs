@@ -8,14 +8,13 @@
 
 ## [1.1.5](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.1.4...v1.1.5) (2023-09-06)
 
-
 ### Bug Fixes
 
-* fix imports in unit tests ([6f05809](https://github.com/KubaBaniak/RecipeAppNestjs/commit/6f05809967b84b22b238f0d9a499481d4cf0ef86))
-* resolve conflicts ([a187c3e](https://github.com/KubaBaniak/RecipeAppNestjs/commit/a187c3e46e7f153c9928d34d09875a426137f11b))
-* resolve conflicts and fix tests ([337b3b5](https://github.com/KubaBaniak/RecipeAppNestjs/commit/337b3b54125a366543652bfc4d19ba9982cfb2c0))
-* resolve conflicts with feat/add_webhooks ([d1f8577](https://github.com/KubaBaniak/RecipeAppNestjs/commit/d1f85774554e2cc000deab7b8004f0b44f47fe80))
-* tests ([35e3c65](https://github.com/KubaBaniak/RecipeAppNestjs/commit/35e3c65c09fd917f5da2669ea9eccd9bfb8c9582))
+- fix imports in unit tests ([6f05809](https://github.com/KubaBaniak/RecipeAppNestjs/commit/6f05809967b84b22b238f0d9a499481d4cf0ef86))
+- resolve conflicts ([a187c3e](https://github.com/KubaBaniak/RecipeAppNestjs/commit/a187c3e46e7f153c9928d34d09875a426137f11b))
+- resolve conflicts and fix tests ([337b3b5](https://github.com/KubaBaniak/RecipeAppNestjs/commit/337b3b54125a366543652bfc4d19ba9982cfb2c0))
+- resolve conflicts with feat/add_webhooks ([d1f8577](https://github.com/KubaBaniak/RecipeAppNestjs/commit/d1f85774554e2cc000deab7b8004f0b44f47fe80))
+- tests ([35e3c65](https://github.com/KubaBaniak/RecipeAppNestjs/commit/35e3c65c09fd917f5da2669ea9eccd9bfb8c9582))
 
 ## [1.1.4](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.1.3...v1.1.4) (2023-09-05)
 

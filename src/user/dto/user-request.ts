@@ -1,9 +1,9 @@
-import { PendingUser, User } from '@prisma/client';
+import { PendingUsers, User } from '@prisma/client';
 
 export class UserPayloadRequest {
   constructor(public id: number, public email: string) {}
 
-  public static from(user: User | PendingUser): UserPayloadRequest {
+  public static from(user: User | PendingUsers): UserPayloadRequest {
     return new UserPayloadRequest(user.id, user.email);
   }
 
