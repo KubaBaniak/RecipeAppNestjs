@@ -68,10 +68,6 @@ describe('RecipeController (e2e)', () => {
     await app.init();
   });
 
-  afterAll(async () => {
-    await prismaService.recipe.deleteMany({});
-  });
-
   describe('POST /recipes', () => {
     it('should create recipe and return it', async () => {
       const recipe = createRecipe();
@@ -80,6 +76,7 @@ describe('RecipeController (e2e)', () => {
         .set({ Authorization: `Bearer ${accessToken}` })
         .send(recipe)
         .expect((response: request.Response) => {
+          console.log(response.body);
           const {
             id,
             createdAt,
@@ -105,6 +102,9 @@ describe('RecipeController (e2e)', () => {
         .post('/recipes')
         .set({ Authorization: `Bearer ${accessToken}` })
         .send({})
+        .expect((response: request.Response) => {
+          console.log(response.body);
+        })
         .expect(HttpStatus.BAD_REQUEST);
     });
 
@@ -374,6 +374,7 @@ describe('RecipeController (e2e)', () => {
   });
 
   afterAll(async () => {
+    await prismaService.recipe.deleteMany();
     await prismaService.personalAccessToken.deleteMany();
     await app.close();
   });

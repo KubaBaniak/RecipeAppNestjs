@@ -54,8 +54,6 @@ describe('WebhookController (e2e)', () => {
       email: user.email,
       password: user.password,
     });
-
-    console.log(await authService.verifyJwt(accessToken));
   });
 
   afterAll(async () => {
