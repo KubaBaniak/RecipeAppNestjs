@@ -56,7 +56,7 @@ describe('WebhookController (e2e)', () => {
     });
   });
 
-  beforeEach(async () => {
+  afterAll(async () => {
     await prismaService.webhook.deleteMany();
   });
 
@@ -109,6 +109,7 @@ describe('WebhookController (e2e)', () => {
         .get('/webhooks')
         .set({ Authorization: `Bearer ${accessToken}` })
         .expect((response: request.Response) => {
+          console.log(response.body);
           expect(response.body.webhooks).toEqual(
             expect.arrayContaining([
               {

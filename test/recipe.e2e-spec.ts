@@ -62,7 +62,6 @@ describe('RecipeController (e2e)', () => {
       email: user.email,
       password: user.password,
     });
-
     personalAccessToken = await authService.createPersonalAccessToken(user.id);
 
     app.useGlobalPipes(
@@ -73,12 +72,12 @@ describe('RecipeController (e2e)', () => {
     await app.init();
   });
 
-  afterEach(async () => {
+  afterAll(async () => {
     await prismaService.recipe.deleteMany({});
   });
 
   describe('POST /recipes', () => {
-    it('should create recipe and return in', async () => {
+    it('should create recipe and return it', async () => {
       const recipe = createRecipe();
       return request(app.getHttpServer())
         .post('/recipes')
@@ -86,6 +85,7 @@ describe('RecipeController (e2e)', () => {
         .set({ user: { id: user.id } })
         .send(recipe)
         .expect((response: request.Response) => {
+          console.log(response.body);
           const {
             id,
             createdAt,
