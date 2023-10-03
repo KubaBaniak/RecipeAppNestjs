@@ -63,16 +63,19 @@ describe('WebhookController (e2e)', () => {
         .post('/webhooks')
         .set({ Authorization: `Bearer ${accessToken}` })
         .send(webhook)
+        .expect(async () => {
+          const createdWebhook = await prismaService.webhook.findFirst({
+            where: {
+              name: webhook.name,
+            },
+          });
+          expect(createdWebhook).toBeDefined();
+        })
         .expect(HttpStatus.CREATED);
-      expect(
-        await prismaService.webhook.findFirst({
-          where: { name: webhook.name },
-        }),
-      ).toBeDefined();
     });
+
     it('should not create new webhook due to the limit (5 webhooks)', async () => {
       const testWebhooks = [
-        createWebhookWithUserId(user.id),
         createWebhookWithUserId(user.id),
         createWebhookWithUserId(user.id),
         createWebhookWithUserId(user.id),
