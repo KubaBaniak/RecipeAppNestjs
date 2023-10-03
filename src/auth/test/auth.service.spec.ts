@@ -13,6 +13,9 @@ import { UserRepository } from '../../user/user.repository';
 import { PersonalAccessTokenRepository } from '../personal-access-token.repository';
 import { authenticator } from 'otplib';
 import { TwoFactorAuthRepository } from '../twoFactorAuth.repository';
+import { PendingUserRepository } from '../../user/pending-user.repository';
+
+const MAX_INT32 = 2147483647;
 
 describe('AuthService', () => {
   let authService: AuthService;
@@ -24,6 +27,7 @@ describe('AuthService', () => {
       providers: [
         AuthService,
         UserService,
+        PendingUserRepository,
         TwoFactorAuthRepository,
         UserRepository,
         PersonalAccessTokenRepository,
@@ -60,7 +64,7 @@ describe('AuthService', () => {
         email: faker.internet.email(),
         password: faker.internet.password(),
       };
-      const hashed_password = await bcrypt.hash(request.password, BCRYPT.salt);
+      const hashedPassword = await bcrypt.hash(request.password, BCRYPT.salt);
 
       jest
         .spyOn(userRepository, 'getUserByEmail')
@@ -68,7 +72,7 @@ describe('AuthService', () => {
           return Promise.resolve({
             id: faker.number.int(),
             email,
-            password: hashed_password,
+            password: hashedPassword,
             twoFactorAuth: null,
             role: Role.USER,
           });
@@ -112,14 +116,14 @@ describe('AuthService', () => {
         password: faker.internet.password(),
       };
 
-      const hashed_password = await bcrypt.hash(request.password, BCRYPT.salt);
+      const hashedPassword = await bcrypt.hash(request.password, BCRYPT.salt);
 
       jest.spyOn(userRepository, 'getUserByEmail').mockImplementation(() => {
         return Promise.resolve({
           id: faker.number.int(),
           email: faker.internet.email(),
           twoFactorAuth: null,
-          password: hashed_password,
+          password: hashedPassword,
           role: Role.USER,
         });
       });
@@ -141,12 +145,13 @@ describe('AuthService', () => {
   describe('Generace account activation token', () => {
     it('should generate and save token for account activation.', async () => {
       //given
-      const userId = faker.number.int({ max: 2147483647 });
+      const userId = faker.number.int({ max: MAX_INT32 });
 
       //when
       const token = await authService.generateAccountActivationToken(userId);
 
       //then
+      expect(token).not.toBe('');
       expect(typeof token).toBe('string');
     });
   });
@@ -154,7 +159,7 @@ describe('AuthService', () => {
   describe('Account activation ', () => {
     it('should delete non-activated account and create activated one with same data', async () => {
       //given
-      const userId = faker.number.int({ max: 2147483647 });
+      const userId = faker.number.int({ max: MAX_INT32 });
 
       //when
       const user = await authService.activateAccount(userId);
@@ -167,7 +172,7 @@ describe('AuthService', () => {
   describe('Change password', () => {
     it('should change password', async () => {
       //given
-      const userId = faker.number.int({ max: 2 ** 31 - 1 });
+      const userId = faker.number.int({ max: MAX_INT32 });
       const newPassword = faker.internet.password();
       jest.spyOn(userRepository, 'updateUserById');
 
@@ -182,8 +187,7 @@ describe('AuthService', () => {
   describe('Account activation ', () => {
     it('should delete non-activated account and create activated one with same data', async () => {
       //given
-      const userId = faker.number.int({ max: 2147483647 });
-
+      const userId = faker.number.int({ max: MAX_INT32 });
       //when
       const user = await authService.activateAccount(userId);
 
@@ -195,7 +199,7 @@ describe('AuthService', () => {
   describe('Change password', () => {
     it('should change password', async () => {
       //given
-      const userId = faker.number.int({ max: 2 ** 31 - 1 });
+      const userId = faker.number.int({ max: MAX_INT32 });
       const newPassword = faker.internet.password();
       const spy = jest.spyOn(userRepository, 'updateUserById');
 
@@ -228,6 +232,7 @@ describe('AuthService', () => {
       const token = await authService.generateResetPasswordToken(email);
 
       //then
+      expect(token).not.toBe('');
       expect(typeof token).toBe('string');
     });
   });
@@ -294,6 +299,7 @@ describe('AuthService', () => {
 
       const loginToken = await authService.verify2fa(userId, token);
 
+      expect(loginToken).not.toBe('');
       expect(typeof loginToken).toBe('string');
     });
   });
