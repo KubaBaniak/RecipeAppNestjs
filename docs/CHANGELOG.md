@@ -1,3 +1,14 @@
+## [1.1.7](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.1.6...v1.1.7) (2023-10-03)
+
+
+### Bug Fixes
+
+* fix open handles in auth e2e tests ([4ff08af](https://github.com/KubaBaniak/RecipeAppNestjs/commit/4ff08af595a734fa38c0672c89c1e5941581fdb9))
+* resolve conflicts ([1ad9990](https://github.com/KubaBaniak/RecipeAppNestjs/commit/1ad99902326eba3972245314d5d4f3afa7cd870d))
+* resolve conflicts ([c717783](https://github.com/KubaBaniak/RecipeAppNestjs/commit/c7177837e4bc04cb165fdc25302f6dc395cddf5d))
+* tests ([627f783](https://github.com/KubaBaniak/RecipeAppNestjs/commit/627f78306fad1e577eddb15b92feb7da643b45f4))
+* tests + prisma schema ([bbdf695](https://github.com/KubaBaniak/RecipeAppNestjs/commit/bbdf69575c176cc7db65e3cb43e4550c82cac460))
+
 ## [1.1.6](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.1.5...v1.1.6) (2023-10-02)
 
 
