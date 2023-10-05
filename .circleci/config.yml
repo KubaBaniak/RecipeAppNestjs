@@ -190,9 +190,8 @@ workflows:
   deploy:
     jobs:
       - deploy:
-          context:
-            recipe-app-production
-            #filters:
-            #  branches:
-            #    only:
-            #      - main
+          context: recipe-app-production
+          filters:
+            branches:
+              only:
+                - main
