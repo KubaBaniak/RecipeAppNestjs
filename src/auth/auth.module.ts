@@ -16,9 +16,24 @@ import { PasswordResetTokenStrategy } from './strategies/reset-password.strategy
 import { TwoFactorAuthStrategy } from './strategies/two-factor-auth.strategy';
 import { TwoFactorAuthRepository } from './twoFactorAuth.repository';
 import { PendingUsersRepository } from '../user/pending-user.repository';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 
 @Module({
   imports: [
+    ClientsModule.register([
+      {
+        name: 'AUTH_SERVICE',
+        transport: Transport.RMQ,
+        options: {
+          urls: ['amqp://127.0.0.1:5672'],
+          queue: 'auth_queue',
+          noAck: true,
+          queueOptions: {
+            durable: true,
+          },
+        },
+      },
+    ]),
     UserModule,
     PassportModule,
     JwtModule.register({

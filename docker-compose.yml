@@ -38,6 +38,21 @@ services:
       - dependencies
     networks:
       - recipe-app-network
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    hostname: rabbitmq
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+    volumes:
+      - /var/lib/rabbitmq
+    env_file:
+      - .env
+    profiles:
+      - dependencies
+    networks:
+      - recipe-app-network
   application:
     image: '${APP_IMAGE_NAME}'
     build: .
