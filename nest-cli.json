@@ -3,7 +3,7 @@
   "collection": "@nestjs/schematics",
   "sourceRoot": "src",
   "compilerOptions": {
-    "assets": ["mail/templates/**/*"],
+    "assets": ["**/*.pug"],
     "watchAssets": true,
     "builder": "swc",
     "typeCheck": true,
