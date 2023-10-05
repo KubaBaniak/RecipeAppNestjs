@@ -54,7 +54,7 @@ commands:
             JWT_SECRET="$JWT_SECRET"
             MAIL_FROM="$MAIL_FROM"
             MAIL_HOST="$MAIL_HOST"
-            MAIL_PASSWORD="$MAIL_PASSOWORD"
+            MAIL_PASSWORD="$MAIL_PASSWORD"
             MAIL_PORT="$MAIL_PORT"
             MAIL_USER="$MAIL_USER"
             PGADMIN_EMAIL="$PGADMIN_EMAIL"
