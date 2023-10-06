@@ -253,7 +253,7 @@ export class AuthService {
       return this.generateToken(
         user.id,
         process.env.JWT_ACCOUNT_ACTIVATION_SECRET,
-        process.env.ACCOUNT_ACTIVATION_TIME_IN_SECONDS,
+        process.env.ACCOUNT_ACTIVATION_TIME,
       );
     }
 
