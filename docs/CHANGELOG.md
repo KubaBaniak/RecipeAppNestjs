@@ -1,3 +1,12 @@
+## [1.1.8](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.1.7...v1.1.8) (2023-10-06)
+
+
+### Bug Fixes
+
+* account activation time env var name ([1862413](https://github.com/KubaBaniak/RecipeAppNestjs/commit/18624132a563fd68e6a5db2bbe9c92e38760421f))
+* envs for jwt exiry time on ci + deploy ([aedf620](https://github.com/KubaBaniak/RecipeAppNestjs/commit/aedf620e0b2d7d094e34ae1e6699faa98de2d51f))
+* other TIME envs ([ccdbd56](https://github.com/KubaBaniak/RecipeAppNestjs/commit/ccdbd563201ee76803f2df3f5bf78e2cae13e83f))
+
 ## [1.1.7](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.1.6...v1.1.7) (2023-10-03)
 
 
