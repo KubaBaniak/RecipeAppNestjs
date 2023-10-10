@@ -24,7 +24,6 @@ import { TwoFactorAuth } from '@prisma/client';
 import { TwoFactorAuthRepository } from './twoFactorAuth.repository';
 import { PendingUsersRepository } from '../user/pending-user.repository';
 import { isJwtTokenStructureValid } from 'src/utils/jwt-utils';
-import { NotFoundError } from 'rxjs';
 
 @Injectable()
 export class AuthService {
