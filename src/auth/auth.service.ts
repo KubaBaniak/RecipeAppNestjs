@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
@@ -22,6 +23,8 @@ import qrcode from 'qrcode';
 import { TwoFactorAuth } from '@prisma/client';
 import { TwoFactorAuthRepository } from './twoFactorAuth.repository';
 import { PendingUsersRepository } from '../user/pending-user.repository';
+import { isJwtTokenStructureValid } from 'src/utils/jwt-utils';
+import { NotFoundError } from 'rxjs';
 
 @Injectable()
 export class AuthService {
@@ -121,12 +124,19 @@ export class AuthService {
   async verifyAccountActivationToken(
     jwtToken: string,
   ): Promise<{ id: number }> {
+    const invalidTokenMessage =
+      'Invalid token. Please provide a valid token to activate account';
+
+    if (!isJwtTokenStructureValid(jwtToken)) {
+      throw new UnauthorizedException(invalidTokenMessage);
+    }
+
     try {
       return this.jwtService.verifyAsync(jwtToken, {
         secret: process.env.JWT_ACCOUNT_ACTIVATION_SECRET,
       });
     } catch {
-      throw new ForbiddenException('Token expired');
+      throw new UnauthorizedException(invalidTokenMessage);
     }
   }
 
@@ -134,6 +144,13 @@ export class AuthService {
     const userData = await this.pendingUsersRepository.getPendingUserById(
       userId,
     );
+
+    if (!userData) {
+      throw new NotFoundException(
+        'User account data for activation was not found. Please ensure you provided correct token or check if User is already activated',
+      );
+    }
+
     const createdUser = this.userRepository.createUser(userData);
 
     await this.pendingUsersRepository.removePendingUserById(userId);
