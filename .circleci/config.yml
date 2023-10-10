@@ -41,6 +41,7 @@ commands:
             AWS_REGION="$AWS_REGION"
             AWS_S3_BUCKET="$AWS_S3_BUCKET"
             AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY"
+            BASE_URL="$BASE_URL"
             BCRYPT_SALT="$BCRYPT_SALT"
             DATABASE_URL="$DATABASE_URL"
             ENVIRONMENT="$ENVIRONMENT"
