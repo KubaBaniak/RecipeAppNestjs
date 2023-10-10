@@ -113,7 +113,7 @@ export class RecipeController {
     return FetchRecipeResponse.from(fetchedRecipe);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(ApiAuthGuard)
   @ApiOperation({ summary: 'Update recipe' })
   @ApiBearerAuth()
   @ApiNotFoundResponse({ description: 'Recipe does not exist' })
@@ -137,7 +137,7 @@ export class RecipeController {
     return UpdatedRecipeResponse.from(updatedRecipe);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(ApiAuthGuard)
   @ApiOperation({ summary: 'Delete recipe' })
   @ApiBearerAuth()
   @ApiNotFoundResponse({ description: 'Recipe does not exist' })
