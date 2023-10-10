@@ -23,7 +23,7 @@ import qrcode from 'qrcode';
 import { TwoFactorAuth } from '@prisma/client';
 import { TwoFactorAuthRepository } from './twoFactorAuth.repository';
 import { PendingUsersRepository } from '../user/pending-user.repository';
-import { isJwtTokenStructureValid } from 'src/utils/jwt-utils';
+import { isJwtTokenStructureValid } from '../utils/jwt-utils';
 
 @Injectable()
 export class AuthService {
