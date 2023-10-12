@@ -25,7 +25,7 @@ export class WebhookService {
     const userWebhooks = await this.webhookRepository.getAllWebhooksByUserId(
       userId,
     );
-    if (userWebhooks.length >= 100) {
+    if (userWebhooks.length >= +process.env.WEBHOOK_LIMIT) {
       throw new ForbiddenException('Reached limit of owned webhooks');
     }
 
