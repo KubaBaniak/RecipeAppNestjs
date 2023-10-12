@@ -13,7 +13,7 @@ export class WebhookRepository {
     iv?: string,
     authTag?: string,
   ): Promise<Webhook> {
-    return this.prisma.webhook.create({
+    const test = await this.prisma.webhook.create({
       data: {
         ...webhookData,
         userId,
@@ -21,6 +21,7 @@ export class WebhookRepository {
         authTag,
       },
     });
+    return test;
   }
 
   async createWebhookEvent(

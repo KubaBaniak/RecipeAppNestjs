@@ -1,23 +1,30 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsIn, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString, IsUrl, Length } from 'class-validator';
+import { NoDuplicateAndOtherTypes } from './custom-class-validators';
 import { WebhookEventType } from './webhook-event-types';
 
 export class CreateWebhookRequest {
-  @IsNotEmpty()
   @IsString()
+  @Length(4, 255, {
+    message: 'name should should have 4-255 characters',
+  })
   @ApiProperty()
   name: string;
 
-  @IsNotEmpty()
-  @IsString()
+  @NoDuplicateAndOtherTypes(
+    ['recipe_created', 'recipe_updated', 'recipe_deleted'],
+    {
+      message: `Invalid or duplicate event type detected in the array. Use these types: ${Object.values(
+        WebhookEventType,
+      )}`,
+    },
+  )
   @ApiProperty({
     enum: ['recipe_created', 'recipe_updated', 'recipe_deleted'],
   })
-  @IsIn(['recipe_created', 'recipe_updated', 'recipe_deleted'])
-  type: WebhookEventType;
+  types: WebhookEventType[];
 
-  @IsNotEmpty()
-  @IsString()
+  @IsUrl()
   @ApiProperty()
   url: string;
 

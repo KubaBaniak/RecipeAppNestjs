@@ -25,7 +25,7 @@ export class WebhookService {
     const userWebhooks = await this.webhookRepository.getAllWebhooksByUserId(
       userId,
     );
-    if (userWebhooks.length >= +process.env.WEBHOOK_LIMIT) {
+    if (userWebhooks.length >= 100) {
       throw new ForbiddenException('Reached limit of owned webhooks');
     }
 
@@ -43,7 +43,7 @@ export class WebhookService {
       );
     }
 
-    this.webhookRepository.createWebhook(userId, webhookData);
+    return this.webhookRepository.createWebhook(userId, webhookData);
   }
 
   async deleteWebhook(userId: number, webhookId: number): Promise<Webhook> {
@@ -75,25 +75,29 @@ export class WebhookService {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     };
-    const test = await firstValueFrom(
+    const message = await firstValueFrom(
       this.httpService.post(url, data, {
         headers: headersRequest,
       }),
     );
-    return test.status === 200;
+    return message.status === 200;
   }
 
   async createWebhookEvent(
     userId: number,
     data: Recipe,
-    type: WebhookEventType,
+    eventType: WebhookEventType,
   ): Promise<void> {
     const userWebhooks = await this.webhookRepository.getAllWebhooksByUserId(
       userId,
     );
     userWebhooks.forEach(async (webhook) => {
-      if (webhook.type === type) {
-        await this.webhookRepository.createWebhookEvent(webhook.id, data, type);
+      if (webhook.types.includes(eventType)) {
+        await this.webhookRepository.createWebhookEvent(
+          webhook.id,
+          { eventType, data },
+          eventType,
+        );
       }
     });
   }
