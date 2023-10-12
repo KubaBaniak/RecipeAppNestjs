@@ -26,7 +26,7 @@ export class MailService {
     userEmail: string,
     token: string,
   ): Promise<SentMessageInfo> {
-    const url = `${process.env.BASE_URL}/auth/reset-password/?token=${token}`;
+    const url = `${process.env.BASE_URL}?token=${token}`;
 
     return this.mailerService.sendMail({
       to: userEmail,
