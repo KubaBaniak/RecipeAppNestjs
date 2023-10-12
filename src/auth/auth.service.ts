@@ -76,7 +76,7 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
-    if (user.twoFactorAuth.isEnabled) {
+    if (user?.twoFactorAuth?.isEnabled) {
       if (!signInRequest.token) {
         throw new UnauthorizedException();
       }

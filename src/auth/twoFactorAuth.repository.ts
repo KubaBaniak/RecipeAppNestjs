@@ -17,21 +17,21 @@ export class TwoFactorAuthRepository {
     });
   }
 
-  async enable2faForUserWithId(id: number): Promise<TwoFactorAuth> {
+  async enable2faForUserWithId(userId: number): Promise<TwoFactorAuth> {
     return this.prisma.twoFactorAuth.update({
       data: {
         isEnabled: true,
       },
-      where: { id },
+      where: { userId },
     });
   }
 
-  async disable2faForUserWithId(id: number): Promise<TwoFactorAuth> {
+  async disable2faForUserWithId(userId: number): Promise<TwoFactorAuth> {
     return this.prisma.twoFactorAuth.update({
       data: {
         isEnabled: false,
       },
-      where: { id },
+      where: { userId },
     });
   }
 
