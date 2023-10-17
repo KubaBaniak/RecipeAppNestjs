@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
@@ -128,12 +129,15 @@ export class AuthService {
   async verifyAccountActivationToken(
     jwtToken: string,
   ): Promise<{ id: number }> {
+    const invalidTokenMessage =
+      'Invalid token. Please provide a valid token to activate account';
+
     try {
       return this.jwtService.verifyAsync(jwtToken, {
         secret: process.env.JWT_ACCOUNT_ACTIVATION_SECRET,
       });
     } catch {
-      throw new ForbiddenException('Token expired');
+      throw new UnauthorizedException(invalidTokenMessage);
     }
   }
 
@@ -141,6 +145,13 @@ export class AuthService {
     const userData = await this.pendingUsersRepository.getPendingUserById(
       userId,
     );
+
+    if (!userData) {
+      throw new NotFoundException(
+        'User account data for activation was not found. Please ensure you provided correct token or check if User is already activated',
+      );
+    }
+
     const createdUser = this.userRepository.createUser(userData);
 
     await this.pendingUsersRepository.removePendingUserById(userId);
