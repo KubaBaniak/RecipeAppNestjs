@@ -7,13 +7,13 @@ import { CreateWebhookRequest, WebhookEventType } from './dto';
 export class WebhookRepository {
   constructor(private prisma: PrismaService) {}
 
-  async createWebhook(
+  createWebhook(
     userId: number,
     webhookData: CreateWebhookRequest,
     iv?: string,
     authTag?: string,
   ): Promise<Webhook> {
-    const test = await this.prisma.webhook.create({
+    return this.prisma.webhook.create({
       data: {
         ...webhookData,
         userId,
@@ -21,10 +21,9 @@ export class WebhookRepository {
         authTag,
       },
     });
-    return test;
   }
 
-  async createWebhookEvent(
+  createWebhookEvent(
     webhookId: number,
     data: any,
     webhookType: WebhookEventType,
@@ -38,7 +37,7 @@ export class WebhookRepository {
     });
   }
 
-  async getDataToSendWebhookEvent(webhookId: number) {
+  getDataToSendWebhookEvent(webhookId: number) {
     return this.prisma.webhook.findUnique({
       where: {
         id: webhookId,
@@ -52,7 +51,7 @@ export class WebhookRepository {
     });
   }
 
-  async getAllWebhooksByUserId(userId: number): Promise<Webhook[]> {
+  getAllWebhooksByUserId(userId: number): Promise<Webhook[]> {
     return this.prisma.webhook.findMany({
       where: {
         userId,
@@ -60,7 +59,7 @@ export class WebhookRepository {
     });
   }
 
-  async getWebhookById(webhookId: number): Promise<Webhook> {
+  getWebhookById(webhookId: number): Promise<Webhook> {
     return this.prisma.webhook.findUnique({
       where: {
         id: webhookId,
