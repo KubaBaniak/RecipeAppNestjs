@@ -1,3 +1,10 @@
+## [1.1.11](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.1.10...v1.1.11) (2023-10-17)
+
+
+### Bug Fixes
+
+* tests (type -> types) and change webhook limit ([6176992](https://github.com/KubaBaniak/RecipeAppNestjs/commit/617699200e0464e2ef7fcea9fc74a97caca22e92))
+
 ## [1.1.10](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.1.9...v1.1.10) (2023-10-17)
 
 
