@@ -1,3 +1,10 @@
+## [1.1.9](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.1.8...v1.1.9) (2023-10-17)
+
+
+### Bug Fixes
+
+* require user to provide token if 2fa is enabled ([1cd4a05](https://github.com/KubaBaniak/RecipeAppNestjs/commit/1cd4a05060a5aac616612a17adfdb4ae3280b2b6))
+
 ## [1.1.8](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.1.7...v1.1.8) (2023-10-06)
 
 
