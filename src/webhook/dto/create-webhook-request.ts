@@ -1,23 +1,33 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsIn, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsIn,
+  IsOptional,
+  IsString,
+  IsUrl,
+  Length,
+} from 'class-validator';
 import { WebhookEventType } from './webhook-event-types';
+import { Transform } from 'class-transformer';
 
 export class CreateWebhookRequest {
-  @IsNotEmpty()
   @IsString()
+  @Length(4, 255, {
+    message: 'name should be between 4 and 255 characters long',
+  })
   @ApiProperty()
   name: string;
 
-  @IsNotEmpty()
-  @IsString()
+  @IsArray()
+  @IsString({ each: true })
+  @Transform(({ value }) => Array.from(new Set(value)))
+  @IsIn(['recipe_created', 'recipe_updated', 'recipe_deleted'], { each: true })
   @ApiProperty({
     enum: ['recipe_created', 'recipe_updated', 'recipe_deleted'],
   })
-  @IsIn(['recipe_created', 'recipe_updated', 'recipe_deleted'])
-  type: WebhookEventType;
+  types: WebhookEventType[];
 
-  @IsNotEmpty()
-  @IsString()
+  @IsUrl()
   @ApiProperty()
   url: string;
 

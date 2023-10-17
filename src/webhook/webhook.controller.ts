@@ -36,6 +36,7 @@ export class WebhookController {
       userId,
       webhookData,
     );
+
     return FetchWebhookResponse.from(webhook);
   }
 

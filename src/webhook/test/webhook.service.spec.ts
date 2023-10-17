@@ -18,7 +18,6 @@ describe('WebhookService', () => {
   let service: WebhookService;
   let webhookRepository: WebhookRepository;
   let cryptoUtils: CryptoUtils;
-  let httpService: HttpService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -48,7 +47,6 @@ describe('WebhookService', () => {
     service = module.get<WebhookService>(WebhookService);
     webhookRepository = module.get<WebhookRepository>(WebhookRepository);
     cryptoUtils = module.get<CryptoUtils>(CryptoUtils);
-    httpService = module.get<HttpService>(HttpService);
   });
 
   afterEach(() => {
