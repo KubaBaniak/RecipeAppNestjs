@@ -1,3 +1,10 @@
+## [1.1.10](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.1.9...v1.1.10) (2023-10-17)
+
+
+### Bug Fixes
+
+* password reset link + method on sending email ([44ad716](https://github.com/KubaBaniak/RecipeAppNestjs/commit/44ad7167989d9c0fee05cb2ebfa2e2526a216f5e))
+
 ## [1.1.9](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.1.8...v1.1.9) (2023-10-17)
 
 
