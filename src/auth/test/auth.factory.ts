@@ -11,6 +11,11 @@ type TwoFactorAuthRecoveryKeyOverrides = {
   usedAt?: Date;
 };
 
+export const add2faToUser = (overrides: TwoFactorAuthOverrides = {}) => ({
+  secretKey: overrides.secretKey ?? authenticator.generateSecret(),
+  isEnabled: overrides.isEnabled ?? false,
+});
+
 export const add2faToUserWithId = (
   userId: number,
   overrides: TwoFactorAuthOverrides = {},

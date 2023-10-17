@@ -76,6 +76,13 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
+    if (user?.twoFactorAuth?.isEnabled) {
+      if (!signInRequest.token) {
+        throw new UnauthorizedException();
+      }
+      return this.verify2fa(user.id, signInRequest.token);
+    }
+
     return this.generateToken(
       user.id,
       process.env.JWT_SECRET,
@@ -225,6 +232,7 @@ export class AuthService {
       await this.twoFactorAuthRepository.get2faSecretKeyForUserWithId(userId);
 
     if (authenticator.check(providedToken, secretKey)) {
+      await this.twoFactorAuthRepository.enable2faForUserWithId(userId);
       return this.generate2faRecoveryKeys(userId);
     } else {
       throw new BadRequestException('Incorrect 2FA token');
@@ -252,8 +260,8 @@ export class AuthService {
     if (authenticator.check(token, secretKey)) {
       return this.generateToken(
         user.id,
-        process.env.JWT_ACCOUNT_ACTIVATION_SECRET,
-        process.env.ACCOUNT_ACTIVATION_TIME,
+        process.env.JWT_SECRET,
+        process.env.JWT_EXPIRY_TIME,
       );
     }
 

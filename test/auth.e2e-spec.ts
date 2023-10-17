@@ -10,7 +10,10 @@ import { createUser } from '../src/user/test/user.factory';
 import { UserRepository } from '../src/user/user.repository';
 import { PersonalAccessTokenRepository } from '../src/auth/personal-access-token.repository';
 import { TwoFactorAuthRepository } from '../src/auth/twoFactorAuth.repository';
-import { add2faToUserWithId } from '../src/auth/test/auth.factory';
+import {
+  add2faToUser,
+  add2faToUserWithId,
+} from '../src/auth/test/auth.factory';
 import { authenticator } from 'otplib';
 import { BCRYPT, NUMBER_OF_2FA_RECOVERY_TOKENS } from '../src/auth/constants';
 import * as bcrypt from 'bcryptjs';
@@ -229,23 +232,30 @@ describe('AuthController (e2e)', () => {
     });
 
     describe('POST /auth/enable-2fa', () => {
-      let accessToken: string;
-      let secretKey: string;
-      beforeEach(async () => {
-        const userData = createUser();
-        const tempUser = await prismaService.user.create({ data: userData });
-        const twoFactorAuthData = await prismaService.twoFactorAuth.create({
-          data: add2faToUserWithId(tempUser.id),
-        });
-        secretKey = twoFactorAuthData.secretKey;
-        accessToken = await authService.signIn(userData);
-      });
       it('should enable 2fa on user account', async () => {
+        const createdUser = await prismaService.user.create({
+          data: createUser(),
+        });
+        await prismaService.twoFactorAuth.create({
+          data: add2faToUserWithId(createdUser.id),
+        });
+        const accessToken = await authService.signIn({
+          email: createdUser.email,
+          password: createdUser.password,
+        });
+        const { secretKey } =
+          await twoFactorAuthRepository.get2faSecretKeyForUserWithId(
+            createdUser.id,
+          );
         return request(app.getHttpServer())
           .post('/auth/enable-2fa')
           .set('Accept', 'application/json')
-          .set({ Authorization: `Bearer ${accessToken}` })
-          .send({ token: authenticator.generate(secretKey) })
+          .set({
+            Authorization: `Bearer ${accessToken}`,
+          })
+          .send({
+            token: authenticator.generate(secretKey),
+          })
           .expect((response: request.Response) => {
             const { recoveryKeys } = response.body;
             expect(recoveryKeys).toHaveLength(NUMBER_OF_2FA_RECOVERY_TOKENS);
@@ -348,7 +358,6 @@ describe('AuthController (e2e)', () => {
       });
     });
   });
-
   afterAll(async () => {
     await app.close();
   });
