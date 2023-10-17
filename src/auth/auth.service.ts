@@ -23,7 +23,6 @@ import qrcode from 'qrcode';
 import { TwoFactorAuth } from '@prisma/client';
 import { TwoFactorAuthRepository } from './twoFactorAuth.repository';
 import { PendingUsersRepository } from '../user/pending-user.repository';
-import { isJwtTokenStructureValid } from '../utils/jwt-utils';
 
 @Injectable()
 export class AuthService {
@@ -125,10 +124,6 @@ export class AuthService {
   ): Promise<{ id: number }> {
     const invalidTokenMessage =
       'Invalid token. Please provide a valid token to activate account';
-
-    if (!isJwtTokenStructureValid(jwtToken)) {
-      throw new UnauthorizedException(invalidTokenMessage);
-    }
 
     try {
       return this.jwtService.verifyAsync(jwtToken, {
