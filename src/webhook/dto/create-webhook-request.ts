@@ -23,8 +23,10 @@ export class CreateWebhookRequest {
   @Transform(({ value }) => Array.from(new Set(value)))
   @IsIn(['recipe_created', 'recipe_updated', 'recipe_deleted'], { each: true })
   @ApiProperty({
-    type: String,
-    isArray: true,
+    type: Array,
+    items: {
+      type: 'string',
+    },
     example: ['recipe_created', 'recipe_updated', 'recipe_deleted'],
   })
   types: WebhookEventType[];
