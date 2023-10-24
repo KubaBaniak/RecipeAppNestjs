@@ -10,7 +10,7 @@ export class MailService {
     userEmail: string,
     token: string,
   ): Promise<SentMessageInfo> {
-    const url = `${process.env.BASE_URL}/auth/activate-account/?token=${token}`;
+    const url = `${process.env.BASE_URL}:${process.env.APP_PORT}/auth/activate-account/?token=${token}`;
 
     return this.mailerService.sendMail({
       to: userEmail,
