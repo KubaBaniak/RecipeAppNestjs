@@ -1,3 +1,10 @@
+## [1.1.12](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.1.11...v1.1.12) (2023-10-24)
+
+
+### Bug Fixes
+
+* validate jwt on account activation ([9555862](https://github.com/KubaBaniak/RecipeAppNestjs/commit/95558624c944383b79ad6dfb7260c88f2c46dd8c))
+
 ## [1.1.11](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.1.10...v1.1.11) (2023-10-17)
 
 
