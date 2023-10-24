@@ -133,7 +133,7 @@ export class AuthService {
       'Invalid token. Please provide a valid token to activate account';
 
     try {
-      return this.jwtService.verifyAsync(jwtToken, {
+      return this.jwtService.verify(jwtToken, {
         secret: process.env.JWT_ACCOUNT_ACTIVATION_SECRET,
       });
     } catch {
