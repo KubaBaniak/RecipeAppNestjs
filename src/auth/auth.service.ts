@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
@@ -76,6 +77,13 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
+    if (user?.twoFactorAuth?.isEnabled) {
+      if (!signInRequest.token) {
+        throw new UnauthorizedException();
+      }
+      return this.verify2fa(user.id, signInRequest.token);
+    }
+
     return this.generateToken(
       user.id,
       process.env.JWT_SECRET,
@@ -121,12 +129,15 @@ export class AuthService {
   async verifyAccountActivationToken(
     jwtToken: string,
   ): Promise<{ id: number }> {
+    const invalidTokenMessage =
+      'Invalid token. Please provide a valid token to activate account';
+
     try {
       return this.jwtService.verifyAsync(jwtToken, {
         secret: process.env.JWT_ACCOUNT_ACTIVATION_SECRET,
       });
     } catch {
-      throw new ForbiddenException('Token expired');
+      throw new UnauthorizedException(invalidTokenMessage);
     }
   }
 
@@ -134,6 +145,13 @@ export class AuthService {
     const userData = await this.pendingUsersRepository.getPendingUserById(
       userId,
     );
+
+    if (!userData) {
+      throw new NotFoundException(
+        'User account data for activation was not found. Please ensure you provided correct token or check if User is already activated',
+      );
+    }
+
     const createdUser = this.userRepository.createUser(userData);
 
     await this.pendingUsersRepository.removePendingUserById(userId);
@@ -225,6 +243,7 @@ export class AuthService {
       await this.twoFactorAuthRepository.get2faSecretKeyForUserWithId(userId);
 
     if (authenticator.check(providedToken, secretKey)) {
+      await this.twoFactorAuthRepository.enable2faForUserWithId(userId);
       return this.generate2faRecoveryKeys(userId);
     } else {
       throw new BadRequestException('Incorrect 2FA token');
@@ -252,8 +271,8 @@ export class AuthService {
     if (authenticator.check(token, secretKey)) {
       return this.generateToken(
         user.id,
-        process.env.JWT_ACCOUNT_ACTIVATION_SECRET,
-        process.env.ACCOUNT_ACTIVATION_TIME_IN_SECONDS,
+        process.env.JWT_SECRET,
+        process.env.JWT_EXPIRY_TIME,
       );
     }
 

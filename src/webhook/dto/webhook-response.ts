@@ -5,7 +5,7 @@ export class FetchWebhookResponse {
     public id: number,
     public name: string,
     public url: string,
-    public type: string,
+    public types: string[],
   ) {}
 
   public static from(fetchedWebhook: Webhook): FetchWebhookResponse {
@@ -13,7 +13,7 @@ export class FetchWebhookResponse {
       fetchedWebhook.id,
       fetchedWebhook.name,
       fetchedWebhook.url,
-      fetchedWebhook.type,
+      fetchedWebhook.types,
     );
   }
 }

@@ -52,7 +52,7 @@ describe('WebhookController', () => {
     it('should create a new webhook with token', () => {
       const data: CreateWebhookRequest = {
         name: faker.word.noun(),
-        type: WebhookEventType.RecipeCreated,
+        types: [WebhookEventType.RecipeCreated],
         url: faker.internet.url(),
       };
 
@@ -64,7 +64,7 @@ describe('WebhookController', () => {
     it('should create a new webhook without token', () => {
       const data: CreateWebhookRequest = {
         name: faker.word.noun(),
-        type: WebhookEventType.RecipeDeleted,
+        types: [WebhookEventType.RecipeDeleted],
         url: faker.internet.url(),
         token: faker.string.alphanumeric(32),
       };
@@ -99,7 +99,7 @@ describe('WebhookController', () => {
           id: faker.number.int(),
           name: faker.word.noun(),
           url: faker.internet.url(),
-          type: WebhookEventType.RecipeCreated,
+          types: [WebhookEventType.RecipeCreated],
         },
       ];
       jest

@@ -46,7 +46,7 @@ model Webhook {
   id           Int            @id @default(autoincrement())
   name         String
   url          String
-  type         String
+  types        String[]
   token        String?
   initVector   String?
   authTag      String?

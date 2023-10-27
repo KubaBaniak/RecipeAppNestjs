@@ -113,7 +113,7 @@ describe('WebhookController (e2e)', () => {
               {
                 id: expect.any(Number),
                 name: expect.any(String),
-                type: expect.any(String),
+                types: expect.any(Array<string>),
                 url: expect.any(String),
               },
             ]),

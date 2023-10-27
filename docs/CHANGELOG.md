@@ -1,3 +1,33 @@
+## [1.1.11](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.1.10...v1.1.11) (2023-10-17)
+
+
+### Bug Fixes
+
+* tests (type -> types) and change webhook limit ([6176992](https://github.com/KubaBaniak/RecipeAppNestjs/commit/617699200e0464e2ef7fcea9fc74a97caca22e92))
+
+## [1.1.10](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.1.9...v1.1.10) (2023-10-17)
+
+
+### Bug Fixes
+
+* password reset link + method on sending email ([44ad716](https://github.com/KubaBaniak/RecipeAppNestjs/commit/44ad7167989d9c0fee05cb2ebfa2e2526a216f5e))
+
+## [1.1.9](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.1.8...v1.1.9) (2023-10-17)
+
+
+### Bug Fixes
+
+* require user to provide token if 2fa is enabled ([1cd4a05](https://github.com/KubaBaniak/RecipeAppNestjs/commit/1cd4a05060a5aac616612a17adfdb4ae3280b2b6))
+
+## [1.1.8](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.1.7...v1.1.8) (2023-10-06)
+
+
+### Bug Fixes
+
+* account activation time env var name ([1862413](https://github.com/KubaBaniak/RecipeAppNestjs/commit/18624132a563fd68e6a5db2bbe9c92e38760421f))
+* envs for jwt exiry time on ci + deploy ([aedf620](https://github.com/KubaBaniak/RecipeAppNestjs/commit/aedf620e0b2d7d094e34ae1e6699faa98de2d51f))
+* other TIME envs ([ccdbd56](https://github.com/KubaBaniak/RecipeAppNestjs/commit/ccdbd563201ee76803f2df3f5bf78e2cae13e83f))
+
 ## [1.1.7](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.1.6...v1.1.7) (2023-10-03)
 
 

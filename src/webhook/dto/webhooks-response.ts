@@ -2,7 +2,7 @@ export interface FetchedWebhook {
   id: number;
   name: string;
   url: string;
-  type: string;
+  types: string[];
 }
 
 export class FetchWebhooksResponse {
