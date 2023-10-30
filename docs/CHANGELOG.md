@@ -1,3 +1,10 @@
+## [1.1.13](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.1.12...v1.1.13) (2023-10-30)
+
+
+### Bug Fixes
+
+* separate base url with app port ([dfbbb26](https://github.com/KubaBaniak/RecipeAppNestjs/commit/dfbbb269c911c3b8e62095d5754dd1e2ae49be23))
+
 ## [1.1.12](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.1.11...v1.1.12) (2023-10-24)
 
 
