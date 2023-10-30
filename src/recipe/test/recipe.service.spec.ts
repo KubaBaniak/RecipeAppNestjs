@@ -13,8 +13,6 @@ import { WebhookRepository } from '../../webhook/webhook.repository';
 import { WebhookService } from '../../webhook/webhook.service';
 import { HttpModule } from '@nestjs/axios';
 import { CryptoUtils } from '../../webhook/utils/crypt-webhook-token';
-import { PersonalAccessTokenRepository } from '../../auth/personal-access-token.repository';
-import { TwoFactorAuthRepository } from '../../auth/twoFactorAuth.repository';
 import { RecipeRepository } from '../recipe.repository';
 import { UserRepository } from '../../user/user.repository';
 import { PendingUsersRepository } from '../../user/pending-user.repository';
@@ -30,10 +28,8 @@ describe('RecipeService', () => {
         RecipeService,
         S3Service,
         RecipeRepository,
-        TwoFactorAuthRepository,
         PendingUsersRepository,
         UserRepository,
-        PersonalAccessTokenRepository,
         WebSocketEventGateway,
         AuthService,
         JwtService,

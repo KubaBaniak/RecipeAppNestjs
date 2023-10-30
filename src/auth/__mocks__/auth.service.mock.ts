@@ -14,7 +14,6 @@ export class MockAuthService {
     return Promise.resolve(
       createUserResponse({
         email: signUpRequest.email,
-        password: signUpRequest.password,
       }),
     );
   }

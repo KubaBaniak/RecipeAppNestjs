@@ -1,9 +1,14 @@
-import { UserPayloadRequest } from '../../user/dto/user-request';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class SignUpResponse {
-  constructor(public id: number, public email: string) {}
+  @ApiProperty()
+  public accountActivationToken: string;
 
-  public static from(user: UserPayloadRequest): SignUpResponse {
-    return new SignUpResponse(user.id, user.email);
+  constructor(accountActivationToken: string) {
+    this.accountActivationToken = accountActivationToken;
+  }
+
+  public static from(accountActivationToken: string): SignUpResponse {
+    return new SignUpResponse(accountActivationToken);
   }
 }

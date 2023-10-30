@@ -12,11 +12,10 @@ export class PendingUsersRepository {
     return this.prisma.pendingUsers.create({ data });
   }
 
-  getPendingUserById(id: number): Promise<{ email: string; password: string }> {
+  getPendingUserById(id: number): Promise<{ email: string }> {
     return this.prisma.pendingUsers.findUnique({
       select: {
         email: true,
-        password: true,
       },
       where: { id },
     });

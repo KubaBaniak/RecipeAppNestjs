@@ -10,11 +10,9 @@ import { LocalAuthGuard } from './guards/local-auth.guard';
 import { PersonalAccessTokenStrategy } from './strategies/pat.strategy';
 import { UserRepository } from '../user/user.repository';
 import { PrismaService } from '../prisma/prisma.service';
-import { PersonalAccessTokenRepository } from './personal-access-token.repository';
 import { MailModule } from '../mail/mail.module';
 import { PasswordResetTokenStrategy } from './strategies/reset-password.strategy';
 import { TwoFactorAuthStrategy } from './strategies/two-factor-auth.strategy';
-import { TwoFactorAuthRepository } from './twoFactorAuth.repository';
 import { PendingUsersRepository } from '../user/pending-user.repository';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 
@@ -48,14 +46,12 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
     UserAuthBearerStrategy,
     PersonalAccessTokenStrategy,
     TwoFactorAuthStrategy,
-    TwoFactorAuthRepository,
     UserRepository,
     PendingUsersRepository,
-    PersonalAccessTokenRepository,
     PasswordResetTokenStrategy,
     PrismaService,
     LocalAuthGuard,
   ],
-  exports: [AuthService],
+  exports: [AuthService, ClientsModule],
 })
 export class AuthModule {}

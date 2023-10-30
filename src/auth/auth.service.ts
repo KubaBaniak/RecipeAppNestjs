@@ -1,59 +1,36 @@
 import {
-  BadRequestException,
   ForbiddenException,
+  Inject,
   Injectable,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { JwtService, JwtSignOptions } from '@nestjs/jwt';
-import { BCRYPT, NUMBER_OF_2FA_RECOVERY_TOKENS, SERVICE } from './constants';
-import * as bcrypt from 'bcryptjs';
-import {
-  AccessTokenPayload,
-  SignInRequest,
-  SignUpRequest,
-  SignUpResponse,
-  UserRequest,
-} from './dto';
 import { UserRepository } from '../user/user.repository';
-import { UserPayloadRequest } from '../user/dto';
-import { PersonalAccessTokenRepository } from './personal-access-token.repository';
-import { authenticator } from 'otplib';
-import qrcode from 'qrcode';
-import { TwoFactorAuth } from '@prisma/client';
-import { TwoFactorAuthRepository } from './twoFactorAuth.repository';
 import { PendingUsersRepository } from '../user/pending-user.repository';
+import { UserPayloadRequest } from '../user/dto';
+import {
+  ClientProxy,
+  RmqRecordBuilder,
+  RpcException,
+} from '@nestjs/microservices';
+import { catchError, firstValueFrom } from 'rxjs';
+import { SignInRequest, SignUpRequest, UserRequest } from './dto';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly pendingUsersRepository: PendingUsersRepository,
     private readonly userRepository: UserRepository,
-    private readonly twoFactorAuthRepository: TwoFactorAuthRepository,
-    private readonly personalAccessTokenRepository: PersonalAccessTokenRepository,
-    private readonly jwtService: JwtService,
+    @Inject('AUTH_SERVICE') private readonly authClient: ClientProxy,
   ) {}
 
-  verifyJwt(jwtToken: string, secret: string): Promise<AccessTokenPayload> {
-    return this.jwtService.verifyAsync(jwtToken, { secret });
+  async onApplicationBootstrap() {
+    await this.authClient.connect();
   }
 
-  async generateToken(
-    id: number,
-    secret: string,
-    time?: string,
-  ): Promise<string> {
-    const payload = { id };
-    const options: JwtSignOptions = { secret };
-
-    if (time) {
-      options.expiresIn = time;
-    }
-
-    return this.jwtService.signAsync(payload, options);
-  }
-
-  async signUp(signUpRequest: SignUpRequest): Promise<SignUpResponse> {
+  async signUp(
+    signUpRequest: SignUpRequest,
+  ): Promise<{ email: string; accountActivationToken: string }> {
     const [pendingUser, user] = await Promise.all([
       this.pendingUsersRepository.getPendingUserByEmail(signUpRequest.email),
       this.userRepository.getUserByEmail(signUpRequest.email),
@@ -63,11 +40,23 @@ export class AuthService {
       throw new ForbiddenException();
     }
 
-    const hash = await bcrypt.hash(signUpRequest.password, BCRYPT.salt);
+    const data = { email: signUpRequest.email };
+    const createdUser = await this.pendingUsersRepository.createPendingUser(
+      data,
+    );
+    const signUpPayload = new RmqRecordBuilder({
+      userId: createdUser.id,
+      password: signUpRequest.password,
+    }).build();
 
-    const data = { email: signUpRequest.email, password: hash };
-
-    return this.pendingUsersRepository.createPendingUser(data);
+    const { accountActivationToken } = await firstValueFrom(
+      this.authClient.send('signup', signUpPayload).pipe(
+        catchError((err) => {
+          throw new RpcException(err.response);
+        }),
+      ),
+    );
+    return { email: createdUser.email, accountActivationToken };
   }
 
   async signIn(signInRequest: SignInRequest): Promise<string> {
@@ -77,37 +66,39 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
-    if (user?.twoFactorAuth?.isEnabled) {
-      if (!signInRequest.token) {
-        throw new UnauthorizedException();
-      }
-      return this.verify2fa(user.id, signInRequest.token);
-    }
+    const signInPayload = new RmqRecordBuilder({
+      userId: user.id,
+      password: signInRequest.password,
+      token: signInRequest.token,
+    }).build();
 
-    return this.generateToken(
-      user.id,
-      process.env.JWT_SECRET,
-      process.env.JWT_EXPIRY_TIME,
+    const { accessToken } = await firstValueFrom(
+      this.authClient.send('signin', signInPayload).pipe(
+        catchError((err) => {
+          throw new RpcException(err.response);
+        }),
+      ),
     );
+
+    return accessToken;
   }
 
   async createPersonalAccessToken(userId: number): Promise<string> {
-    const validPersonalAccessToken =
-      await this.personalAccessTokenRepository.getValidPatForUserId(userId);
-
-    if (validPersonalAccessToken) {
-      this.personalAccessTokenRepository.invalidatePatForUserId(userId);
-    }
-    const personalAccessToken = await this.generateToken(
+    const createPatPayload = new RmqRecordBuilder({
       userId,
-      process.env.JWT_PAT_SECRET,
+    }).build();
+
+    const { personalAccessToken } = await firstValueFrom(
+      this.authClient
+        .send('create-personal-access-token', createPatPayload)
+        .pipe(
+          catchError((err) => {
+            throw new RpcException(err.response);
+          }),
+        ),
     );
-    const { token } =
-      await this.personalAccessTokenRepository.savePersonalAccessToken(
-        userId,
-        personalAccessToken,
-      );
-    return token;
+
+    return personalAccessToken;
   }
 
   async validateUser(userRequest: UserRequest): Promise<UserPayloadRequest> {
@@ -117,31 +108,35 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
-    const isMatch = await bcrypt.compare(userRequest.password, user.password);
+    const validateUserPayload = new RmqRecordBuilder({
+      userId: user.id,
+      password: userRequest.password,
+    }).build();
 
-    if (!isMatch) {
-      throw new UnauthorizedException();
-    }
+    const validatedUserId = await firstValueFrom(
+      this.authClient.send('validate-user', validateUserPayload).pipe(
+        catchError((err) => {
+          throw new RpcException(err.response);
+        }),
+      ),
+    );
 
-    return user;
+    return validatedUserId;
   }
 
-  async verifyAccountActivationToken(
-    jwtToken: string,
-  ): Promise<{ id: number }> {
-    const invalidTokenMessage =
-      'Invalid token. Please provide a valid token to activate account';
+  async activateAccount(token: string): Promise<UserPayloadRequest> {
+    const activateAccountPayload = new RmqRecordBuilder({
+      token,
+    }).build();
 
-    try {
-      return this.jwtService.verifyAsync(jwtToken, {
-        secret: process.env.JWT_ACCOUNT_ACTIVATION_SECRET,
-      });
-    } catch {
-      throw new UnauthorizedException(invalidTokenMessage);
-    }
-  }
+    const userId = await firstValueFrom(
+      this.authClient.send('activate-account', activateAccountPayload).pipe(
+        catchError((err) => {
+          throw new RpcException(err.response);
+        }),
+      ),
+    );
 
-  async activateAccount(userId: number): Promise<UserPayloadRequest> {
     const userData = await this.pendingUsersRepository.getPendingUserById(
       userId,
     );
@@ -159,140 +154,139 @@ export class AuthService {
     return createdUser;
   }
 
-  async changePassword(
-    userId: number,
-    newPassword: string,
-  ): Promise<UserPayloadRequest> {
-    const hashedPassword = await bcrypt.hash(newPassword, BCRYPT.salt);
-
-    return this.userRepository.updateUserById(userId, {
-      password: hashedPassword,
-    });
-  }
-
-  async generateAccountActivationToken(userId: number): Promise<string> {
-    const token = await this.generateToken(
+  async changePassword(userId: number, newPassword: string): Promise<number> {
+    const changePasswordPayload = new RmqRecordBuilder({
       userId,
-      process.env.JWT_ACCOUNT_ACTIVATION_SECRET,
-      process.env.ACCOUNT_ACTIVATION_TIME_IN_SECONDS,
+      newPassword,
+    }).build();
+
+    await firstValueFrom(
+      this.authClient.send('change-password', changePasswordPayload).pipe(
+        catchError((err) => {
+          throw new RpcException(err.response);
+        }),
+      ),
     );
 
-    return token;
+    return userId;
   }
 
   async generateResetPasswordToken(email: string): Promise<string> {
     const user = await this.userRepository.getUserByEmail(email);
+    const generateResetPassToken = new RmqRecordBuilder({
+      userId: user.id,
+    }).build();
 
-    if (!user) {
-      return;
-    }
-
-    const token = await this.generateToken(
-      user.id,
-      process.env.JWT_PASSWORD_RESET_SECRET,
-      process.env.JWT_PASSWORD_RESET_TIME,
+    const token = await firstValueFrom(
+      this.authClient
+        .send('generate-password-reset-token', generateResetPassToken)
+        .pipe(
+          catchError((err) => {
+            throw new RpcException(err.response);
+          }),
+        ),
     );
+
     return token;
   }
 
-  async is2faEnabled(userId: number): Promise<boolean> {
-    const isEnabledObject =
-      await this.twoFactorAuthRepository.is2faEnabledForUserWithId(userId);
-
-    return isEnabledObject?.isEnabled === true;
-  }
-
   async createQrCodeFor2fa(userId: number): Promise<string> {
-    const { email } = await this.userRepository.getUserById(userId);
-    const service = SERVICE.name;
-    const secretKey = authenticator.generateSecret();
-
-    const otpauth = authenticator.keyuri(email, service, secretKey);
-
-    await this.twoFactorAuthRepository.save2faSecretKeyForUserWithId(
+    const create2faQrCodePayload = new RmqRecordBuilder({
       userId,
-      secretKey,
+    }).build();
+
+    const { qrCodeUrl } = await firstValueFrom(
+      this.authClient.send('create-2fa-qrcode', create2faQrCodePayload).pipe(
+        catchError((err) => {
+          throw new RpcException(err.response);
+        }),
+      ),
     );
 
-    return qrcode.toDataURL(otpauth);
+    return qrCodeUrl;
   }
 
   async generate2faRecoveryKeys(userId: number): Promise<string[]> {
-    const user = await this.userRepository.getUserById(userId);
+    const generate2faRecoveryKeysPayload = new RmqRecordBuilder({
+      userId,
+    }).build();
 
-    const recoveryKeys = Array.from(
-      { length: NUMBER_OF_2FA_RECOVERY_TOKENS },
-      () => {
-        return { key: authenticator.generateSecret() };
-      },
+    const { recoveryKeys } = await firstValueFrom(
+      this.authClient
+        .send('create-2fa-qrcode', generate2faRecoveryKeysPayload)
+        .pipe(
+          catchError((err) => {
+            throw new RpcException(err.response);
+          }),
+        ),
     );
 
-    await this.twoFactorAuthRepository.saveRecoveryKeysForUserWithId(
-      user.id,
-      recoveryKeys,
-    );
-
-    return recoveryKeys.map((keyObject) => keyObject.key);
+    return recoveryKeys;
   }
 
   async enable2fa(userId: number, providedToken: string): Promise<string[]> {
-    if (await this.is2faEnabled(userId)) {
-      throw new BadRequestException('You have already enabled 2FA');
-    }
-    const { secretKey } =
-      await this.twoFactorAuthRepository.get2faSecretKeyForUserWithId(userId);
+    const enable2faPayload = new RmqRecordBuilder({
+      userId,
+      token: providedToken,
+    }).build();
 
-    if (authenticator.check(providedToken, secretKey)) {
-      await this.twoFactorAuthRepository.enable2faForUserWithId(userId);
-      return this.generate2faRecoveryKeys(userId);
-    } else {
-      throw new BadRequestException('Incorrect 2FA token');
-    }
+    const { recoveryKeys } = await firstValueFrom(
+      this.authClient.send('enable-2fa', enable2faPayload).pipe(
+        catchError((err) => {
+          throw new RpcException(err.response);
+        }),
+      ),
+    );
+
+    return recoveryKeys;
   }
 
-  async disable2fa(userId: number): Promise<TwoFactorAuth> {
-    if (!(await this.is2faEnabled(userId))) {
-      throw new BadRequestException(
-        'Could not disable 2FA, because it was not enabled',
-      );
-    }
-    return this.twoFactorAuthRepository.disable2faForUserWithId(userId);
+  async disable2fa(userId: number): Promise<number> {
+    const disable2faPayload = new RmqRecordBuilder({
+      userId,
+    }).build();
+
+    const twoFactorObject = await firstValueFrom(
+      this.authClient.send('disable-2fa', disable2faPayload).pipe(
+        catchError((err) => {
+          throw new RpcException(err.response);
+        }),
+      ),
+    );
+
+    return twoFactorObject.id;
   }
 
   async verify2fa(userId: number, token: string): Promise<string> {
-    const user = await this.userRepository.getUserById(userId);
-    const { secretKey } =
-      await this.twoFactorAuthRepository.get2faSecretKeyForUserWithId(userId);
-    const { recoveryKeys: keys } =
-      await this.twoFactorAuthRepository.get2faRecoveryKeysForUserWithId(
-        userId,
-      );
+    const verify2faPayload = new RmqRecordBuilder({
+      userId,
+      token,
+    }).build();
 
-    if (authenticator.check(token, secretKey)) {
-      return this.generateToken(
-        user.id,
-        process.env.JWT_SECRET,
-        process.env.JWT_EXPIRY_TIME,
-      );
-    }
+    const { accessToken } = await firstValueFrom(
+      this.authClient.send('verify-2fa', verify2faPayload).pipe(
+        catchError((err) => {
+          throw new RpcException(err.response);
+        }),
+      ),
+    );
 
-    if (keys.some(({ key, isUsed }) => key === token && !isUsed)) {
-      await this.twoFactorAuthRepository.expire2faRecoveryKey(token);
-      return this.generateToken(
-        user.id,
-        process.env.JWT_SECRET,
-        process.env.JWT_EXPIRY_TIME,
-      );
-    }
-
-    throw new UnauthorizedException('Incorrect 2FA token');
+    return accessToken;
   }
 
   async regenerate2faRecoveryTokens(userId: number): Promise<string[]> {
-    if (!(await this.is2faEnabled(userId))) {
-      throw new BadRequestException('You have to enable 2FA first');
-    }
+    const regenerate2faRecoveryKeysPayload = new RmqRecordBuilder({
+      userId,
+    }).build();
 
-    return this.generate2faRecoveryKeys(userId);
+    const { recoveryKeys } = await firstValueFrom(
+      this.authClient.send('verify-2fa', regenerate2faRecoveryKeysPayload).pipe(
+        catchError((err) => {
+          throw new RpcException(err.response);
+        }),
+      ),
+    );
+
+    return recoveryKeys;
   }
 }

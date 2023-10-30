@@ -6,7 +6,6 @@ import {
   HttpCode,
   UseGuards,
   Query,
-  Inject,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './guards/local-auth.guard';
@@ -34,7 +33,6 @@ import { UserId } from '../common/decorators/req-user-id.decorator';
 import { MailService } from '../mail/mail.service';
 import { PasswordResetAuthGuard } from './guards/reset-password.guard';
 import { TwoFactorAuthGuard } from './guards/two-factor-auth.guard';
-import { ClientProxy, RmqRecordBuilder } from '@nestjs/microservices';
 
 @Controller('auth')
 @ApiTags('Authentication')
@@ -42,12 +40,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly mailService: MailService,
-    @Inject('AUTH_SERVICE') private readonly authClient: ClientProxy,
   ) {}
-
-  async onApplicationBootstrap() {
-    await this.authClient.connect();
-  }
 
   @HttpCode(200)
   @UseGuards(LocalAuthGuard)
@@ -67,25 +60,16 @@ export class AuthController {
   })
   @Post('signup')
   async signUp(@Body() signUpRequest: SignUpRequest): Promise<SignUpResponse> {
-    console.log('hehw');
-    const createdUser = await this.authService.signUp(signUpRequest);
-
-    const record = new RmqRecordBuilder({
-      userId: createdUser.id,
-      password: signUpRequest.password,
-    });
-
-    console.log(await this.authClient.send('signup', record).toPromise());
-
-    const accountActivationToken =
-      await this.authService.generateAccountActivationToken(createdUser.id);
+    const { email, accountActivationToken } = await this.authService.signUp(
+      signUpRequest,
+    );
 
     await this.mailService.sendAccountActivationEmail(
-      createdUser.email,
+      email,
       accountActivationToken,
     );
 
-    return SignUpResponse.from(createdUser);
+    return SignUpResponse.from(accountActivationToken);
   }
 
   @HttpCode(201)
@@ -116,10 +100,7 @@ export class AuthController {
   @HttpCode(200)
   @Get('activate-account')
   async activateAccount(@Query('token') token: string): Promise<void> {
-    const tokenData = await this.authService.verifyAccountActivationToken(
-      token,
-    );
-    await this.authService.activateAccount(tokenData.id);
+    await this.authService.activateAccount(token);
   }
 
   @ApiOperation({ summary: 'Sends link to resets password of the user' })
@@ -146,6 +127,7 @@ export class AuthController {
     @UserId() userId: number,
     @Body() resetPasswordRequest: ResetPasswordRequest,
   ): Promise<void> {
+    console.log(resetPasswordRequest);
     await this.authService.changePassword(
       userId,
       resetPasswordRequest.newPassword,

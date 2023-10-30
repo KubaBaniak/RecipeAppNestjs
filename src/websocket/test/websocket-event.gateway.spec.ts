@@ -5,8 +5,6 @@ import { AuthService } from '../../auth/auth.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UserRepository } from '../../user/user.repository';
 import { JwtService } from '@nestjs/jwt';
-import { PersonalAccessTokenRepository } from '../../auth/personal-access-token.repository';
-import { TwoFactorAuthRepository } from '../../auth/twoFactorAuth.repository';
 import { PendingUsersRepository } from '../../user/pending-user.repository';
 
 describe('Websocket', () => {
@@ -19,8 +17,6 @@ describe('Websocket', () => {
         AuthService,
         PendingUsersRepository,
         UserRepository,
-        TwoFactorAuthRepository,
-        PersonalAccessTokenRepository,
         JwtService,
         PrismaService,
       ],
