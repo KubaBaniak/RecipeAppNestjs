@@ -23,6 +23,7 @@ export class WebSocketEventGateway {
     const token: string = socket.handshake.headers.authorization?.split(' ')[1];
     try {
       const userId = await this.authService.validateAuthToken(token);
+      this.authService.validateAuthMicroserviceReturn(userId);
       const user = await this.userRepository.getUserById(userId);
 
       if (!user) {

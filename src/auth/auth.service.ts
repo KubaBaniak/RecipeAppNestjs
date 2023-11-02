@@ -93,29 +93,29 @@ export class AuthService {
   async createPersonalAccessToken(userId: number): Promise<string> {
     const payload = { userId };
 
-    const { personalAccessToken } = await this.amqpConnection.request<{
+    const personalAccessTokenObject = await this.amqpConnection.request<{
       personalAccessToken: string;
     }>({
       exchange: this.EXCHANGE,
       routingKey: 'add-personal-access-token',
       payload,
     });
-    this.validateAuthMicroserviceReturn(userId);
+    this.validateAuthMicroserviceReturn(personalAccessTokenObject);
 
-    return personalAccessToken;
+    return personalAccessTokenObject.personalAccessToken;
   }
 
   async validateAuthToken(token: string): Promise<number> {
     const payload = { token };
 
-    const { id: userId } = await this.amqpConnection.request<{ id: number }>({
+    const userIdObject = await this.amqpConnection.request<{ id: number }>({
       exchange: this.EXCHANGE,
       routingKey: 'validate-jwt-token',
       payload,
     });
-    this.validateAuthMicroserviceReturn(userId);
+    this.validateAuthMicroserviceReturn(userIdObject);
 
-    return userId;
+    return userIdObject.id;
   }
 
   async validateUser(userRequest: UserRequest): Promise<number> {
@@ -173,7 +173,7 @@ export class AuthService {
     }>(this.EXCHANGE, 'change-password', payload);
     this.validateAuthMicroserviceReturn(changedPasswordUserId);
 
-    return userId;
+    return changedPasswordUserId;
   }
 
   async generateResetPasswordToken(email: string): Promise<string> {
@@ -194,31 +194,31 @@ export class AuthService {
   async createQrCodeFor2fa(userId: number): Promise<string> {
     const payload = { userId };
 
-    const { qrCodeUrl } = await this.amqpConnection.request<{
+    const qrCodeUrlObject = await this.amqpConnection.request<{
       qrCodeUrl: string;
     }>({
       exchange: this.EXCHANGE,
       routingKey: 'create-2fa-qrcode',
       payload,
     });
-    this.validateAuthMicroserviceReturn(qrCodeUrl);
+    this.validateAuthMicroserviceReturn(qrCodeUrlObject);
 
-    return qrCodeUrl;
+    return qrCodeUrlObject.qrCodeUrl;
   }
 
   async generate2faRecoveryKeys(userId: number): Promise<string[]> {
     const payload = { userId };
 
-    const { recoveryKeys } = await this.amqpConnection.request<{
+    const recoveryKeysObject = await this.amqpConnection.request<{
       recoveryKeys: string[];
     }>({
       exchange: this.EXCHANGE,
       routingKey: 'regenerate-2fa-recovery-keys',
       payload,
     });
-    this.validateAuthMicroserviceReturn(recoveryKeys);
+    this.validateAuthMicroserviceReturn(recoveryKeysObject);
 
-    return recoveryKeys;
+    return recoveryKeysObject.recoveryKeys;
   }
 
   async enable2fa(userId: number, providedToken: string): Promise<string[]> {
