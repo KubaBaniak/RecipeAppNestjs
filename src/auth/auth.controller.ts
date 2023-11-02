@@ -32,7 +32,6 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { UserId } from '../common/decorators/req-user-id.decorator';
 import { MailService } from '../mail/mail.service';
 import { PasswordResetAuthGuard } from './guards/reset-password.guard';
-import { TwoFactorAuthGuard } from './guards/two-factor-auth.guard';
 
 @Controller('auth')
 @ApiTags('Authentication')
@@ -127,7 +126,6 @@ export class AuthController {
     @UserId() userId: number,
     @Body() resetPasswordRequest: ResetPasswordRequest,
   ): Promise<void> {
-    console.log(resetPasswordRequest);
     await this.authService.changePassword(
       userId,
       resetPasswordRequest.newPassword,
@@ -177,7 +175,7 @@ export class AuthController {
 
   @HttpCode(200)
   @ApiOperation({ summary: 'Authenticate with 2FA to login' })
-  @UseGuards(TwoFactorAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Post('verify-2fa')
   async verify2FA(
     @UserId() userId: number,

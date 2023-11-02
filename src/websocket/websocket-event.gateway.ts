@@ -1,20 +1,15 @@
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { UserRepository } from '../user/user.repository';
-import {
-  ClientProxy,
-  RmqRecordBuilder,
-  RpcException,
-} from '@nestjs/microservices';
-import { catchError, firstValueFrom } from 'rxjs';
+import { AuthService } from '../auth/auth.service';
 
 @Injectable()
 @WebSocketGateway()
 export class WebSocketEventGateway {
   constructor(
     private readonly userRepository: UserRepository,
-    @Inject('AUTH_SERVICE') private readonly authClient: ClientProxy,
+    private readonly authService: AuthService,
   ) {}
 
   @WebSocketServer()
@@ -27,17 +22,7 @@ export class WebSocketEventGateway {
   async handleConnection(socket: Socket) {
     const token: string = socket.handshake.headers.authorization?.split(' ')[1];
     try {
-      const validateJwtPayload = new RmqRecordBuilder({
-        token,
-      }).build();
-
-      const userId: number = await firstValueFrom(
-        this.authClient.send('create-2fa-qrcode', validateJwtPayload).pipe(
-          catchError((err) => {
-            throw new RpcException(err.response);
-          }),
-        ),
-      );
+      const userId = await this.authService.validateAuthToken(token);
       const user = await this.userRepository.getUserById(userId);
 
       if (!user) {

@@ -1,6 +1,6 @@
 import {
   ForbiddenException,
-  Inject,
+  HttpException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -8,24 +8,23 @@ import {
 import { UserRepository } from '../user/user.repository';
 import { PendingUsersRepository } from '../user/pending-user.repository';
 import { UserPayloadRequest } from '../user/dto';
-import {
-  ClientProxy,
-  RmqRecordBuilder,
-  RpcException,
-} from '@nestjs/microservices';
-import { catchError, firstValueFrom } from 'rxjs';
 import { SignInRequest, SignUpRequest, UserRequest } from './dto';
+import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly pendingUsersRepository: PendingUsersRepository,
     private readonly userRepository: UserRepository,
-    @Inject('AUTH_SERVICE') private readonly authClient: ClientProxy,
+    private readonly amqpConnection: AmqpConnection,
   ) {}
 
-  async onApplicationBootstrap() {
-    await this.authClient.connect();
+  private EXCHANGE = 'authentication';
+
+  validateAuthMicroserviceReturn(payload: any) {
+    if (typeof payload === 'object' && 'status' in payload) {
+      throw new HttpException(payload.message, payload.status);
+    }
   }
 
   async signUp(
@@ -44,19 +43,26 @@ export class AuthService {
     const createdUser = await this.pendingUsersRepository.createPendingUser(
       data,
     );
-    const signUpPayload = new RmqRecordBuilder({
+
+    const payload = {
       userId: createdUser.id,
       password: signUpRequest.password,
-    }).build();
+    };
 
-    const { accountActivationToken } = await firstValueFrom(
-      this.authClient.send('signup', signUpPayload).pipe(
-        catchError((err) => {
-          throw new RpcException(err.response);
-        }),
-      ),
-    );
-    return { email: createdUser.email, accountActivationToken };
+    const accountActivationTokenObject = await this.amqpConnection.request<{
+      accountActivationToken: string;
+    }>({
+      exchange: this.EXCHANGE,
+      routingKey: 'signup',
+      payload,
+    });
+    this.validateAuthMicroserviceReturn(accountActivationTokenObject);
+
+    return {
+      email: createdUser.email,
+      accountActivationToken:
+        accountActivationTokenObject.accountActivationToken,
+    };
   }
 
   async signIn(signInRequest: SignInRequest): Promise<string> {
@@ -66,76 +72,80 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
-    const signInPayload = new RmqRecordBuilder({
+    const payload = {
       userId: user.id,
       password: signInRequest.password,
       token: signInRequest.token,
-    }).build();
+    };
 
-    const { accessToken } = await firstValueFrom(
-      this.authClient.send('signin', signInPayload).pipe(
-        catchError((err) => {
-          throw new RpcException(err.response);
-        }),
-      ),
-    );
+    const accessTokenObject = await this.amqpConnection.request<{
+      accessToken: string;
+    }>({
+      exchange: this.EXCHANGE,
+      routingKey: 'signin',
+      payload,
+    });
+    this.validateAuthMicroserviceReturn(accessTokenObject);
 
-    return accessToken;
+    return accessTokenObject.accessToken;
   }
 
   async createPersonalAccessToken(userId: number): Promise<string> {
-    const createPatPayload = new RmqRecordBuilder({
-      userId,
-    }).build();
+    const payload = { userId };
 
-    const { personalAccessToken } = await firstValueFrom(
-      this.authClient
-        .send('create-personal-access-token', createPatPayload)
-        .pipe(
-          catchError((err) => {
-            throw new RpcException(err.response);
-          }),
-        ),
-    );
+    const { personalAccessToken } = await this.amqpConnection.request<{
+      personalAccessToken: string;
+    }>({
+      exchange: this.EXCHANGE,
+      routingKey: 'add-personal-access-token',
+      payload,
+    });
+    this.validateAuthMicroserviceReturn(userId);
 
     return personalAccessToken;
   }
 
-  async validateUser(userRequest: UserRequest): Promise<UserPayloadRequest> {
+  async validateAuthToken(token: string): Promise<number> {
+    const payload = { token };
+
+    const { id: userId } = await this.amqpConnection.request<{ id: number }>({
+      exchange: this.EXCHANGE,
+      routingKey: 'validate-jwt-token',
+      payload,
+    });
+    this.validateAuthMicroserviceReturn(userId);
+
+    return userId;
+  }
+
+  async validateUser(userRequest: UserRequest): Promise<number> {
     const user = await this.userRepository.getUserByEmail(userRequest.email);
 
     if (!user) {
       throw new UnauthorizedException();
     }
 
-    const validateUserPayload = new RmqRecordBuilder({
-      userId: user.id,
-      password: userRequest.password,
-    }).build();
+    const payload = { userId: user.id, password: userRequest.password };
 
-    const validatedUserId = await firstValueFrom(
-      this.authClient.send('validate-user', validateUserPayload).pipe(
-        catchError((err) => {
-          throw new RpcException(err.response);
-        }),
-      ),
-    );
+    const validatedUserId = await this.amqpConnection.request<number>({
+      exchange: this.EXCHANGE,
+      routingKey: 'validate-user',
+      payload,
+    });
+    this.validateAuthMicroserviceReturn(validatedUserId);
 
     return validatedUserId;
   }
 
   async activateAccount(token: string): Promise<UserPayloadRequest> {
-    const activateAccountPayload = new RmqRecordBuilder({
-      token,
-    }).build();
+    const payload = { token };
 
-    const userId = await firstValueFrom(
-      this.authClient.send('activate-account', activateAccountPayload).pipe(
-        catchError((err) => {
-          throw new RpcException(err.response);
-        }),
-      ),
-    );
+    const userId = await this.amqpConnection.request<number>({
+      exchange: this.EXCHANGE,
+      routingKey: 'activate-account',
+      payload,
+    });
+    this.validateAuthMicroserviceReturn(userId);
 
     const userData = await this.pendingUsersRepository.getPendingUserById(
       userId,
@@ -155,138 +165,117 @@ export class AuthService {
   }
 
   async changePassword(userId: number, newPassword: string): Promise<number> {
-    const changePasswordPayload = new RmqRecordBuilder({
-      userId,
-      newPassword,
-    }).build();
+    const payload = { userId, newPassword };
 
-    await firstValueFrom(
-      this.authClient.send('change-password', changePasswordPayload).pipe(
-        catchError((err) => {
-          throw new RpcException(err.response);
-        }),
-      ),
-    );
+    const changedPasswordUserId = await this.amqpConnection.publish<{
+      userId: number;
+      newPassword: string;
+    }>(this.EXCHANGE, 'change-password', payload);
+    this.validateAuthMicroserviceReturn(changedPasswordUserId);
 
     return userId;
   }
 
   async generateResetPasswordToken(email: string): Promise<string> {
     const user = await this.userRepository.getUserByEmail(email);
-    const generateResetPassToken = new RmqRecordBuilder({
-      userId: user.id,
-    }).build();
 
-    const token = await firstValueFrom(
-      this.authClient
-        .send('generate-password-reset-token', generateResetPassToken)
-        .pipe(
-          catchError((err) => {
-            throw new RpcException(err.response);
-          }),
-        ),
-    );
+    const payload = { userId: user.id };
+
+    const token = await this.amqpConnection.request<string>({
+      exchange: this.EXCHANGE,
+      routingKey: 'generate-password-reset-token',
+      payload,
+    });
+    this.validateAuthMicroserviceReturn(token);
 
     return token;
   }
 
   async createQrCodeFor2fa(userId: number): Promise<string> {
-    const create2faQrCodePayload = new RmqRecordBuilder({
-      userId,
-    }).build();
+    const payload = { userId };
 
-    const { qrCodeUrl } = await firstValueFrom(
-      this.authClient.send('create-2fa-qrcode', create2faQrCodePayload).pipe(
-        catchError((err) => {
-          throw new RpcException(err.response);
-        }),
-      ),
-    );
+    const { qrCodeUrl } = await this.amqpConnection.request<{
+      qrCodeUrl: string;
+    }>({
+      exchange: this.EXCHANGE,
+      routingKey: 'create-2fa-qrcode',
+      payload,
+    });
+    this.validateAuthMicroserviceReturn(qrCodeUrl);
 
     return qrCodeUrl;
   }
 
   async generate2faRecoveryKeys(userId: number): Promise<string[]> {
-    const generate2faRecoveryKeysPayload = new RmqRecordBuilder({
-      userId,
-    }).build();
+    const payload = { userId };
 
-    const { recoveryKeys } = await firstValueFrom(
-      this.authClient
-        .send('create-2fa-qrcode', generate2faRecoveryKeysPayload)
-        .pipe(
-          catchError((err) => {
-            throw new RpcException(err.response);
-          }),
-        ),
-    );
+    const { recoveryKeys } = await this.amqpConnection.request<{
+      recoveryKeys: string[];
+    }>({
+      exchange: this.EXCHANGE,
+      routingKey: 'regenerate-2fa-recovery-keys',
+      payload,
+    });
+    this.validateAuthMicroserviceReturn(recoveryKeys);
 
     return recoveryKeys;
   }
 
   async enable2fa(userId: number, providedToken: string): Promise<string[]> {
-    const enable2faPayload = new RmqRecordBuilder({
-      userId,
-      token: providedToken,
-    }).build();
+    const payload = { userId, token: providedToken };
 
-    const { recoveryKeys } = await firstValueFrom(
-      this.authClient.send('enable-2fa', enable2faPayload).pipe(
-        catchError((err) => {
-          throw new RpcException(err.response);
-        }),
-      ),
-    );
+    const recoveryKeysObject = await this.amqpConnection.request<{
+      recoveryKeys: string[];
+    }>({
+      exchange: this.EXCHANGE,
+      routingKey: 'enable-2fa',
+      payload,
+    });
+    this.validateAuthMicroserviceReturn(recoveryKeysObject);
 
-    return recoveryKeys;
+    return recoveryKeysObject.recoveryKeys;
   }
 
   async disable2fa(userId: number): Promise<number> {
-    const disable2faPayload = new RmqRecordBuilder({
-      userId,
-    }).build();
+    const payload = { userId };
 
-    const twoFactorObject = await firstValueFrom(
-      this.authClient.send('disable-2fa', disable2faPayload).pipe(
-        catchError((err) => {
-          throw new RpcException(err.response);
-        }),
-      ),
-    );
+    const userTwoFactorAuthId = await this.amqpConnection.request<number>({
+      exchange: this.EXCHANGE,
+      routingKey: 'disable-2fa',
+      payload,
+    });
+    this.validateAuthMicroserviceReturn(userTwoFactorAuthId);
 
-    return twoFactorObject.id;
+    return userTwoFactorAuthId;
   }
 
   async verify2fa(userId: number, token: string): Promise<string> {
-    const verify2faPayload = new RmqRecordBuilder({
-      userId,
-      token,
-    }).build();
+    const payload = { userId, token };
 
-    const { accessToken } = await firstValueFrom(
-      this.authClient.send('verify-2fa', verify2faPayload).pipe(
-        catchError((err) => {
-          throw new RpcException(err.response);
-        }),
-      ),
-    );
+    const accessTokenObject = await this.amqpConnection.request<{
+      accessToken: string;
+    }>({
+      exchange: this.EXCHANGE,
+      routingKey: 'verify-2fa',
+      payload,
+    });
+    this.validateAuthMicroserviceReturn(accessTokenObject);
 
-    return accessToken;
+    return accessTokenObject.accessToken;
   }
 
   async regenerate2faRecoveryTokens(userId: number): Promise<string[]> {
-    const regenerate2faRecoveryKeysPayload = new RmqRecordBuilder({
-      userId,
-    }).build();
+    const payload = { userId };
 
-    const { recoveryKeys } = await firstValueFrom(
-      this.authClient.send('verify-2fa', regenerate2faRecoveryKeysPayload).pipe(
-        catchError((err) => {
-          throw new RpcException(err.response);
-        }),
-      ),
-    );
+    const recoveryKeysObject = await this.amqpConnection.request<{
+      recoveryKeys: string[];
+    }>({
+      exchange: this.EXCHANGE,
+      routingKey: 'regenerate-2fa-recovery-keys',
+      payload,
+    });
+    this.validateAuthMicroserviceReturn(recoveryKeysObject);
 
-    return recoveryKeys;
+    return recoveryKeysObject.recoveryKeys;
   }
 }

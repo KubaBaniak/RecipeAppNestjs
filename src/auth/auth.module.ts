@@ -12,32 +12,27 @@ import { UserRepository } from '../user/user.repository';
 import { PrismaService } from '../prisma/prisma.service';
 import { MailModule } from '../mail/mail.module';
 import { PasswordResetTokenStrategy } from './strategies/reset-password.strategy';
-import { TwoFactorAuthStrategy } from './strategies/two-factor-auth.strategy';
 import { PendingUsersRepository } from '../user/pending-user.repository';
-import { ClientsModule, Transport } from '@nestjs/microservices';
+import { RabbitMQModule } from '@golevelup/nestjs-rabbitmq';
 
 @Module({
   imports: [
-    ClientsModule.register([
-      {
-        name: 'AUTH_SERVICE',
-        transport: Transport.RMQ,
-        options: {
-          urls: ['amqp://127.0.0.1:5672'],
-          queue: 'auth_queue',
-          noAck: true,
-          queueOptions: {
-            durable: true,
-          },
-        },
-      },
-    ]),
     UserModule,
     PassportModule,
     JwtModule.register({
       global: true,
     }),
     MailModule,
+    RabbitMQModule.forRoot(RabbitMQModule, {
+      exchanges: [
+        {
+          name: 'authentication',
+          type: 'topic',
+        },
+      ],
+      uri: 'amqp://127.0.0.1:5672',
+    }),
+    AuthModule,
   ],
   controllers: [AuthController],
   providers: [
@@ -45,13 +40,12 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
     LocalStrategy,
     UserAuthBearerStrategy,
     PersonalAccessTokenStrategy,
-    TwoFactorAuthStrategy,
     UserRepository,
     PendingUsersRepository,
     PasswordResetTokenStrategy,
     PrismaService,
     LocalAuthGuard,
   ],
-  exports: [AuthService, ClientsModule],
+  exports: [AuthService, RabbitMQModule],
 })
 export class AuthModule {}
