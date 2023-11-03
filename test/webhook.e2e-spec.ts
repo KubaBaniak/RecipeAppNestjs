@@ -8,7 +8,6 @@ import { User } from '@prisma/client';
 import { HttpModule } from '@nestjs/axios';
 import { WebhookService } from '../src/webhook/webhook.service';
 import { WebhookRepository } from '../src/webhook/webhook.repository';
-import { AuthService } from '../src/auth/auth.service';
 import {
   createWebhookRequest,
   createWebhookWithUserId,
@@ -16,13 +15,14 @@ import {
 import { WebhookModule } from '../src/webhook/webhook.module';
 import { CryptoUtils } from '../src/webhook/utils/crypt-webhook-token';
 import { AuthModule } from '../src/auth/auth.module';
+import { JwtService } from '@nestjs/jwt';
 
 describe('WebhookController (e2e)', () => {
   let app: INestApplication;
-  let authService: AuthService;
   let prismaService: PrismaService;
   let user: User;
   let accessToken: string;
+  let jwtService: JwtService;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -37,7 +37,7 @@ describe('WebhookController (e2e)', () => {
 
     app = moduleRef.createNestApplication();
     prismaService = moduleRef.get<PrismaService>(PrismaService);
-    authService = moduleRef.get<AuthService>(AuthService);
+    jwtService = moduleRef.get<JwtService>(JwtService);
 
     app.useGlobalPipes(
       new ValidationPipe({
@@ -50,10 +50,10 @@ describe('WebhookController (e2e)', () => {
       data: createUser(),
     });
 
-    accessToken = await authService.signIn({
-      email: user.email,
-      password: user.password,
-    });
+    accessToken = jwtService.sign(
+      { id: user.id },
+      { secret: process.env.JWT_SECRET },
+    );
   });
 
   describe('POST /webhooks', () => {

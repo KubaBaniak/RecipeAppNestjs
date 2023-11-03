@@ -6,7 +6,6 @@ import { RecipeModule } from '../src/recipe/recipe.module';
 import { RecipeService } from '../src/recipe/recipe.service';
 import { faker } from '@faker-js/faker';
 import { ValidationPipe } from '@nestjs/common';
-import { AuthService } from '../src/auth/auth.service';
 import { AuthModule } from '../src/auth/auth.module';
 import { createUser } from '../src/user/test/user.factory';
 import { createRecipe } from '../src/recipe/test/recipe.factory';
@@ -21,27 +20,22 @@ import { HttpModule } from '@nestjs/axios';
 import { WebhookService } from '../src/webhook/webhook.service';
 import { WebhookRepository } from '../src/webhook/webhook.repository';
 import { CryptoUtils } from '../src/webhook/utils/crypt-webhook-token';
-import { PersonalAccessTokenRepository } from '../src/auth/personal-access-token.repository';
-import { TwoFactorAuthRepository } from '../src/auth/twoFactorAuth.repository';
-import * as bcrypt from 'bcryptjs';
-import { BCRYPT } from '../src/auth/constants';
+import { JwtService } from '@nestjs/jwt';
 
 describe('RecipeController (e2e)', () => {
   let app: INestApplication;
   let prismaService: PrismaService;
-  let authService: AuthService;
   let user: User;
   let accessToken: string;
   let personalAccessToken: string;
+  let jwtService: JwtService;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [RecipeModule, AuthModule, RedisCacheModule, HttpModule],
       providers: [
         RecipeService,
-        TwoFactorAuthRepository,
         UserRepository,
-        PersonalAccessTokenRepository,
         RecipeRepository,
         PrismaService,
         RecipeCacheService,
@@ -55,18 +49,19 @@ describe('RecipeController (e2e)', () => {
 
     app = moduleRef.createNestApplication();
     prismaService = moduleRef.get<PrismaService>(PrismaService);
-    authService = moduleRef.get<AuthService>(AuthService);
+    jwtService = moduleRef.get<JwtService>(JwtService);
 
-    const tempUser = createUser();
-    const hashedPassword = await bcrypt.hash(tempUser.password, BCRYPT.salt);
     user = await prismaService.user.create({
-      data: {
-        email: tempUser.email,
-        password: hashedPassword,
-      },
+      data: createUser(),
     });
-    accessToken = await authService.signIn(tempUser);
-    personalAccessToken = await authService.createPersonalAccessToken(user.id);
+    accessToken = jwtService.sign(
+      { id: user.id },
+      { secret: process.env.JWT_SECRET },
+    );
+    personalAccessToken = jwtService.sign(
+      { id: user.id },
+      { secret: process.env.JWT_PAT_SECRET },
+    );
 
     app.useGlobalPipes(
       new ValidationPipe({
@@ -379,7 +374,6 @@ describe('RecipeController (e2e)', () => {
 
   afterAll(async () => {
     await prismaService.recipe.deleteMany();
-    await prismaService.personalAccessToken.deleteMany();
     await app.close();
   });
 });
