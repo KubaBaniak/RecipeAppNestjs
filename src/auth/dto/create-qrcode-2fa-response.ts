@@ -1,6 +1,5 @@
 export class CreateQrCodeFor2FA {
   public qrCodeUrl: string;
-  public urlToEnable2FA = `${process.env.BASE_URL}:${process.env.APP_PORT}/api/auth/enable-2fa`;
 
   constructor(qrCodeUrl: string) {
     this.qrCodeUrl = qrCodeUrl;
