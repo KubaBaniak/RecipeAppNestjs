@@ -4,8 +4,9 @@ import { faker } from '@faker-js/faker';
 import { AuthService } from '../../auth/auth.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UserRepository } from '../../user/user.repository';
-import { JwtService } from '@nestjs/jwt';
 import { PendingUsersRepository } from '../../user/pending-user.repository';
+import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
+import { mock } from 'jest-mock-extended';
 
 describe('Websocket', () => {
   let webSocketEventGateway: WebSocketEventGateway;
@@ -17,8 +18,11 @@ describe('Websocket', () => {
         AuthService,
         PendingUsersRepository,
         UserRepository,
-        JwtService,
         PrismaService,
+        {
+          provide: AmqpConnection,
+          useValue: mock<AmqpConnection>(),
+        },
       ],
     }).compile();
 

@@ -79,13 +79,10 @@ describe('AuthController', () => {
       };
 
       //when
-      const signedUpUser = await authController.signUp(request);
+      const response = await authController.signUp(request);
 
       //then
-      expect(signedUpUser).toEqual({
-        id: expect.any(Number),
-        email: request.email,
-      });
+      expect(typeof response.accountActivationToken).toEqual('string');
     });
   });
 
