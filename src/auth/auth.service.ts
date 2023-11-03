@@ -167,10 +167,11 @@ export class AuthService {
   async changePassword(userId: number, newPassword: string): Promise<number> {
     const payload = { userId, newPassword };
 
-    const changedPasswordUserId = await this.amqpConnection.publish<{
-      userId: number;
-      newPassword: string;
-    }>(this.EXCHANGE, 'change-password', payload);
+    const changedPasswordUserId = await this.amqpConnection.request<number>({
+      exchange: this.EXCHANGE,
+      routingKey: 'change-password',
+      payload,
+    });
     this.validateAuthMicroserviceReturn(changedPasswordUserId);
 
     return changedPasswordUserId;
