@@ -3,7 +3,7 @@ import { AuthService } from '../auth.service';
 import { MockAuthService } from '../__mocks__/auth.service.mock';
 import { MailModule } from '../../mail/mail.module';
 import { MailService } from '../../mail/mail.service';
-import { MailerService } from '@nestjs-modules/mailer';
+import { MAILER_OPTIONS, MailerService } from '@nestjs-modules/mailer';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserRepository } from '../../user/user.repository';
@@ -178,6 +178,7 @@ describe('AuthController', () => {
 
       expect(responseObject).toHaveProperty('qrCodeUrl');
       expect(typeof responseObject.qrCodeUrl).toBe('string');
+      expect(responseObject).toHaveProperty('urlToEnable2FA');
     });
   });
 

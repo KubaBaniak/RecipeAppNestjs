@@ -8,7 +8,6 @@ defaults: &defaults
     - image: cimg/node:18.16.0
     - image: cimg/postgres:14.1
     - image: redis:7.0.12-alpine
-    - image: rabbitmq:3.13.0-rc.1-alpine
 
 commands:
   install_dependencies:
@@ -28,6 +27,9 @@ commands:
     steps:
       - setup_remote_docker:
           version: 20.10.14
+      - run:
+          name: Run images of services declared in docker-compose.yml
+          command: docker-compose --profile dependencies up -d
   create_env_files:
     steps:
       - run:
@@ -95,10 +97,6 @@ jobs:
           key: ${CACHE_VERSION}-deps-{{ checksum "package-lock.json" }}
       - create_env_files
       - setup_prisma
-      - run: |
-          echo 'export RABBITMQ_DEFAULT_USER="$RABBITMQ_USER"' >> $BASH_ENV
-          echo 'export RABBITMQ_DEFAULT_PASS="$RABBITMQ_PASS"' >> $BASH_ENV
-          echo 'export AMQP_URL="${RABBITMQ_ADDRESS}"' >> $BASH_ENV
       - setup_docker_compose_dependencies
       - run:
           name: Run unit tests

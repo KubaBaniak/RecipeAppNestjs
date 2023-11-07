@@ -28,16 +28,15 @@ describe('UserService', () => {
   describe('CreateUser', () => {
     it('should create default User', async () => {
       //given
-      const { email } = createUser();
-      const password = faker.internet.password({ length: 64 });
+      const request = createUser();
 
       //when
-      const createdUser = await userService.createUser({ email, password });
+      const createdUser = await userService.createUser(request);
 
       //then
       expect(createdUser).toEqual({
         id: expect.any(Number),
-        email,
+        email: request.email,
       });
     });
   });
