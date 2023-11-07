@@ -42,13 +42,14 @@ services:
     image: rabbitmq:3-management
     container_name: rabbitmq
     hostname: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: '${RABBITMQ_DEFAULT_USER}'
+      RABBITMQ_DEFAULT_PASS: '${RABBITMQ_DEFAULT_PASS}'
     ports:
       - '5672:5672'
       - '15672:15672'
     volumes:
       - /var/lib/rabbitmq
-    env_file:
-      - .env
     profiles:
       - dependencies
     networks:
