@@ -30,7 +30,7 @@ import { RabbitMQModule } from '@golevelup/nestjs-rabbitmq';
           type: 'topic',
         },
       ],
-      uri: 'amqp://127.0.0.1:5672',
+      uri: process.env.RABBITMQ_ADDRESS,
     }),
     AuthModule,
   ],
