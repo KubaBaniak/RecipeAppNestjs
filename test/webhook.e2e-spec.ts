@@ -24,7 +24,7 @@ describe('WebhookController (e2e)', () => {
   let accessToken: string;
   let jwtService: JwtService;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [WebhookModule, HttpModule, AuthModule],
       providers: [
@@ -76,6 +76,7 @@ describe('WebhookController (e2e)', () => {
 
     it('should not create new webhook due to the limit (5 webhooks)', async () => {
       const testWebhooks = [
+        createWebhookWithUserId(user.id),
         createWebhookWithUserId(user.id),
         createWebhookWithUserId(user.id),
         createWebhookWithUserId(user.id),
