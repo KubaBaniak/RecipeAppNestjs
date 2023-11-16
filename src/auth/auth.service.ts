@@ -22,7 +22,7 @@ export class AuthService {
   constructor(
     private readonly pendingUsersRepository: PendingUsersRepository,
     private readonly userRepository: UserRepository,
-    private readonly amqpConnection: AmqpConnection,
+    private readonly authClient: AmqpConnection,
   ) {}
 
   private exchange = 'authentication';
@@ -62,7 +62,7 @@ export class AuthService {
       password: signUpRequest.password,
     };
 
-    const accountActivationTokenObject = await this.amqpConnection.request<{
+    const accountActivationTokenObject = await this.authClient.request<{
       accountActivationToken: string;
     }>({
       exchange: this.exchange,
@@ -92,7 +92,7 @@ export class AuthService {
       token: signInRequest.token,
     };
 
-    const accessTokenObject = await this.amqpConnection.request<{
+    const accessTokenObject = await this.authClient.request<{
       accessToken: string;
     }>({
       exchange: this.exchange,
@@ -108,7 +108,7 @@ export class AuthService {
   async createPersonalAccessToken(userId: number): Promise<string> {
     const payload = { userId };
 
-    const personalAccessTokenObject = await this.amqpConnection.request<{
+    const personalAccessTokenObject = await this.authClient.request<{
       personalAccessToken: string;
     }>({
       exchange: this.exchange,
@@ -124,7 +124,7 @@ export class AuthService {
   async validateAuthToken(token: string): Promise<number> {
     const payload = { token };
 
-    const userIdObject = await this.amqpConnection.request<{ id: number }>({
+    const userIdObject = await this.authClient.request<{ id: number }>({
       exchange: this.exchange,
       routingKey: 'validate-jwt-token',
       payload,
@@ -144,7 +144,7 @@ export class AuthService {
 
     const payload = { userId: user.id, password: userRequest.password };
 
-    const validatedUserId = await this.amqpConnection.request<number>({
+    const validatedUserId = await this.authClient.request<number>({
       exchange: this.exchange,
       routingKey: 'validate-user',
       payload,
@@ -158,7 +158,7 @@ export class AuthService {
   async activateAccount(token: string): Promise<UserPayloadRequest> {
     const payload = { token };
 
-    const userId = await this.amqpConnection.request<number>({
+    const userId = await this.authClient.request<number>({
       exchange: this.exchange,
       routingKey: 'activate-account',
       payload,
@@ -186,7 +186,7 @@ export class AuthService {
   async changePassword(userId: number, newPassword: string): Promise<number> {
     const payload = { userId, newPassword };
 
-    const changedPasswordUserId = await this.amqpConnection.request<number>({
+    const changedPasswordUserId = await this.authClient.request<number>({
       exchange: this.exchange,
       routingKey: 'change-password',
       payload,
@@ -202,7 +202,7 @@ export class AuthService {
 
     const payload = { userId: user.id };
 
-    const token = await this.amqpConnection.request<string>({
+    const token = await this.authClient.request<string>({
       exchange: this.exchange,
       routingKey: 'generate-password-reset-token',
       payload,
@@ -216,7 +216,7 @@ export class AuthService {
   async createQrCodeFor2fa(userId: number): Promise<string> {
     const payload = { userId };
 
-    const qrCodeUrlObject = await this.amqpConnection.request<{
+    const qrCodeUrlObject = await this.authClient.request<{
       qrCodeUrl: string;
     }>({
       exchange: this.exchange,
@@ -232,7 +232,7 @@ export class AuthService {
   async generate2faRecoveryKeys(userId: number): Promise<string[]> {
     const payload = { userId };
 
-    const recoveryKeysObject = await this.amqpConnection.request<{
+    const recoveryKeysObject = await this.authClient.request<{
       recoveryKeys: string[];
     }>({
       exchange: this.exchange,
@@ -248,7 +248,7 @@ export class AuthService {
   async enable2fa(userId: number, providedToken: string): Promise<string[]> {
     const payload = { userId, token: providedToken };
 
-    const recoveryKeysObject = await this.amqpConnection.request<{
+    const recoveryKeysObject = await this.authClient.request<{
       recoveryKeys: string[];
     }>({
       exchange: this.exchange,
@@ -264,7 +264,7 @@ export class AuthService {
   async disable2fa(userId: number): Promise<number> {
     const payload = { userId };
 
-    const userTwoFactorAuthId = await this.amqpConnection.request<number>({
+    const userTwoFactorAuthId = await this.authClient.request<number>({
       exchange: this.exchange,
       routingKey: 'disable-2fa',
       payload,
@@ -278,7 +278,7 @@ export class AuthService {
   async verify2fa(userId: number, token: string): Promise<string> {
     const payload = { userId, token };
 
-    const accessTokenObject = await this.amqpConnection.request<{
+    const accessTokenObject = await this.authClient.request<{
       accessToken: string;
     }>({
       exchange: this.exchange,
@@ -294,7 +294,7 @@ export class AuthService {
   async regenerate2faRecoveryTokens(userId: number): Promise<string[]> {
     const payload = { userId };
 
-    const recoveryKeysObject = await this.amqpConnection.request<{
+    const recoveryKeysObject = await this.authClient.request<{
       recoveryKeys: string[];
     }>({
       exchange: this.exchange,

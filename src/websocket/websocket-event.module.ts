@@ -3,7 +3,7 @@ import { WebSocketEventGateway } from './websocket-event.gateway';
 import { UserRepository } from '../user/user.repository';
 import { PrismaService } from '../prisma/prisma.service';
 import { PendingUsersRepository } from '../user/pending-user.repository';
-import { AuthModule } from 'src/auth/auth.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [AuthModule],
