@@ -22,7 +22,8 @@ describe('RecipeService', () => {
   let recipeService: RecipeService;
   let webSocketEventGateway: WebSocketEventGateway;
   let webhookService: WebhookService;
-  beforeEach(async () => {
+
+  beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [HttpModule],
       providers: [

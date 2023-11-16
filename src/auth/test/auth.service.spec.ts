@@ -3,14 +3,12 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from '../../user/user.service';
 import { AuthService } from '../auth.service';
 import { faker } from '@faker-js/faker';
-import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../../prisma/prisma.service';
 import { MockPrismaService } from '../../prisma/__mocks__/prisma.service.mock';
 import { Role } from '@prisma/client';
 import { MockJwtService } from '../__mocks__/jwt.service.mock';
-import { BCRYPT, NUMBER_OF_2FA_RECOVERY_TOKENS } from '../constants';
+import { NUMBER_OF_2FA_RECOVERY_TOKENS } from '../constants';
 import { UserRepository } from '../../user/user.repository';
-import { authenticator } from 'otplib';
 import { PendingUsersRepository } from '../../user/pending-user.repository';
 import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
 import { mock } from 'jest-mock-extended';
@@ -21,8 +19,9 @@ describe('AuthService', () => {
   let authService: AuthService;
   let userRepository: UserRepository;
   let authClient: AmqpConnection;
+  let pendingUsersRepository: PendingUsersRepository;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
@@ -43,10 +42,17 @@ describe('AuthService', () => {
 
     authService = module.get<AuthService>(AuthService);
     userRepository = module.get<UserRepository>(UserRepository);
+    pendingUsersRepository = module.get<PendingUsersRepository>(
+      PendingUsersRepository,
+    );
     authClient = module.get<AmqpConnection>(AmqpConnection);
   });
 
   afterAll(() => {
+    jest.clearAllMocks();
+  });
+
+  beforeEach(async () => {
     jest.clearAllMocks();
   });
 
@@ -91,6 +97,10 @@ describe('AuthService', () => {
       jest.spyOn(authClient, 'request').mockResolvedValue({
         accountActivationToken,
       });
+      jest
+        .spyOn(pendingUsersRepository, 'getPendingUserByEmail')
+        .mockResolvedValue(null);
+      jest.spyOn(userRepository, 'getUserByEmail').mockResolvedValue(null);
 
       //when
       const signUpResponse = await authService.signUp(request);
@@ -198,8 +208,8 @@ describe('AuthService', () => {
     });
   });
 
-  describe('Enable 2fa', () => {
-    it('should enable 2fa', async () => {
+  describe('Enable 2FA', () => {
+    it('should enable 2FA', async () => {
       const userId = faker.number.int();
       const token = faker.string.numeric(6);
       const recoveryKeys = Array.from(
@@ -214,8 +224,8 @@ describe('AuthService', () => {
     });
   });
 
-  describe('Disable 2fa', () => {
-    it('should disable 2fa', async () => {
+  describe('Disable 2FA', () => {
+    it('should disable 2FA', async () => {
       const userId = faker.number.int();
       jest.spyOn(authClient, 'request').mockResolvedValue(userId);
 
@@ -225,8 +235,8 @@ describe('AuthService', () => {
     });
   });
 
-  describe('Verify 2fa', () => {
-    it('should verify 2fa', async () => {
+  describe('Verify 2FA', () => {
+    it('should verify 2FA', async () => {
       const userId = faker.number.int();
       const token = faker.string.numeric(6);
       const accessToken = faker.string.alphanumeric({ length: 64 });

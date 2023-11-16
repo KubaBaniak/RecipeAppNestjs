@@ -3,7 +3,7 @@ import { AuthService } from '../auth.service';
 import { MockAuthService } from '../__mocks__/auth.service.mock';
 import { MailModule } from '../../mail/mail.module';
 import { MailService } from '../../mail/mail.service';
-import { MAILER_OPTIONS, MailerService } from '@nestjs-modules/mailer';
+import { MailerService } from '@nestjs-modules/mailer';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserRepository } from '../../user/user.repository';
@@ -23,7 +23,7 @@ describe('AuthController', () => {
   let authService: AuthService;
   let mailService: MailService;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AuthController, MailModule],
       providers: [

@@ -24,7 +24,7 @@ describe('WebhookController (e2e)', () => {
   let accessToken: string;
   let jwtService: JwtService;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [WebhookModule, HttpModule, AuthModule],
       providers: [
@@ -54,6 +54,11 @@ describe('WebhookController (e2e)', () => {
       { id: user.id },
       { secret: process.env.JWT_SECRET },
     );
+  });
+
+  beforeEach(async () => {
+    await prismaService.webhook.deleteMany();
+    await prismaService.webhookEvent.deleteMany();
   });
 
   describe('POST /webhooks', () => {

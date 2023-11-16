@@ -11,7 +11,7 @@ import { mock } from 'jest-mock-extended';
 describe('Websocket', () => {
   let webSocketEventGateway: WebSocketEventGateway;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         WebSocketEventGateway,
