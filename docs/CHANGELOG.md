@@ -1,3 +1,12 @@
+## [1.1.14](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.1.13...v1.1.14) (2023-11-16)
+
+
+### Bug Fixes
+
+* rabbit url as env and fix import ([1cb7929](https://github.com/KubaBaniak/RecipeAppNestjs/commit/1cb7929b426deba4ac8f53df691673ec104b914f))
+* resolve conflicts ([41bd122](https://github.com/KubaBaniak/RecipeAppNestjs/commit/41bd12220eaa69d2755fbcc2a914dc54dd009923))
+* use static rabbitmq values for tests ([f530d02](https://github.com/KubaBaniak/RecipeAppNestjs/commit/f530d0272504e573e060ab8288b3fd39d1d6160b))
+
 ## [1.1.13](https://github.com/KubaBaniak/RecipeAppNestjs/compare/v1.1.12...v1.1.13) (2023-10-30)
 
 
