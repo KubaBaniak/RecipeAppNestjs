@@ -9,7 +9,7 @@ import { UserRepository } from '../user.repository';
 describe('UserService', () => {
   let userService: UserService;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UserService,

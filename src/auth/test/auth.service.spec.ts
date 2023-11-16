@@ -21,7 +21,7 @@ describe('AuthService', () => {
   let authClient: AmqpConnection;
   let pendingUsersRepository: PendingUsersRepository;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
@@ -46,10 +46,6 @@ describe('AuthService', () => {
       PendingUsersRepository,
     );
     authClient = module.get<AmqpConnection>(AmqpConnection);
-  });
-
-  afterAll(() => {
-    jest.clearAllMocks();
   });
 
   beforeEach(async () => {
@@ -97,10 +93,6 @@ describe('AuthService', () => {
       jest.spyOn(authClient, 'request').mockResolvedValue({
         accountActivationToken,
       });
-      jest
-        .spyOn(pendingUsersRepository, 'getPendingUserByEmail')
-        .mockResolvedValue(null);
-      jest.spyOn(userRepository, 'getUserByEmail').mockResolvedValue(null);
 
       //when
       const signUpResponse = await authService.signUp(request);

@@ -8,7 +8,7 @@ describe('MailService', () => {
   let service: MailService;
   let nestMailerService: MailerService;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [MailModule],
       providers: [
