@@ -11,6 +11,12 @@ import { UserPayloadRequest } from '../user/dto';
 import { SignInRequest, SignUpRequest, UserRequest } from './dto';
 import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
 
+type MicroserviceReturn = {
+  [key: string]: any;
+  message: string;
+  status: number;
+};
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -19,10 +25,17 @@ export class AuthService {
     private readonly amqpConnection: AmqpConnection,
   ) {}
 
-  private EXCHANGE = 'authentication';
+  private exchange = 'authentication';
 
-  validateAuthMicroserviceReturn(payload: any) {
-    if (typeof payload === 'object' && 'status' in payload) {
+  isMicroserviceError(payload: unknown): payload is MicroserviceReturn {
+    const hasMessage = (payload as MicroserviceReturn).message !== undefined;
+    const hasStatus = (payload as MicroserviceReturn).status !== undefined;
+
+    return hasMessage && hasStatus;
+  }
+
+  validateAuthMicroserviceReturn(payload: unknown) {
+    if (this.isMicroserviceError(payload)) {
       throw new HttpException(payload.message, payload.status);
     }
   }
@@ -52,10 +65,11 @@ export class AuthService {
     const accountActivationTokenObject = await this.amqpConnection.request<{
       accountActivationToken: string;
     }>({
-      exchange: this.EXCHANGE,
+      exchange: this.exchange,
       routingKey: 'signup',
       payload,
     });
+
     this.validateAuthMicroserviceReturn(accountActivationTokenObject);
 
     return {
@@ -81,10 +95,11 @@ export class AuthService {
     const accessTokenObject = await this.amqpConnection.request<{
       accessToken: string;
     }>({
-      exchange: this.EXCHANGE,
+      exchange: this.exchange,
       routingKey: 'signin',
       payload,
     });
+
     this.validateAuthMicroserviceReturn(accessTokenObject);
 
     return accessTokenObject.accessToken;
@@ -96,10 +111,11 @@ export class AuthService {
     const personalAccessTokenObject = await this.amqpConnection.request<{
       personalAccessToken: string;
     }>({
-      exchange: this.EXCHANGE,
+      exchange: this.exchange,
       routingKey: 'add-personal-access-token',
       payload,
     });
+
     this.validateAuthMicroserviceReturn(personalAccessTokenObject);
 
     return personalAccessTokenObject.personalAccessToken;
@@ -109,10 +125,11 @@ export class AuthService {
     const payload = { token };
 
     const userIdObject = await this.amqpConnection.request<{ id: number }>({
-      exchange: this.EXCHANGE,
+      exchange: this.exchange,
       routingKey: 'validate-jwt-token',
       payload,
     });
+
     this.validateAuthMicroserviceReturn(userIdObject);
 
     return userIdObject.id;
@@ -128,10 +145,11 @@ export class AuthService {
     const payload = { userId: user.id, password: userRequest.password };
 
     const validatedUserId = await this.amqpConnection.request<number>({
-      exchange: this.EXCHANGE,
+      exchange: this.exchange,
       routingKey: 'validate-user',
       payload,
     });
+
     this.validateAuthMicroserviceReturn(validatedUserId);
 
     return validatedUserId;
@@ -141,10 +159,11 @@ export class AuthService {
     const payload = { token };
 
     const userId = await this.amqpConnection.request<number>({
-      exchange: this.EXCHANGE,
+      exchange: this.exchange,
       routingKey: 'activate-account',
       payload,
     });
+
     this.validateAuthMicroserviceReturn(userId);
 
     const userData = await this.pendingUsersRepository.getPendingUserById(
@@ -168,10 +187,11 @@ export class AuthService {
     const payload = { userId, newPassword };
 
     const changedPasswordUserId = await this.amqpConnection.request<number>({
-      exchange: this.EXCHANGE,
+      exchange: this.exchange,
       routingKey: 'change-password',
       payload,
     });
+
     this.validateAuthMicroserviceReturn(changedPasswordUserId);
 
     return changedPasswordUserId;
@@ -183,10 +203,11 @@ export class AuthService {
     const payload = { userId: user.id };
 
     const token = await this.amqpConnection.request<string>({
-      exchange: this.EXCHANGE,
+      exchange: this.exchange,
       routingKey: 'generate-password-reset-token',
       payload,
     });
+
     this.validateAuthMicroserviceReturn(token);
 
     return token;
@@ -198,10 +219,11 @@ export class AuthService {
     const qrCodeUrlObject = await this.amqpConnection.request<{
       qrCodeUrl: string;
     }>({
-      exchange: this.EXCHANGE,
+      exchange: this.exchange,
       routingKey: 'create-2fa-qrcode',
       payload,
     });
+
     this.validateAuthMicroserviceReturn(qrCodeUrlObject);
 
     return qrCodeUrlObject.qrCodeUrl;
@@ -213,10 +235,11 @@ export class AuthService {
     const recoveryKeysObject = await this.amqpConnection.request<{
       recoveryKeys: string[];
     }>({
-      exchange: this.EXCHANGE,
+      exchange: this.exchange,
       routingKey: 'regenerate-2fa-recovery-keys',
       payload,
     });
+
     this.validateAuthMicroserviceReturn(recoveryKeysObject);
 
     return recoveryKeysObject.recoveryKeys;
@@ -228,10 +251,11 @@ export class AuthService {
     const recoveryKeysObject = await this.amqpConnection.request<{
       recoveryKeys: string[];
     }>({
-      exchange: this.EXCHANGE,
+      exchange: this.exchange,
       routingKey: 'enable-2fa',
       payload,
     });
+
     this.validateAuthMicroserviceReturn(recoveryKeysObject);
 
     return recoveryKeysObject.recoveryKeys;
@@ -241,10 +265,11 @@ export class AuthService {
     const payload = { userId };
 
     const userTwoFactorAuthId = await this.amqpConnection.request<number>({
-      exchange: this.EXCHANGE,
+      exchange: this.exchange,
       routingKey: 'disable-2fa',
       payload,
     });
+
     this.validateAuthMicroserviceReturn(userTwoFactorAuthId);
 
     return userTwoFactorAuthId;
@@ -256,10 +281,11 @@ export class AuthService {
     const accessTokenObject = await this.amqpConnection.request<{
       accessToken: string;
     }>({
-      exchange: this.EXCHANGE,
+      exchange: this.exchange,
       routingKey: 'verify-2fa',
       payload,
     });
+
     this.validateAuthMicroserviceReturn(accessTokenObject);
 
     return accessTokenObject.accessToken;
@@ -271,10 +297,11 @@ export class AuthService {
     const recoveryKeysObject = await this.amqpConnection.request<{
       recoveryKeys: string[];
     }>({
-      exchange: this.EXCHANGE,
+      exchange: this.exchange,
       routingKey: 'regenerate-2fa-recovery-keys',
       payload,
     });
+
     this.validateAuthMicroserviceReturn(recoveryKeysObject);
 
     return recoveryKeysObject.recoveryKeys;
