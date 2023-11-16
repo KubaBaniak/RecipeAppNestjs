@@ -32,7 +32,6 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { UserId } from '../common/decorators/req-user-id.decorator';
 import { MailService } from '../mail/mail.service';
 import { PasswordResetAuthGuard } from './guards/reset-password.guard';
-import { TwoFactorAuthGuard } from './guards/two-factor-auth.guard';
 
 @Controller('auth')
 @ApiTags('Authentication')
@@ -60,17 +59,16 @@ export class AuthController {
   })
   @Post('signup')
   async signUp(@Body() signUpRequest: SignUpRequest): Promise<SignUpResponse> {
-    const createdUser = await this.authService.signUp(signUpRequest);
-
-    const accountActivationToken =
-      await this.authService.generateAccountActivationToken(createdUser.id);
+    const { email, accountActivationToken } = await this.authService.signUp(
+      signUpRequest,
+    );
 
     await this.mailService.sendAccountActivationEmail(
-      createdUser.email,
+      email,
       accountActivationToken,
     );
 
-    return SignUpResponse.from(createdUser);
+    return SignUpResponse.from(accountActivationToken);
   }
 
   @HttpCode(201)
@@ -101,10 +99,7 @@ export class AuthController {
   @HttpCode(200)
   @Get('activate-account')
   async activateAccount(@Query('token') token: string): Promise<void> {
-    const tokenData = await this.authService.verifyAccountActivationToken(
-      token,
-    );
-    await this.authService.activateAccount(tokenData.id);
+    await this.authService.activateAccount(token);
   }
 
   @ApiOperation({ summary: 'Sends link to resets password of the user' })
@@ -180,7 +175,7 @@ export class AuthController {
 
   @HttpCode(200)
   @ApiOperation({ summary: 'Authenticate with 2FA to login' })
-  @UseGuards(TwoFactorAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Post('verify-2fa')
   async verify2FA(
     @UserId() userId: number,

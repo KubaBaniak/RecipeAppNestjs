@@ -14,13 +14,15 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
     const status = exception.getStatus();
+    const message = exception.message;
 
     if (status >= 500) {
       rollbar.log(exception);
     }
 
     response.status(status).json({
-      info: exception.getResponse(),
+      message,
+      status,
       timestamp: new Date().toISOString(),
       path: request.url,
     });

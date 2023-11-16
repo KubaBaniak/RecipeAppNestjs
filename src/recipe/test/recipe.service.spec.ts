@@ -7,39 +7,40 @@ import { RecipeCacheService } from '../recipe.cache.service';
 import { MockRecipeCacheService } from '../__mocks__/recipe.cache.mock';
 import { S3Service } from '../s3-bucket.service';
 import { WebSocketEventGateway } from '../../websocket/websocket-event.gateway';
-import { AuthService } from '../../auth/auth.service';
-import { JwtService } from '@nestjs/jwt';
 import { WebhookRepository } from '../../webhook/webhook.repository';
 import { WebhookService } from '../../webhook/webhook.service';
 import { HttpModule } from '@nestjs/axios';
 import { CryptoUtils } from '../../webhook/utils/crypt-webhook-token';
-import { PersonalAccessTokenRepository } from '../../auth/personal-access-token.repository';
-import { TwoFactorAuthRepository } from '../../auth/twoFactorAuth.repository';
 import { RecipeRepository } from '../recipe.repository';
 import { UserRepository } from '../../user/user.repository';
 import { PendingUsersRepository } from '../../user/pending-user.repository';
+import { AuthService } from '../../auth/auth.service';
+import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
+import { mock } from 'jest-mock-extended';
 
 describe('RecipeService', () => {
   let recipeService: RecipeService;
   let webSocketEventGateway: WebSocketEventGateway;
   let webhookService: WebhookService;
-  beforeEach(async () => {
+
+  beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [HttpModule],
       providers: [
         RecipeService,
         S3Service,
         RecipeRepository,
-        TwoFactorAuthRepository,
         PendingUsersRepository,
         UserRepository,
-        PersonalAccessTokenRepository,
         WebSocketEventGateway,
-        AuthService,
-        JwtService,
         WebhookService,
         WebhookRepository,
         CryptoUtils,
+        AuthService,
+        {
+          provide: AmqpConnection,
+          useValue: mock<AmqpConnection>(),
+        },
         {
           provide: PrismaService,
           useClass: MockPrismaService,
@@ -51,10 +52,10 @@ describe('RecipeService', () => {
       ],
     }).compile();
 
+    webhookService = module.get<WebhookService>(WebhookService);
     webSocketEventGateway = module.get<WebSocketEventGateway>(
       WebSocketEventGateway,
     );
-    webhookService = module.get<WebhookService>(WebhookService);
     recipeService = module.get<RecipeService>(RecipeService);
   });
 

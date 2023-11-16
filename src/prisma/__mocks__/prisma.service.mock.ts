@@ -1,13 +1,4 @@
-import { NUMBER_OF_2FA_RECOVERY_TOKENS } from '../../auth/constants';
-import {
-  Prisma,
-  Recipe,
-  User,
-  Role,
-  TwoFactorAuth,
-  TwoFactorAuthRecoveryKey,
-  PendingUsers,
-} from '@prisma/client';
+import { Prisma, Recipe, User, Role, PendingUsers } from '@prisma/client';
 import { UpdateRecipeRequest } from '../../recipe/dto';
 import { faker } from '@faker-js/faker';
 
@@ -21,7 +12,6 @@ export class MockPrismaService {
       return Promise.resolve({
         id: faker.number.int(),
         email: request.data.email,
-        password: request.data.password,
         role: Role.USER,
         activated: false,
         accountActivationToken: null,
@@ -32,16 +22,14 @@ export class MockPrismaService {
       where: { id: number };
       data: {
         email?: string;
-        password?: string;
         activated?: boolean;
         accountActivationToken?: string;
       };
     }): Promise<User> {
-      const { email, password } = request.data;
+      const { email } = request.data;
       return Promise.resolve({
         id: request.where.id,
         email: email ?? faker.internet.email(),
-        password: password ?? faker.internet.password(),
         role: Role.USER,
       });
     },
@@ -51,7 +39,7 @@ export class MockPrismaService {
     },
 
     findUnique: function (request: {
-      where: { id?: number; email?: string; password?: string };
+      where: { id?: number; email?: string };
     }): Promise<User> | Promise<void> {
       const { id, email } = request.where;
       // for signUp test
@@ -62,7 +50,6 @@ export class MockPrismaService {
       return Promise.resolve({
         id,
         email: faker.internet.email(),
-        password: faker.internet.password(),
         role: Role.USER,
         activated: false,
         accountActivationToken: null,
@@ -77,7 +64,6 @@ export class MockPrismaService {
       return Promise.resolve({
         id: faker.number.int(),
         email: request.data.email,
-        password: request.data.password,
         accountActivationToken: faker.string.alphanumeric(32),
         createdAt: new Date(),
       });
@@ -87,15 +73,13 @@ export class MockPrismaService {
       where: { id: number };
       data: {
         email?: string;
-        password?: string;
         accountActivationToken?: string;
       };
     }): Promise<PendingUsers> {
-      const { email, password, accountActivationToken } = request.data;
+      const { email, accountActivationToken } = request.data;
       return Promise.resolve({
         id: request.where.id,
         email: email ?? faker.internet.email(),
-        password: password ?? faker.internet.password(),
         createdAt: new Date(),
         accountActivationToken: accountActivationToken ?? null,
       });
@@ -116,7 +100,6 @@ export class MockPrismaService {
       return Promise.resolve({
         id,
         email: faker.internet.email(),
-        password: faker.internet.password(),
         createdAt: new Date(),
         accountActivationToken: faker.string.alphanumeric(16),
       });
@@ -195,64 +178,6 @@ export class MockPrismaService {
 
     delete: function (_request: number): Promise<void> {
       return Promise.resolve();
-    },
-  };
-
-  twoFactorAuth = {
-    create: function (data: {
-      userId: number;
-      secretKey: string;
-    }): Promise<TwoFactorAuth> {
-      return Promise.resolve({
-        id: faker.number.int(),
-        ...data,
-        isEnabled: false,
-      });
-    },
-
-    findUnique: function (_where: {
-      userId: number;
-    }): Promise<{ recoveryKeys: { key: string; isUsed: boolean }[] }> {
-      return Promise.resolve({
-        recoveryKeys: Array.from(
-          { length: NUMBER_OF_2FA_RECOVERY_TOKENS },
-          () => {
-            return { key: faker.string.alphanumeric(16), isUsed: false };
-          },
-        ),
-      });
-    },
-
-    update: function (_where: { userId: number }): Promise<TwoFactorAuth> {
-      return Promise.resolve({
-        id: faker.number.int(),
-        userId: faker.number.int(),
-        secretKey: faker.string.alphanumeric(16),
-        isEnabled: false,
-      });
-    },
-
-    delete: function (_where: { id: number }): Promise<TwoFactorAuth> {
-      return Promise.resolve({
-        id: faker.number.int(),
-        userId: faker.number.int(),
-        secretKey: faker.string.numeric(6),
-        isEnabled: true,
-      });
-    },
-  };
-
-  twoFactorAuthRecoveryKey = {
-    update: function (where: {
-      key: string;
-    }): Promise<TwoFactorAuthRecoveryKey> {
-      return Promise.resolve({
-        id: faker.number.int(),
-        key: where.key,
-        isUsed: true,
-        usedAt: new Date(),
-        twoFactorAuthId: faker.number.int(),
-      });
     },
   };
 }

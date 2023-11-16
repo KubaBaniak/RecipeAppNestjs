@@ -38,6 +38,22 @@ services:
       - dependencies
     networks:
       - recipe-app-network
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    hostname: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: '${RABBITMQ_DEFAULT_USER}'
+      RABBITMQ_DEFAULT_PASS: '${RABBITMQ_DEFAULT_PASS}'
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+    volumes:
+      - /var/lib/rabbitmq
+    profiles:
+      - dependencies
+    networks:
+      - recipe-app-network
   application:
     image: '${APP_IMAGE_NAME}'
     build: .

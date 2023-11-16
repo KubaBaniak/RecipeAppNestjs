@@ -17,7 +17,7 @@ import { CryptoUtils } from '../../webhook/utils/crypt-webhook-token';
 describe('RecipeController', () => {
   let recipeController: RecipeController;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [RedisCacheModule, HttpModule],
       controllers: [RecipeController],

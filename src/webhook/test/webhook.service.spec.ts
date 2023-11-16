@@ -19,7 +19,7 @@ describe('WebhookService', () => {
   let webhookRepository: WebhookRepository;
   let cryptoUtils: CryptoUtils;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [HttpModule],
       providers: [

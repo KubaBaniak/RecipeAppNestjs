@@ -1,15 +1,15 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { AuthService } from '../auth/auth.service';
 import { UserRepository } from '../user/user.repository';
+import { AuthService } from '../auth/auth.service';
 
 @Injectable()
 @WebSocketGateway()
 export class WebSocketEventGateway {
   constructor(
-    private readonly authService: AuthService,
     private readonly userRepository: UserRepository,
+    private readonly authService: AuthService,
   ) {}
 
   @WebSocketServer()
@@ -22,11 +22,9 @@ export class WebSocketEventGateway {
   async handleConnection(socket: Socket) {
     const token: string = socket.handshake.headers.authorization?.split(' ')[1];
     try {
-      const decodedToken = await this.authService.verifyJwt(
-        token,
-        process.env.JWT_SECRET,
-      );
-      const user = await this.userRepository.getUserById(decodedToken.id);
+      const userId = await this.authService.validateAuthToken(token);
+      this.authService.validateAuthMicroserviceReturn(userId);
+      const user = await this.userRepository.getUserById(userId);
 
       if (!user) {
         return this.dissconnectOnAuth(socket);

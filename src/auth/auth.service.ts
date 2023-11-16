@@ -1,59 +1,48 @@
 import {
-  BadRequestException,
   ForbiddenException,
+  HttpException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { JwtService, JwtSignOptions } from '@nestjs/jwt';
-import { BCRYPT, NUMBER_OF_2FA_RECOVERY_TOKENS, SERVICE } from './constants';
-import * as bcrypt from 'bcryptjs';
-import {
-  AccessTokenPayload,
-  SignInRequest,
-  SignUpRequest,
-  SignUpResponse,
-  UserRequest,
-} from './dto';
 import { UserRepository } from '../user/user.repository';
-import { UserPayloadRequest } from '../user/dto';
-import { PersonalAccessTokenRepository } from './personal-access-token.repository';
-import { authenticator } from 'otplib';
-import qrcode from 'qrcode';
-import { TwoFactorAuth } from '@prisma/client';
-import { TwoFactorAuthRepository } from './twoFactorAuth.repository';
 import { PendingUsersRepository } from '../user/pending-user.repository';
+import { UserPayloadRequest } from '../user/dto';
+import { SignInRequest, SignUpRequest, UserRequest } from './dto';
+import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
+
+type MicroserviceReturn = {
+  [key: string]: any;
+  message: string;
+  status: number;
+};
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly pendingUsersRepository: PendingUsersRepository,
     private readonly userRepository: UserRepository,
-    private readonly twoFactorAuthRepository: TwoFactorAuthRepository,
-    private readonly personalAccessTokenRepository: PersonalAccessTokenRepository,
-    private readonly jwtService: JwtService,
+    private readonly authClient: AmqpConnection,
   ) {}
 
-  verifyJwt(jwtToken: string, secret: string): Promise<AccessTokenPayload> {
-    return this.jwtService.verifyAsync(jwtToken, { secret });
+  private exchange = 'authentication';
+
+  isMicroserviceError(payload: unknown): payload is MicroserviceReturn {
+    const hasMessage = (payload as MicroserviceReturn).message !== undefined;
+    const hasStatus = (payload as MicroserviceReturn).status !== undefined;
+
+    return hasMessage && hasStatus;
   }
 
-  async generateToken(
-    id: number,
-    secret: string,
-    time?: string,
-  ): Promise<string> {
-    const payload = { id };
-    const options: JwtSignOptions = { secret };
-
-    if (time) {
-      options.expiresIn = time;
+  validateAuthMicroserviceReturn(payload: unknown) {
+    if (this.isMicroserviceError(payload)) {
+      throw new HttpException(payload.message, payload.status);
     }
-
-    return this.jwtService.signAsync(payload, options);
   }
 
-  async signUp(signUpRequest: SignUpRequest): Promise<SignUpResponse> {
+  async signUp(
+    signUpRequest: SignUpRequest,
+  ): Promise<{ email: string; accountActivationToken: string }> {
     const [pendingUser, user] = await Promise.all([
       this.pendingUsersRepository.getPendingUserByEmail(signUpRequest.email),
       this.userRepository.getUserByEmail(signUpRequest.email),
@@ -63,11 +52,31 @@ export class AuthService {
       throw new ForbiddenException();
     }
 
-    const hash = await bcrypt.hash(signUpRequest.password, BCRYPT.salt);
+    const data = { email: signUpRequest.email };
+    const createdUser = await this.pendingUsersRepository.createPendingUser(
+      data,
+    );
 
-    const data = { email: signUpRequest.email, password: hash };
+    const payload = {
+      userId: createdUser.id,
+      password: signUpRequest.password,
+    };
 
-    return this.pendingUsersRepository.createPendingUser(data);
+    const accountActivationTokenObject = await this.authClient.request<{
+      accountActivationToken: string;
+    }>({
+      exchange: this.exchange,
+      routingKey: 'signup',
+      payload,
+    });
+
+    this.validateAuthMicroserviceReturn(accountActivationTokenObject);
+
+    return {
+      email: createdUser.email,
+      accountActivationToken:
+        accountActivationTokenObject.accountActivationToken,
+    };
   }
 
   async signIn(signInRequest: SignInRequest): Promise<string> {
@@ -77,71 +86,86 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
-    if (user?.twoFactorAuth?.isEnabled) {
-      if (!signInRequest.token) {
-        throw new UnauthorizedException();
-      }
-      return this.verify2fa(user.id, signInRequest.token);
-    }
+    const payload = {
+      userId: user.id,
+      password: signInRequest.password,
+      token: signInRequest.token,
+    };
 
-    return this.generateToken(
-      user.id,
-      process.env.JWT_SECRET,
-      process.env.JWT_EXPIRY_TIME,
-    );
+    const accessTokenObject = await this.authClient.request<{
+      accessToken: string;
+    }>({
+      exchange: this.exchange,
+      routingKey: 'signin',
+      payload,
+    });
+
+    this.validateAuthMicroserviceReturn(accessTokenObject);
+
+    return accessTokenObject.accessToken;
   }
 
   async createPersonalAccessToken(userId: number): Promise<string> {
-    const validPersonalAccessToken =
-      await this.personalAccessTokenRepository.getValidPatForUserId(userId);
+    const payload = { userId };
 
-    if (validPersonalAccessToken) {
-      this.personalAccessTokenRepository.invalidatePatForUserId(userId);
-    }
-    const personalAccessToken = await this.generateToken(
-      userId,
-      process.env.JWT_PAT_SECRET,
-    );
-    const { token } =
-      await this.personalAccessTokenRepository.savePersonalAccessToken(
-        userId,
-        personalAccessToken,
-      );
-    return token;
+    const personalAccessTokenObject = await this.authClient.request<{
+      personalAccessToken: string;
+    }>({
+      exchange: this.exchange,
+      routingKey: 'add-personal-access-token',
+      payload,
+    });
+
+    this.validateAuthMicroserviceReturn(personalAccessTokenObject);
+
+    return personalAccessTokenObject.personalAccessToken;
   }
 
-  async validateUser(userRequest: UserRequest): Promise<UserPayloadRequest> {
+  async validateAuthToken(token: string): Promise<number> {
+    const payload = { token };
+
+    const userIdObject = await this.authClient.request<{ id: number }>({
+      exchange: this.exchange,
+      routingKey: 'validate-jwt-token',
+      payload,
+    });
+
+    this.validateAuthMicroserviceReturn(userIdObject);
+
+    return userIdObject.id;
+  }
+
+  async validateUser(userRequest: UserRequest): Promise<number> {
     const user = await this.userRepository.getUserByEmail(userRequest.email);
 
     if (!user) {
       throw new UnauthorizedException();
     }
 
-    const isMatch = await bcrypt.compare(userRequest.password, user.password);
+    const payload = { userId: user.id, password: userRequest.password };
 
-    if (!isMatch) {
-      throw new UnauthorizedException();
-    }
+    const validatedUserId = await this.authClient.request<number>({
+      exchange: this.exchange,
+      routingKey: 'validate-user',
+      payload,
+    });
 
-    return user;
+    this.validateAuthMicroserviceReturn(validatedUserId);
+
+    return validatedUserId;
   }
 
-  async verifyAccountActivationToken(
-    jwtToken: string,
-  ): Promise<{ id: number }> {
-    const invalidTokenMessage =
-      'Invalid token. Please provide a valid token to activate account';
+  async activateAccount(token: string): Promise<UserPayloadRequest> {
+    const payload = { token };
 
-    try {
-      return this.jwtService.verify(jwtToken, {
-        secret: process.env.JWT_ACCOUNT_ACTIVATION_SECRET,
-      });
-    } catch {
-      throw new UnauthorizedException(invalidTokenMessage);
-    }
-  }
+    const userId = await this.authClient.request<number>({
+      exchange: this.exchange,
+      routingKey: 'activate-account',
+      payload,
+    });
 
-  async activateAccount(userId: number): Promise<UserPayloadRequest> {
+    this.validateAuthMicroserviceReturn(userId);
+
     const userData = await this.pendingUsersRepository.getPendingUserById(
       userId,
     );
@@ -159,140 +183,127 @@ export class AuthService {
     return createdUser;
   }
 
-  async changePassword(
-    userId: number,
-    newPassword: string,
-  ): Promise<UserPayloadRequest> {
-    const hashedPassword = await bcrypt.hash(newPassword, BCRYPT.salt);
+  async changePassword(userId: number, newPassword: string): Promise<number> {
+    const payload = { userId, newPassword };
 
-    return this.userRepository.updateUserById(userId, {
-      password: hashedPassword,
+    const changedPasswordUserId = await this.authClient.request<number>({
+      exchange: this.exchange,
+      routingKey: 'change-password',
+      payload,
     });
-  }
 
-  async generateAccountActivationToken(userId: number): Promise<string> {
-    const token = await this.generateToken(
-      userId,
-      process.env.JWT_ACCOUNT_ACTIVATION_SECRET,
-      process.env.ACCOUNT_ACTIVATION_TIME_IN_SECONDS,
-    );
+    this.validateAuthMicroserviceReturn(changedPasswordUserId);
 
-    return token;
+    return changedPasswordUserId;
   }
 
   async generateResetPasswordToken(email: string): Promise<string> {
     const user = await this.userRepository.getUserByEmail(email);
 
-    if (!user) {
-      return;
-    }
+    const payload = { userId: user.id };
 
-    const token = await this.generateToken(
-      user.id,
-      process.env.JWT_PASSWORD_RESET_SECRET,
-      process.env.JWT_PASSWORD_RESET_TIME,
-    );
+    const token = await this.authClient.request<string>({
+      exchange: this.exchange,
+      routingKey: 'generate-password-reset-token',
+      payload,
+    });
+
+    this.validateAuthMicroserviceReturn(token);
+
     return token;
   }
 
-  async is2faEnabled(userId: number): Promise<boolean> {
-    const isEnabledObject =
-      await this.twoFactorAuthRepository.is2faEnabledForUserWithId(userId);
-
-    return isEnabledObject?.isEnabled === true;
-  }
-
   async createQrCodeFor2fa(userId: number): Promise<string> {
-    const { email } = await this.userRepository.getUserById(userId);
-    const service = SERVICE.name;
-    const secretKey = authenticator.generateSecret();
+    const payload = { userId };
 
-    const otpauth = authenticator.keyuri(email, service, secretKey);
+    const qrCodeUrlObject = await this.authClient.request<{
+      qrCodeUrl: string;
+    }>({
+      exchange: this.exchange,
+      routingKey: 'create-2fa-qrcode',
+      payload,
+    });
 
-    await this.twoFactorAuthRepository.save2faSecretKeyForUserWithId(
-      userId,
-      secretKey,
-    );
+    this.validateAuthMicroserviceReturn(qrCodeUrlObject);
 
-    return qrcode.toDataURL(otpauth);
+    return qrCodeUrlObject.qrCodeUrl;
   }
 
   async generate2faRecoveryKeys(userId: number): Promise<string[]> {
-    const user = await this.userRepository.getUserById(userId);
+    const payload = { userId };
 
-    const recoveryKeys = Array.from(
-      { length: NUMBER_OF_2FA_RECOVERY_TOKENS },
-      () => {
-        return { key: authenticator.generateSecret() };
-      },
-    );
+    const recoveryKeysObject = await this.authClient.request<{
+      recoveryKeys: string[];
+    }>({
+      exchange: this.exchange,
+      routingKey: 'regenerate-2fa-recovery-keys',
+      payload,
+    });
 
-    await this.twoFactorAuthRepository.saveRecoveryKeysForUserWithId(
-      user.id,
-      recoveryKeys,
-    );
+    this.validateAuthMicroserviceReturn(recoveryKeysObject);
 
-    return recoveryKeys.map((keyObject) => keyObject.key);
+    return recoveryKeysObject.recoveryKeys;
   }
 
   async enable2fa(userId: number, providedToken: string): Promise<string[]> {
-    if (await this.is2faEnabled(userId)) {
-      throw new BadRequestException('You have already enabled 2FA');
-    }
-    const { secretKey } =
-      await this.twoFactorAuthRepository.get2faSecretKeyForUserWithId(userId);
+    const payload = { userId, token: providedToken };
 
-    if (authenticator.check(providedToken, secretKey)) {
-      await this.twoFactorAuthRepository.enable2faForUserWithId(userId);
-      return this.generate2faRecoveryKeys(userId);
-    } else {
-      throw new BadRequestException('Incorrect 2FA token');
-    }
+    const recoveryKeysObject = await this.authClient.request<{
+      recoveryKeys: string[];
+    }>({
+      exchange: this.exchange,
+      routingKey: 'enable-2fa',
+      payload,
+    });
+
+    this.validateAuthMicroserviceReturn(recoveryKeysObject);
+
+    return recoveryKeysObject.recoveryKeys;
   }
 
-  async disable2fa(userId: number): Promise<TwoFactorAuth> {
-    if (!(await this.is2faEnabled(userId))) {
-      throw new BadRequestException(
-        'Could not disable 2FA, because it was not enabled',
-      );
-    }
-    return this.twoFactorAuthRepository.disable2faForUserWithId(userId);
+  async disable2fa(userId: number): Promise<number> {
+    const payload = { userId };
+
+    const userTwoFactorAuthId = await this.authClient.request<number>({
+      exchange: this.exchange,
+      routingKey: 'disable-2fa',
+      payload,
+    });
+
+    this.validateAuthMicroserviceReturn(userTwoFactorAuthId);
+
+    return userTwoFactorAuthId;
   }
 
   async verify2fa(userId: number, token: string): Promise<string> {
-    const user = await this.userRepository.getUserById(userId);
-    const { secretKey } =
-      await this.twoFactorAuthRepository.get2faSecretKeyForUserWithId(userId);
-    const { recoveryKeys: keys } =
-      await this.twoFactorAuthRepository.get2faRecoveryKeysForUserWithId(
-        userId,
-      );
+    const payload = { userId, token };
 
-    if (authenticator.check(token, secretKey)) {
-      return this.generateToken(
-        user.id,
-        process.env.JWT_SECRET,
-        process.env.JWT_EXPIRY_TIME,
-      );
-    }
+    const accessTokenObject = await this.authClient.request<{
+      accessToken: string;
+    }>({
+      exchange: this.exchange,
+      routingKey: 'verify-2fa',
+      payload,
+    });
 
-    if (keys.some(({ key, isUsed }) => key === token && !isUsed)) {
-      await this.twoFactorAuthRepository.expire2faRecoveryKey(token);
-      return this.generateToken(
-        user.id,
-        process.env.JWT_SECRET,
-        process.env.JWT_EXPIRY_TIME,
-      );
-    }
+    this.validateAuthMicroserviceReturn(accessTokenObject);
 
-    throw new UnauthorizedException('Incorrect 2FA token');
+    return accessTokenObject.accessToken;
   }
 
   async regenerate2faRecoveryTokens(userId: number): Promise<string[]> {
-    if (!(await this.is2faEnabled(userId))) {
-      throw new BadRequestException('You have to enable 2FA first');
-    }
+    const payload = { userId };
 
-    return this.generate2faRecoveryKeys(userId);
+    const recoveryKeysObject = await this.authClient.request<{
+      recoveryKeys: string[];
+    }>({
+      exchange: this.exchange,
+      routingKey: 'regenerate-2fa-recovery-keys',
+      payload,
+    });
+
+    this.validateAuthMicroserviceReturn(recoveryKeysObject);
+
+    return recoveryKeysObject.recoveryKeys;
   }
 }

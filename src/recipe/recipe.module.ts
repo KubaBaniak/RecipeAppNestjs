@@ -13,7 +13,6 @@ import { HttpModule } from '@nestjs/axios';
 import { WebhookRepository } from '../webhook/webhook.repository';
 import { UserRepository } from '../user/user.repository';
 import { CryptoUtils } from '../webhook/utils/crypt-webhook-token';
-import { TwoFactorAuthRepository } from '../auth/twoFactorAuth.repository';
 import { PendingUsersRepository } from '../user/pending-user.repository';
 
 @Module({
@@ -28,7 +27,6 @@ import { PendingUsersRepository } from '../user/pending-user.repository';
     WebhookService,
     WebhookRepository,
     CryptoUtils,
-    TwoFactorAuthRepository,
     PendingUsersRepository,
     UserRepository,
   ],
