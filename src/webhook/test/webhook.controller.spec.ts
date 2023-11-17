@@ -13,7 +13,7 @@ describe('WebhookController', () => {
   let controller: WebhookController;
   let webhookService: WebhookService;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [HttpModule],
       controllers: [WebhookController],
